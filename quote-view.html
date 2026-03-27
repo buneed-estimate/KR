@@ -147,13 +147,15 @@ async function loadRentalQuote(token) {
   const { data: items } = await db.from('rental_quote_items').select('*').eq('quote_id', q.id).order('sort_order');
   const quoteItems = items || [];
 
-  const sub = q.subtotal || 0;
-  const discount = q.discount_amount || 0;
-  const installFee = q.installation_fee || 0;
-  const deposit = q.deposit || 0;
-  const supply = q.supply_price || (sub - discount + installFee);
-  const vat = q.vat || Math.round(supply * 0.1);
-  const total = q.total || (supply + vat + deposit);
+  // ── 금액 계산 (null/undefined 안전 처리) ──
+  const sub = Number(q.subtotal ?? quoteItems.reduce((s, it) => s + (Number(it.total_price) || 0), 0)) || 0;
+  const discount = Number(q.discount_amount) || 0;
+  const installFee = Number(q.installation_fee) || 0;
+  const deposit = Number(q.deposit) || 0;
+  // supply_price가 명시적으로 저장된 경우 우선 사용, 없으면 직접 계산
+  const supply = (q.supply_price != null ? Number(q.supply_price) : null) ?? Math.max(0, sub - discount + installFee);
+  const vat = (q.vat != null ? Number(q.vat) : null) ?? Math.round(supply * 0.1);
+  const total = (q.total != null ? Number(q.total) : null) ?? (supply + vat + deposit);
 
   const today = new Date(q.created_at).toLocaleDateString('ko-KR');
   const typeLabel = q.rental_type === '일' ? '일 단위' : '월 단위';
@@ -293,10 +295,13 @@ async function loadPurchaseQuote(token) {
   const { data: items } = await db.from('quote_items').select('*').eq('quote_id', q.id).order('sort_order');
   const quoteItems = items || [];
 
-  const supply = q.supply_price || (q.subtotal - (q.discount_amount || 0));
-  const vat = q.vat || Math.round(supply * 0.1);
-  const total = q.total || (supply + vat);
-  const discAmt = q.discount_amount || 0;
+  // ── 금액 계산 (null/undefined 안전 처리) ──
+  const subTotal = Number(q.subtotal ?? quoteItems.reduce((s, it) => s + (Number(it.total_price) || 0), 0)) || 0;
+  const discAmt = Number(q.discount_amount) || 0;
+  // supply_price가 명시적으로 저장된 경우 우선 사용, 없으면 직접 계산
+  const supply = (q.supply_price != null ? Number(q.supply_price) : null) ?? Math.max(0, subTotal - discAmt);
+  const vat = (q.vat != null ? Number(q.vat) : null) ?? Math.round(supply * 0.1);
+  const total = (q.total != null ? Number(q.total) : null) ?? (supply + vat);
 
   const today = new Date(q.created_at).toLocaleDateString('ko-KR');
 
@@ -406,7 +411,6 @@ async function loadPurchaseQuote(token) {
       주식회사 비유니드 | 경기도 하남시 미사강변한강로 135 다동 4층 445호 | 031.8028.0464 | www.buneed.co.kr
     </div>
   `;
-}
 }
 
 loadQuote();
