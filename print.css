@@ -1,0 +1,151 @@
+/* 인쇄 전용 스타일 - media=print 로만 로드됨 */
+/* 1. 모든 요소 숨김 */
+body > * { display: none !important; }
+
+/* 2. 구매/렌탈 미리보기 모달이 열려 있을 때만 표시 */
+#modal-preview.open,
+#r-modal-preview.open {
+  display: block !important;
+  position: static !important;
+  background: none !important;
+  padding: 0 !important;
+  width: 100% !important;
+  overflow: visible !important;
+}
+#modal-preview.open .modal-box,
+#r-modal-preview.open .modal-box {
+  width: 100% !important;
+  max-width: 100% !important;
+  max-height: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  overflow: visible !important;
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 100vh !important;
+}
+/* 모달 헤더/푸터(버튼 영역) 숨김 */
+#modal-preview .modal-header,
+#modal-preview .modal-footer,
+#r-modal-preview .modal-header,
+#r-modal-preview .modal-footer { display: none !important; }
+/* 모달 본문 전체 노출 */
+#modal-preview .modal-body,
+#r-modal-preview .modal-body {
+  overflow: visible !important;
+  max-height: none !important;
+  padding: 0 !important;
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* 3. 인쇄 색상 강제 적용 */
+body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+/* 4. 견적서 레이아웃 – 푸터를 최하단으로 밀기 위해 flex column */
+.qdoc {
+  padding: 18px 20px 0 20px !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 !important;
+  min-height: calc(100vh - 36px) !important;
+}
+
+/* 5. 헤더 – 좌우 레이아웃 강제 유지 (높은 specificity) */
+.qdoc .q-header {
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: space-between !important;
+  align-items: flex-start !important;
+  margin-bottom: 16px !important;
+  padding-bottom: 10px !important;
+  border-bottom: 2px solid #1B3A6B !important;
+}
+/* 헤더 좌측 영역 – 좌정렬 강제 */
+.qdoc .q-header > div:first-child {
+  text-align: left !important;
+  flex: 1 !important;
+  min-width: 0 !important;
+}
+
+/* 6. 로고 영역 – flex column 우측정렬 */
+.q-logo-area { display: flex !important; flex-direction: column !important; align-items: flex-end !important; gap: 4px !important; }
+.q-logo-area img { height: 64px !important; display: block !important; }
+/* 인쇄 시 회사소개서 버튼 완전 숨김 (모든 위치) */
+.q-logo-area a { display: none !important; }
+.q-intro-btn { display: none !important; }
+.q-intro-btn-wrap { display: none !important; }
+
+/* 7. 좌측 헤더 텍스트 */
+.qdoc h1 { font-size: 20px !important; font-weight: 800 !important; color: #1B3A6B !important;
+  letter-spacing: 0.04em !important; margin-bottom: 4px !important; }
+/* 작성일/견적번호 행 – 가로 배치 좌정렬 */
+.q-header-meta {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 3px !important;
+}
+.q-date {
+  font-size: 10px !important;
+  color: #64748b !important;
+  line-height: 1.6 !important;
+  text-align: left !important;
+}
+
+/* 8. 거래처 박스 */
+.q-party-grid { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 10px !important; margin-bottom: 12px !important; }
+.q-party-box { border: 1px solid #b8cde8 !important; border-radius: 6px !important; overflow: hidden !important; }
+.q-party-susin-header { background: #0E76BB !important; padding: 7px 14px !important;
+  -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+.q-party-gonggeup-header { background: #1B3A6B !important; padding: 7px 14px !important;
+  -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+.q-party-header-text { font-size: 12px !important; font-weight: 700 !important; color: #fff !important;
+  letter-spacing: 0.1em !important; }
+
+/* 9. 테이블 */
+table { width: 100% !important; border-collapse: collapse !important; font-size: 11px !important; }
+th { background: #1B3A6B !important; color: #ffffff !important; -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important; padding: 7px 9px !important; font-size: 11px !important; }
+td { padding: 5px 9px !important; border-bottom: 1px solid #e8edf5 !important;
+  font-size: 11px !important; vertical-align: middle !important; }
+
+/* 10. 합계 */
+.q-summary-table { width: 260px !important; margin-left: auto !important;
+  border-collapse: collapse !important; font-size: 11px !important; margin-top: 10px !important; }
+.q-summary-table td { padding: 4px 6px !important; border: none !important; color: #374151 !important; }
+.q-summary-table td:last-child { text-align: right !important; }
+.q-total-row td, .r-q-total-row td { font-weight: 800 !important; font-size: 14px !important;
+  border-top: 2px solid #1B3A6B !important; padding-top: 6px !important; }
+
+/* 11. 렌탈 정보 */
+.q-rental-info-box { background: #f8fafc !important; border: 1px solid #cbd5e1 !important;
+  border-radius: 6px !important; padding: 10px 14px !important;
+  -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+.q-rental-info-grid { display: grid !important; grid-template-columns: repeat(3,1fr) !important;
+  gap: 8px !important; margin-top: 6px !important; }
+
+/* 12. 섹션 제목 */
+.q-section-title, .r-q-section-title { font-size: 10px !important; font-weight: 700 !important;
+  color: #1B3A6B !important; margin-bottom: 6px !important;
+  -webkit-print-color-adjust: exact !important; }
+
+/* 13. 푸터 – spacer가 남는 공간 차지해 footer를 최하단 고정 */
+.q-spacer { flex: 1 !important; min-height: 20px !important; }
+.q-footer-bar {
+  margin-top: auto !important;
+  padding: 10px 0 8px !important;
+  border-top: 1px solid #e2e8f0 !important;
+  text-align: center !important;
+  font-size: 9.5px !important;
+  color: #94a3b8 !important;
+  line-height: 1.6 !important;
+  position: static !important;
+  page-break-inside: avoid !important;
+  -webkit-print-color-adjust: exact !important;
+}
+
+@page { margin: 15mm 14mm 18mm 14mm; }

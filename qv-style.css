@@ -234,7 +234,7 @@ tbody tr:nth-child(even) { background: #f9fafc; }
 /* ================================================================
    반응형 — 태블릿 (≤ 768px)
    ================================================================ */
-@media (max-width: 768px) {
+@media screen and (max-width: 768px) {
   .page-wrap   { padding: 12px 8px; }
   .qdoc        { padding: 20px 16px; border-radius: 8px; }
   h1           { font-size: 17px; }
@@ -250,7 +250,7 @@ tbody tr:nth-child(even) { background: #f9fafc; }
 /* ================================================================
    반응형 — 모바일 (≤ 480px)
    ================================================================ */
-@media (max-width: 480px) {
+@media screen and (max-width: 480px) {
   .qdoc        { padding: 14px 10px; }
   .q-header    { gap: 10px; }
   .q-num       { text-align: left; margin-top: 0; display: block !important; }
