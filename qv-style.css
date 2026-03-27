@@ -89,7 +89,7 @@ h1 {
   background: #0E76BB;
   color: #fff;
   padding: 7px 14px;
-  font-size: 11px;          /* --fs-xs+1 */
+  font-size: 13px;          /* --fs-md */
   font-weight: 700;
   letter-spacing: 0.06em;
 }
@@ -97,8 +97,8 @@ h1 {
 .q-party-body { padding: 10px 14px; }
 
 /* 필드 행 */
-.q-field { display: flex; gap: 8px; padding: 3px 0; font-size: 12px; } /* --fs-sm */
-.q-field .lbl { color: #6b7a99; width: 48px; flex-shrink: 0; font-size: 11px; }
+.q-field { display: flex; gap: 8px; padding: 3px 0; font-size: 13px; } /* --fs-md */
+.q-field .lbl { color: #6b7a99; width: 52px; flex-shrink: 0; font-size: 12px; }
 .q-field .val { font-weight: 600; color: #1a2e5a; }
 
 /* ── 견적 조건 그리드 (info-grid) ── */
@@ -154,24 +154,25 @@ thead th {
   background: #0d2d6b;
   color: #fff;
   padding: 8px 10px;
-  font-size: 11px;          /* --fs-xs+1 */
+  font-size: 13px;          /* --fs-md */
   font-weight: 600;
   text-align: left;
   letter-spacing: 0.03em;
 }
 tbody td {
   padding: 8px 10px;
-  font-size: 12px;          /* --fs-sm */
+  font-size: 13px;          /* --fs-md */
   border-bottom: 1px solid #f1f5f9;
   color: #1a2e5a;
 }
 tbody tr:nth-child(even) { background: #f9fafc; }
-body tr:last-child td { border-bottom: 2px solid #0d2d6b; }
-tbody tr:last-child td { border-bottom: 2px solid #0d2d6b; }
+/* 품목 테이블만 마무리 선 적용 — 합계 테이블은 제외 */
+.q-section tbody tr:last-child td { border-bottom: 1px solid #0d2d6b; }
+.q-summary tbody tr:last-child td { border-bottom: none; }
 .text-right { text-align: right; }
 
 /* ── 합계 테이블 ── */
-.q-summary { margin-bottom: 0; }
+.q-summary { margin-bottom: 32px; }
 .q-summary table { width: 320px; margin-left: auto; }
 .q-summary td {
   padding: 6px 10px;
