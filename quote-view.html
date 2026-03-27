@@ -115,7 +115,7 @@ async function loadRentalQuote(token) {
   document.getElementById('quote-doc').innerHTML = `
     <div class="q-header">
       <div style="text-align:left;">
-        <h1 style="color:#1B3A6B;font-size:22px;font-weight:800;letter-spacing:0.05em;margin:0 0 8px 0;text-align:left;">렌탈 견적서</h1>
+        <h1 style="color:#1B3A6B;font-size:28px;font-weight:800;letter-spacing:0.05em;margin:0 0 8px 0;text-align:left;">렌탈 견적서</h1>
         <div class="q-num" style="text-align:left;">견적번호: ${q.quote_number || '-'}</div>
         <div class="q-num" style="text-align:left;">작성일: ${today}</div>
       </div>
@@ -152,12 +152,12 @@ async function loadRentalQuote(token) {
       </div>
       <div style="background:#f8fafc;padding:10px 14px;">
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
-          <div><div style="font-size:10px;color:#64748b;font-weight:600;margin-bottom:2px;">렌탈 단위</div><div style="font-size:12px;font-weight:700;color:#1e293b;">${typeLabel}</div></div>
-          <div><div style="font-size:10px;color:#64748b;font-weight:600;margin-bottom:2px;">렌탈 시작일</div><div style="font-size:12px;font-weight:700;color:#1e293b;">${q.rental_start_date || '-'}</div></div>
-          <div><div style="font-size:10px;color:#64748b;font-weight:600;margin-bottom:2px;">렌탈 기간</div><div style="font-size:12px;font-weight:700;color:#1e293b;">${durationLabel}</div></div>
-          <div><div style="font-size:10px;color:#64748b;font-weight:600;margin-bottom:2px;">납품희망일</div><div style="font-size:12px;font-weight:700;color:#1e293b;">${q.delivery_location || '-'}</div></div>
-          <div><div style="font-size:10px;color:#64748b;font-weight:600;margin-bottom:2px;">반납/회수</div><div style="font-size:12px;font-weight:700;color:#1e293b;">${q.return_method || '-'}</div></div>
-          <div><div style="font-size:10px;color:#64748b;font-weight:600;margin-bottom:2px;">견적 유효기간</div><div style="font-size:12px;font-weight:700;color:#1e293b;">${q.valid_until || '견적일로부터 30일'}</div></div>
+          <div><div style="font-size:10px;color:#64748b;font-weight:600;margin-bottom:2px;">렌탈 단위</div><div style="font-size:13px;font-weight:700;color:#1e293b;">${typeLabel}</div></div>
+          <div><div style="font-size:10px;color:#64748b;font-weight:600;margin-bottom:2px;">렌탈 시작일</div><div style="font-size:13px;font-weight:700;color:#1e293b;">${q.rental_start_date || '-'}</div></div>
+          <div><div style="font-size:10px;color:#64748b;font-weight:600;margin-bottom:2px;">렌탈 기간</div><div style="font-size:13px;font-weight:700;color:#1e293b;">${durationLabel}</div></div>
+          <div><div style="font-size:10px;color:#64748b;font-weight:600;margin-bottom:2px;">납품희망일</div><div style="font-size:13px;font-weight:700;color:#1e293b;">${q.delivery_location || '-'}</div></div>
+          <div><div style="font-size:10px;color:#64748b;font-weight:600;margin-bottom:2px;">반납/회수</div><div style="font-size:13px;font-weight:700;color:#1e293b;">${q.return_method || '-'}</div></div>
+          <div><div style="font-size:10px;color:#64748b;font-weight:600;margin-bottom:2px;">견적 유효기간</div><div style="font-size:13px;font-weight:700;color:#1e293b;">${q.valid_until || '견적일로부터 30일'}</div></div>
         </div>
       </div>
     </div>
@@ -281,7 +281,7 @@ async function loadPurchaseQuote(token) {
   document.getElementById('quote-doc').innerHTML = `
     <div class="q-header">
       <div style="text-align:left;">
-        <h1 style="color:#1B3A6B;font-size:22px;font-weight:800;letter-spacing:0.05em;margin:0 0 8px 0;text-align:left;">구매 견적서</h1>
+        <h1 style="color:#1B3A6B;font-size:28px;font-weight:800;letter-spacing:0.05em;margin:0 0 8px 0;text-align:left;">구매 견적서</h1>
         <div class="q-num" style="text-align:left;">견적번호: ${q.quote_number}</div>
         <div class="q-num" style="text-align:left;">작성일: ${today}</div>
       </div>
@@ -346,8 +346,6 @@ async function loadPurchaseQuote(token) {
 }
 
 loadQuote();
-
-
 
 </script>
 </body>

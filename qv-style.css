@@ -35,7 +35,7 @@ body {
   border: none;
   border-radius: 6px;
   padding: 8px 20px;
-  font-size: 12px;          /* --fs-sm */
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   letter-spacing: 0.02em;
@@ -62,7 +62,7 @@ body {
 
 /* h1 : 견적서 대제목 */
 h1 {
-  font-size: 20px;          /* --fs-xl */
+  font-size: 28px;          /* --fs-xl */
   font-weight: 800;
   color: #1B3A6B;
   letter-spacing: 0.05em;
@@ -138,14 +138,13 @@ h1 {
 /* ── 섹션 ── */
 .q-section { margin-bottom: 20px; }
 .q-section-title {
-  font-size: 11px;          /* --fs-xs+1 */
+  font-size: 13px;          /* q-party-header 와 동일 */
   font-weight: 700;
   color: #0d2d6b;
   margin-bottom: 10px;
   padding-bottom: 6px;
   border-bottom: 2px solid #c2d4f0;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
 }
 
 /* ── 품목 테이블 ── */
@@ -154,14 +153,14 @@ thead th {
   background: #0d2d6b;
   color: #fff;
   padding: 8px 10px;
-  font-size: 13px;          /* --fs-md */
+  font-size: 12px;          /* --fs-sm */
   font-weight: 600;
   text-align: left;
   letter-spacing: 0.03em;
 }
 tbody td {
   padding: 8px 10px;
-  font-size: 13px;          /* --fs-md */
+  font-size: 12px;          /* --fs-sm */
   border-bottom: 1px solid #f1f5f9;
   color: #1a2e5a;
 }
