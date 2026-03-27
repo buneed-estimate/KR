@@ -441,10 +441,12 @@ async function showApp(email) {
   // ─────────────────────────────────────────────────────────────
 
   // ── 1단계: 카탈로그 우선 로드 (사용자가 즉시 보는 영역) ──
-  // 로딩 중 스피너 표시 (체감 속도 개선)
-  const catalogPanel = document.querySelector('.catalog-panel');
-  const rCatalogPanel = document.querySelector('.r-catalog-panel, #r-catalog-panel');
-  if (catalogPanel) catalogPanel.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#94a3b8;font-size:12px;gap:8px;"><span style="display:inline-block;width:16px;height:16px;border:2px solid #e2e8f0;border-top-color:#1B3A6B;border-radius:50%;animation:spin .7s linear infinite;"></span>카탈로그 로딩 중...</div>';
+  // 로딩 중 스피너 표시 (product-list 안에만 표시 → catalog-panel 구조 유지)
+  const spinnerHtml = '<div style="display:flex;align-items:center;justify-content:center;padding:24px 0;color:#94a3b8;font-size:12px;gap:8px;"><span style="display:inline-block;width:16px;height:16px;border:2px solid #e2e8f0;border-top-color:#1B3A6B;border-radius:50%;animation:spin .7s linear infinite;"></span>로딩 중...</div>';
+  const productList = document.getElementById('product-list');
+  const rProductList = document.getElementById('r-product-list');
+  if (productList) productList.innerHTML = spinnerHtml;
+  if (rProductList) rProductList.innerHTML = spinnerHtml;
 
   // loadAllData 내부의 loadProducts()가 완료되면 renderProducts() 자동 호출
   // rLoadRentalProducts() 완료 후 rRenderProductList() 수동 호출
