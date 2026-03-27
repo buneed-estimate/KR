@@ -402,7 +402,7 @@ function rPreviewQuote() {
     </table>
     ${memo?`<div class="sv-info-grid" style="margin-top:14px;"><div class="sv-info-box"><div class="sv-info-hd">특이사항</div><div class="sv-info-body" style="color:#374151;line-height:1.6;">${memo}</div></div></div>`:''}
     <div class="q-spacer"></div>
-    <div class="q-footer-bar">주식회사 비유니드 | 경기도 하남시 미사강변한강로 135 다동 4층 445호 | 031.8028.0464 | www.buneed.co.kr</div>
+    <div class="q-footer-bar">(주) 비유니드 | 경기도 하남시 미사강변한강로 135 다동 4층 445호 | 031.8028.0464 | www.buneed.co.kr</div>
   </div>`;
   _lastPreviewHtml = html;
   document.getElementById('r-preview-content').innerHTML = html;

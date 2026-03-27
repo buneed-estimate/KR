@@ -427,7 +427,7 @@ function previewQuote() {
     </table>
 
     <div class="q-spacer"></div>
-    <div class="q-footer-bar">(주) 비유니드 | www.buneed.co.kr | 031.8028-0464 | 경기도 하남시 미사강변한강로 135 다동 4층 445호</div>
+    <div class="q-footer-bar">(주) 비유니드 | 경기도 하남시 미사강변한강로 135 다동 4층 445호 | 031.8028.0464 | www.buneed.co.kr</div>
   </div>`;
   _lastPreviewHtml = html;
   document.getElementById('preview-content').innerHTML = html;
