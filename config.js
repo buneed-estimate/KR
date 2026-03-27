@@ -1,5 +1,6 @@
 // ===== 비유니드 앱 설정 =====
-const LOGO_SRC = './logo.png';
+// WebP 지원 시 logo.webp, 미지원 시 logo.png
+const LOGO_SRC = (function(){const c=document.createElement('canvas');return c.toDataURL('image/webp').indexOf('data:image/webp')===0?'./logo.webp':'./logo.png';})();
 
 // ===== SUPABASE =====
 // ===== 관리자 이메일 목록 =====
@@ -440,6 +441,11 @@ async function showApp(email) {
   // ─────────────────────────────────────────────────────────────
 
   // ── 1단계: 카탈로그 우선 로드 (사용자가 즉시 보는 영역) ──
+  // 로딩 중 스피너 표시 (체감 속도 개선)
+  const catalogPanel = document.querySelector('.catalog-panel');
+  const rCatalogPanel = document.querySelector('.r-catalog-panel, #r-catalog-panel');
+  if (catalogPanel) catalogPanel.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#94a3b8;font-size:12px;gap:8px;"><span style="display:inline-block;width:16px;height:16px;border:2px solid #e2e8f0;border-top-color:#1B3A6B;border-radius:50%;animation:spin .7s linear infinite;"></span>카탈로그 로딩 중...</div>';
+
   // loadAllData 내부의 loadProducts()가 완료되면 renderProducts() 자동 호출
   // rLoadRentalProducts() 완료 후 rRenderProductList() 수동 호출
   await Promise.allSettled([

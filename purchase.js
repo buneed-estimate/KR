@@ -20,11 +20,13 @@ function initQuoteNum() {
 }
 
 async function loadAllData() {
-  await Promise.all([loadProducts(), loadSpecCategories(), loadSpecOptions()]);
+  // 카탈로그(제품목록) 우선 로드 → spec 데이터는 백그라운드
+  await loadProducts();
+  Promise.all([loadSpecCategories(), loadSpecOptions()]); // 백그라운드
 }
 async function loadProducts() {
   try {
-    const { data, error } = await db.from('products').select('*').eq('is_active',true).order('category');
+    const { data, error } = await db.from('products').select('id,category,brand,name,spec_summary,feature,unit_price,info_url,is_active').eq('is_active',true).order('category');
     if (error || !data || data.length === 0) {
       // DB 데이터 없을 때 샘플 데이터 사용
       products = (typeof SAMPLE_PRODUCTS !== 'undefined') ? SAMPLE_PRODUCTS.map((p,i)=>({...p,id:i+1})) : [];
@@ -311,21 +313,23 @@ function previewQuote() {
   const today = new Date().toLocaleDateString('ko-KR');
   const introHtml = '<a href="https://buneed-estimate.vercel.app/Buneed.pdf" target="_blank" class="q-intro-btn" style="display:inline-block;padding:3px 12px;border:1.5px solid #1B3A6B;border-radius:99px;font-size:11px;color:#1B3A6B;font-weight:600;text-decoration:none;background:#fff;margin-top:4px;">회사소개서</a>';
     const itemsHtml = quoteItems.map((it,i)=>{
+    const isLast = i === quoteItems.length - 1;
+    const rowBorder = isLast ? '2px solid #1B3A6B' : '1px solid #e8edf5';
     const specText = it.spec_summary ? fmtSpec(it.spec_summary) : '';
     return `
     <tr>
-      <td style="text-align:center;width:28px;font-size:11px;color:#64748b;border-bottom:1px solid #e8edf5;">${i+1}</td>
-      <td style="text-align:center;padding:6px 8px;border-bottom:1px solid #e8edf5;min-width:70px;vertical-align:middle;">
+      <td style="text-align:center;width:28px;font-size:11px;color:#64748b;border-bottom:${rowBorder};">${i+1}</td>
+      <td style="text-align:center;padding:6px 8px;border-bottom:${rowBorder};min-width:70px;vertical-align:middle;">
         <div style="font-size:10.5px;font-weight:700;color:#1B3A6B;white-space:nowrap;">${it.brand||''}</div>
         <div style="font-size:10px;color:#64748b;margin-top:2px;">${it.category||''}</div>
       </td>
-      <td style="min-width:120px;padding:8px 10px;border-bottom:1px solid #e8edf5;">
+      <td style="min-width:120px;padding:8px 10px;border-bottom:${rowBorder};">
         ${it.info_url ? `<a href="${it.info_url}" target="_blank" style="font-weight:700;font-size:12px;color:#1B3A6B;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px;display:inline-flex;align-items:center;gap:0;">${it.product_name}<svg width="10" height="10" viewBox="0 0 12 12" fill="none" style="display:inline;vertical-align:middle;margin-left:3px;flex-shrink:0;"><path d="M5 2H2a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V7" stroke="#1B3A6B" stroke-width="1.5"/><path d="M8 2h2v2M10 2 6 6" stroke="#1B3A6B" stroke-width="1.5" stroke-linecap="round"/></svg></a>` : `<div style="font-weight:700;font-size:12px;color:#1e293b;">${it.product_name}</div>`}
         ${specText ? `<div style="font-size:10.5px;color:#475569;line-height:1.5;margin-top:3px;">${specText}</div>` : ''}
       </td>
-      <td style="text-align:right;white-space:nowrap;font-weight:600;font-size:12px;min-width:90px;border-bottom:1px solid #e8edf5;">${fmt(it.unit_price)}원</td>
-      <td style="text-align:center;font-weight:600;border-bottom:1px solid #e8edf5;">${it.qty}</td>
-      <td style="text-align:right;font-weight:700;white-space:nowrap;font-size:12px;border-bottom:1px solid #e8edf5;">${fmt(it.total_price)}원</td>
+      <td style="text-align:right;white-space:nowrap;font-weight:600;font-size:12px;min-width:90px;border-bottom:${rowBorder};">${fmt(it.unit_price)}원</td>
+      <td style="text-align:center;font-weight:600;border-bottom:${rowBorder};">${it.qty}</td>
+      <td style="text-align:right;font-weight:700;white-space:nowrap;font-size:12px;border-bottom:${rowBorder};">${fmt(it.total_price)}원</td>
     </tr>`;
   }).join('');
   const html = `

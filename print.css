@@ -45,13 +45,14 @@ body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !
 
 /* 4. 견적서 레이아웃 – 푸터를 최하단으로 밀기 위해 flex column */
 .qdoc {
-  padding: 18px 20px 0 20px !important;
+  padding: 0 0 28px 0 !important;
   max-width: 100% !important;
   margin: 0 !important;
   display: flex !important;
   flex-direction: column !important;
   flex: 1 !important;
-  min-height: calc(100vh - 36px) !important;
+  min-height: 0 !important;
+  box-sizing: border-box !important;
 }
 
 /* 5. 헤더 – 좌우 레이아웃 강제 유지 (높은 specificity) */
@@ -112,6 +113,8 @@ th { background: #1B3A6B !important; color: #ffffff !important; -webkit-print-co
   print-color-adjust: exact !important; padding: 7px 9px !important; font-size: 11px !important; }
 td { padding: 5px 9px !important; border-bottom: 1px solid #e8edf5 !important;
   font-size: 11px !important; vertical-align: middle !important; }
+/* 견적 테이블 마지막 행 – 네이비 구분선 */
+.q-table tbody tr:last-child td { border-bottom: 2px solid #1B3A6B !important; }
 
 /* 10. 합계 */
 .q-summary-table { width: 260px !important; margin-left: auto !important;
@@ -134,18 +137,22 @@ td { padding: 5px 9px !important; border-bottom: 1px solid #e8edf5 !important;
   -webkit-print-color-adjust: exact !important; }
 
 /* 13. 푸터 – spacer가 남는 공간 차지해 footer를 최하단 고정 */
-.q-spacer { flex: 1 !important; min-height: 20px !important; }
+.q-spacer { display: none !important; }
 .q-footer-bar {
-  margin-top: auto !important;
-  padding: 10px 0 8px !important;
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  padding: 5px 0 6px !important;
   border-top: 1px solid #e2e8f0 !important;
   text-align: center !important;
   font-size: 9.5px !important;
   color: #94a3b8 !important;
   line-height: 1.6 !important;
-  position: static !important;
-  page-break-inside: avoid !important;
+  background: #fff !important;
   -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
 }
 
+/* 브라우저 기본 헤더/푸터(날짜·URL·페이지번호) 제거 */
 @page { margin: 15mm 14mm 18mm 14mm; }
