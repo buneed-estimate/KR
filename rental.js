@@ -70,7 +70,7 @@ function rInitQuoteNum() {
 
 async function rLoadRentalProducts() {
   try {
-    const { data, error } = await db.from('rental_products').select('id,category,brand,name,spec_summary,feature,unit_price,daily_price,monthly_price,rental_type,info_url,is_active').eq('is_active',true).order('category');
+    const { data, error } = await db.from('rental_products').select('id,category,brand,name,spec_summary,feature,daily_price,monthly_price,rental_type,info_url,is_active').eq('is_active',true).order('category');
     if (error || !data || data.length === 0) {
       // DB 비어있을 때 구매 제품 카탈로그와 동일 데이터 사용 (렌탈용 가격은 0)
       rProducts = (typeof RENTAL_SAMPLE_PRODUCTS !== 'undefined') ? RENTAL_SAMPLE_PRODUCTS.map((p,i)=>({...p,id:i+1})) : [];

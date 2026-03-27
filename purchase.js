@@ -26,7 +26,7 @@ async function loadAllData() {
 }
 async function loadProducts() {
   try {
-    const { data, error } = await db.from('products').select('id,category,brand,name,spec_summary,feature,unit_price,info_url,is_active').eq('is_active',true).order('category');
+    const { data, error } = await db.from('products').select('id,category,brand,name,spec_summary,feature,base_price,info_url,is_active').eq('is_active',true).order('category');
     if (error || !data || data.length === 0) {
       // DB 데이터 없을 때 샘플 데이터 사용
       products = (typeof SAMPLE_PRODUCTS !== 'undefined') ? SAMPLE_PRODUCTS.map((p,i)=>({...p,id:i+1})) : [];
