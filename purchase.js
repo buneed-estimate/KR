@@ -314,7 +314,7 @@ function previewQuote() {
   const introHtml = '<a href="https://buneed-estimate.vercel.app/Buneed.pdf" target="_blank" class="q-intro-btn" style="display:inline-block;padding:3px 12px;border:1.5px solid #1B3A6B;border-radius:99px;font-size:11px;color:#1B3A6B;font-weight:600;text-decoration:none;background:#fff;margin-top:4px;">회사소개서</a>';
     const itemsHtml = quoteItems.map((it,i)=>{
     const isLast = i === quoteItems.length - 1;
-    const rowBorder = isLast ? '2px solid #1B3A6B' : '1px solid #e8edf5';
+    const rowBorder = isLast ? '1px solid #1B3A6B' : '1px solid #e8edf5';
     const specText = it.spec_summary ? fmtSpec(it.spec_summary) : '';
     return `
     <tr>

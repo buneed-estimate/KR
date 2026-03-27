@@ -305,7 +305,7 @@ function rPreviewQuote() {
   const durationLabel = rCurrentType==='일'?`${duration}일`:`${duration}개월`;
   const itemsHtml = rQuoteItems.map((item,i)=>{
     const isLast = i === rQuoteItems.length - 1;
-    const rowBorder = isLast ? '2px solid #1a56a0' : '1px solid #e8edf5';
+    const rowBorder = isLast ? '1px solid #1a56a0' : '1px solid #e8edf5';
     return `
     <tr>
       <td style="text-align:center;font-size:11px;color:#64748b;border-bottom:${rowBorder};">${i+1}</td>
@@ -323,7 +323,8 @@ function rPreviewQuote() {
       <td style="text-align:right;white-space:nowrap;font-weight:600;font-size:12px;min-width:90px;border-bottom:${rowBorder};">${fmt(item.unit_price)}원</td>
       <td style="text-align:center;font-weight:600;border-bottom:${rowBorder};">${item.quantity}</td>
       <td style="text-align:right;font-weight:700;white-space:nowrap;font-size:12px;color:#1B3A6B;border-bottom:${rowBorder};">${fmt(item.total_price)}원</td>
-    </tr>`).join('');
+    </tr>`
+  }).join('');
   const html = `
   <div class="qdoc">
     <div class="q-header">

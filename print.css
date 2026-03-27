@@ -114,7 +114,7 @@ th { background: #1B3A6B !important; color: #ffffff !important; -webkit-print-co
 td { padding: 5px 9px !important; border-bottom: 1px solid #e8edf5 !important;
   font-size: 11px !important; vertical-align: middle !important; }
 /* 견적 테이블 마지막 행 – 네이비 구분선 */
-.q-table tbody tr:last-child td { border-bottom: 2px solid #1B3A6B !important; }
+.q-table tbody tr:last-child td { border-bottom: 1px solid #1B3A6B !important; }
 
 /* 10. 합계 */
 .q-summary-table { width: 260px !important; margin-left: auto !important;

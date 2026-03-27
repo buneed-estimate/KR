@@ -457,7 +457,6 @@ async function showApp(email) {
   try { rRenderProductList(); } catch(e) {}
   try { rInitQuoteNum(); } catch(e) {}
   try { initQuoteNum(); } catch(e) {}
-  try { loadCompanySettings(); } catch(e) {}
   // 관리자 제품 목록: 이미 로드된 전역 변수 재사용 (DB 재조회 없음)
   try { renderAdminProducts(); } catch(e) { console.warn('renderAdminProducts 오류:', e); }
   try { rRenderAdminProducts(); } catch(e) { console.warn('rRenderAdminProducts 오류:', e); }
@@ -545,17 +544,7 @@ function showToast(msg, type='info') {
 function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
-function loadCompanySettings() {
-  try {
-    const s = JSON.parse(localStorage.getItem('buneed_company_settings')||'{}');
-    if (s.companyIntroLink) document.getElementById('company-intro-link').value = s.companyIntroLink;
-  } catch(e) {}
-}
-function saveCompanySettings() {
-  const s = { companyIntroLink: document.getElementById('company-intro-link').value };
-  localStorage.setItem('buneed_company_settings', JSON.stringify(s));
-  showToast('저장되었습니다', 'success');
-}
+
 
 function setRentalType(type, btn) {
   rCurrentType = type;
