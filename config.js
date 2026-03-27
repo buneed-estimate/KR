@@ -439,21 +439,24 @@ async function showApp(email) {
   if (adminBadge){ adminBadge.style.display = 'inline-flex'; }
   // ─────────────────────────────────────────────────────────────
 
-  // 데이터 로드: 독립적인 쿼리는 모두 병렬 실행 → 로그인 후 화면 표시 속도 개선
+  // ── 1단계: 카탈로그 우선 로드 (사용자가 즉시 보는 영역) ──
+  // loadAllData 내부의 loadProducts()가 완료되면 renderProducts() 자동 호출
+  // rLoadRentalProducts() 완료 후 rRenderProductList() 수동 호출
   await Promise.allSettled([
     loadAllData(),
-    rLoadRentalProducts(),
-    loadHistory(),
-    rLoadHistory()
+    rLoadRentalProducts()
   ]);
-  // 로드 완료 후 동기 작업
   try { rRenderProductList(); } catch(e) {}
   try { rInitQuoteNum(); } catch(e) {}
   try { initQuoteNum(); } catch(e) {}
   try { loadCompanySettings(); } catch(e) {}
-  // 관리자 제품 목록: 이미 로드된 전역 변수 사용 (중복 DB 쿼리 없음)
+  // 관리자 제품 목록: 이미 로드된 전역 변수 재사용 (DB 재조회 없음)
   try { renderAdminProducts(); } catch(e) { console.warn('renderAdminProducts 오류:', e); }
   try { rRenderAdminProducts(); } catch(e) { console.warn('rRenderAdminProducts 오류:', e); }
+
+  // ── 2단계: 이력은 카탈로그 블로킹 없이 백그라운드 로드 ──
+  // await 없이 실행 → 카탈로그가 먼저 표시된 후 이력이 채워짐
+  Promise.allSettled([loadHistory(), rLoadHistory()]);
 }
 
 
