@@ -73,7 +73,6 @@ tbody tr:nth-child(even){background:#f9fafc;}
   .q-summary table { width: 100%; }
   .top-bar { flex-wrap: wrap; gap: 8px; }
   .print-btn { display: none; }
-  .top-bar .logo { display: none; }
   .top-bar { justify-content: center; }
   /* 테이블 폰트 축소로 가로 스크롤 제거 */
   table { font-size: 11px; }
@@ -413,11 +412,11 @@ async function loadPurchaseQuote(token) {
 loadQuote();
 
 
-// 로고 src 설정
-document.addEventListener('DOMContentLoaded', function() {
+// 로고 src 설정 (script가 body 끝에 있으므로 DOM 즉시 접근 가능)
+(function() {
   const topbarLogo = document.getElementById('qv-logo-topbar');
   if (topbarLogo) topbarLogo.src = LOGO_SRC;
-});
+})();
 </script>
 </body>
 </html>
