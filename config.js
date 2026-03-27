@@ -104,31 +104,46 @@ function fmt(n) { return Math.round(n || 0).toLocaleString('ko-KR'); }
 const db = supabase.createClient(SUPA_URL, SUPA_KEY, {
   auth: { persistSession: true, autoRefreshToken: true }
 });
+let appInitialized = false; // 중복 showApp 방지
 
 // ===== 앱 시작: 기존 세션 확인 =====
 window.addEventListener('DOMContentLoaded', async () => {
   // 공유 링크 파라미터 먼저 체크 → 있으면 로그인 없이 바로 견적 표시
   if (await checkShareParam()) return;
 
-  try {
-    const { data: { session } } = await db.auth.getSession();
-    if (session) {
-      await showApp(session.user.email);
-    } else {
+  // ── onAuthStateChange 를 먼저 등록 ──────────────────────────────
+  // Supabase는 세션 복원 시 INITIAL_SESSION, 로그인 시 SIGNED_IN 이벤트를 발생시킴.
+  // getSession()만 쓰면 세션 복원 타이밍에 따라 null이 반환돼 흰 화면이 생기므로
+  // 이벤트 기반으로 처리하는 것이 더 안정적임.
+  db.auth.onAuthStateChange(async (event, session) => {
+    if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN') {
+      if (session && !appInitialized) {
+        appInitialized = true;
+        await showApp(session.user.email);
+      } else if (!session && event === 'INITIAL_SESSION') {
+        showLoginScreen();
+      }
+    }
+    if (event === 'SIGNED_OUT') {
+      appInitialized = false;
       showLoginScreen();
     }
-  } catch(e) {
-    showLoginScreen();
-  }
-
-  // 인증 상태 변경 감지
-  db.auth.onAuthStateChange((event, session) => {
-    if (event === 'SIGNED_OUT') showLoginScreen();
     if (event === 'TOKEN_REFRESHED' && session) {
       const el = document.getElementById('user-email-display');
       if (el) el.textContent = session.user.email;
     }
   });
+
+  // ── getSession() 으로 이미 세션이 있으면 즉시 표시 (빠른 경로) ──
+  try {
+    const { data: { session } } = await db.auth.getSession();
+    if (session && !appInitialized) {
+      appInitialized = true;
+      await showApp(session.user.email);
+    }
+  } catch(e) {
+    // getSession 실패 시 onAuthStateChange 이벤트로 처리됨
+  }
 });
 
 // ===== 초기화 (하위 호환) =====
@@ -360,7 +375,11 @@ async function doLogin() {
   try {
     const { data, error } = await db.auth.signInWithPassword({ email, password: pw });
     if (error) throw error;
-    await showApp(data.user.email);
+    // SIGNED_IN 이벤트 대기 없이 직접 실행 → 흰 화면 없음
+    if (!appInitialized) {
+      appInitialized = true;
+      await showApp(data.user.email);
+    }
   } catch (e) {
     err.style.display = 'block';
     err.textContent   = e.message || '로그인 중 오류가 발생했습니다.';
@@ -420,20 +439,21 @@ async function showApp(email) {
   if (adminBadge){ adminBadge.style.display = 'inline-flex'; }
   // ─────────────────────────────────────────────────────────────
 
-  // 데이터 로드 (에러가 나도 이후 코드가 실행되도록 각각 try-catch)
-  try { await loadAllData(); } catch(e) { console.warn('loadAllData 오류:', e); }
-  try { await rLoadRentalProducts(); rRenderProductList(); } catch(e) { console.warn('rLoadRentalProducts 오류:', e); }
-  try { rInitQuoteNum(); } catch(e) { console.warn('rInitQuoteNum 오류:', e); }
-  try { initQuoteNum(); } catch(e) { console.warn('initQuoteNum 오류:', e); }
-
-  // 이력 / 회사 설정 로드
-  try { loadHistory(); } catch(e) { console.warn('loadHistory 오류:', e); }
-  try { rLoadHistory(); } catch(e) { console.warn('rLoadHistory 오류:', e); }
+  // 데이터 로드: 독립적인 쿼리는 모두 병렬 실행 → 로그인 후 화면 표시 속도 개선
+  await Promise.allSettled([
+    loadAllData(),
+    rLoadRentalProducts(),
+    loadHistory(),
+    rLoadHistory()
+  ]);
+  // 로드 완료 후 동기 작업
+  try { rRenderProductList(); } catch(e) {}
+  try { rInitQuoteNum(); } catch(e) {}
+  try { initQuoteNum(); } catch(e) {}
   try { loadCompanySettings(); } catch(e) {}
-
-  // 관리자인 경우에만 제품 목록 렌더
+  // 관리자 제품 목록: 이미 로드된 전역 변수 사용 (중복 DB 쿼리 없음)
   try { renderAdminProducts(); } catch(e) { console.warn('renderAdminProducts 오류:', e); }
-    try { rRenderAdminProducts(); } catch(e) { console.warn('rRenderAdminProducts 오류:', e); }
+  try { rRenderAdminProducts(); } catch(e) { console.warn('rRenderAdminProducts 오류:', e); }
 }
 
 

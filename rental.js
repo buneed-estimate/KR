@@ -507,12 +507,20 @@ function rResetQuote() {
 }
 
 // 렌탈 제품 관리
-async function rRenderAdminProducts() {
+async function rRenderAdminProducts(forceRefresh = false) {
   const body = document.getElementById('r-admin-product-body');
   if (!body) return;
   try {
-    const { data, error } = await db.from('rental_products').select('*').order('category');
-    if (error) { body.innerHTML='<tr><td colspan="8" style="text-align:center;padding:20px;color:#ef4444">로드 오류</td></tr>'; return; }
+    let data;
+    if (!forceRefresh && rProducts && rProducts.length > 0) {
+      // 이미 rLoadRentalProducts()가 가져온 전역 데이터 재사용 → DB 중복 쿼리 없음
+      data = [...rProducts].sort((a,b) => (a.category||'').localeCompare(b.category||'', 'ko'));
+    } else {
+      const res = await db.from('rental_products').select('*').order('category');
+      if (res.error) { body.innerHTML='<tr><td colspan="8" style="text-align:center;padding:20px;color:#ef4444">로드 오류</td></tr>'; return; }
+      data = res.data;
+      if (data) rProducts = data; // 전역 갱신
+    }
     if (!data?.length) { body.innerHTML='<tr><td colspan="8" style="text-align:center;padding:20px;color:#94a3b8">제품 없음</td></tr>'; return; }
     body.innerHTML = data.map(p=>`
       <tr>
@@ -565,13 +573,13 @@ async function rSaveProduct() {
     await db.from('rental_products').insert(payload);
   }
   closeModal('r-modal-product');
-  await rLoadRentalProducts(); rRenderAdminProducts(); rRenderProductList();
+  await rLoadRentalProducts(); rRenderAdminProducts(true); rRenderProductList();
   showToast('저장되었습니다','success');
 }
 async function rDeleteProduct(pid) {
   if (!confirm('렌탈 제품을 삭제하시겠습니까?')) return;
   await db.from('rental_products').delete().eq('id',pid);
-  await rLoadRentalProducts(); rRenderAdminProducts(); rRenderProductList();
+  await rLoadRentalProducts(); rRenderAdminProducts(true); rRenderProductList();
   showToast('삭제되었습니다','success');
 }
 
@@ -598,7 +606,7 @@ async function rBulkDelete() {
   const { error } = await db.from('rental_products').delete().in('id', ids);
   if (error) { showToast('삭제 오류: ' + error.message, 'error'); return; }
   showToast(`${ids.length}개 렌탈 제품이 삭제되었습니다`, 'success');
-  await rLoadRentalProducts(); rRenderAdminProducts(); rRenderProductList();
+  await rLoadRentalProducts(); rRenderAdminProducts(true); rRenderProductList();
   document.getElementById('r-check-all').checked = false;
   const btn = document.getElementById('r-bulk-del-btn');
   if (btn) btn.style.display = 'none';

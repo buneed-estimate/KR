@@ -578,17 +578,25 @@ async function bulkInsertSampleProducts() {
     if (error) fail++; else ok++;
   }
   showToast('등록 완료: 성공 ' + ok + '개 / 실패 ' + fail + '개', ok > 0 ? 'success' : 'error');
-  renderAdminProducts();
+  renderAdminProducts(true);
   loadProducts();
   if (typeof rLoadProducts === 'function') rLoadProducts(); else if (typeof rRenderProducts === 'function') { rProducts = SAMPLE_PRODUCTS.map((p,i)=>({...p,id:i+1})); rRenderProducts(); }
 }
 
-async function renderAdminProducts() {
+async function renderAdminProducts(forceRefresh = false) {
   const body = document.getElementById('admin-product-body');
   if (!body) return;
   try {
-    const { data, error } = await db.from('products').select('*').order('category');
-    if (error) { body.innerHTML='<tr><td colspan="8" style="text-align:center;padding:20px;color:#ef4444">로드 오류</td></tr>'; return; }
+    let data;
+    if (!forceRefresh && products && products.length > 0) {
+      // 이미 loadProducts()가 가져온 전역 데이터 재사용 → DB 중복 쿼리 없음
+      data = [...products].sort((a,b) => (a.category||'').localeCompare(b.category||'', 'ko'));
+    } else {
+      const res = await db.from('products').select('*').order('category');
+      if (res.error) { body.innerHTML='<tr><td colspan="8" style="text-align:center;padding:20px;color:#ef4444">로드 오류</td></tr>'; return; }
+      data = res.data;
+      if (data) products = data; // 전역 갱신
+    }
     if (!data?.length) { body.innerHTML='<tr><td colspan="8" style="text-align:center;padding:20px;color:#94a3b8">제품 없음</td></tr>'; return; }
     body.innerHTML = data.map(p=>`
       <tr>
@@ -666,7 +674,7 @@ async function saveProduct() {
   }
   try {
     closeModal('modal-product');
-    await loadProducts(); renderAdminProducts(); renderProducts();
+    await loadProducts(); renderAdminProducts(true); renderProducts();
     showToast('저장되었습니다','success');
   } catch(e) {
     showToast('저장 중 오류: ' + (e.message||e), 'error');
@@ -675,7 +683,7 @@ async function saveProduct() {
 async function deleteProduct(pid) {
   if (!confirm('제품을 삭제하시겠습니까?')) return;
   await db.from('products').delete().eq('id',pid);
-  await loadProducts(); renderAdminProducts(); renderProducts();
+  await loadProducts(); renderAdminProducts(true); renderProducts();
   showToast('삭제되었습니다','success');
 }
 
@@ -702,7 +710,7 @@ async function pBulkDelete() {
   const { error } = await db.from('products').delete().in('id', ids);
   if (error) { showToast('삭제 오류: ' + error.message, 'error'); return; }
   showToast(`${ids.length}개 제품이 삭제되었습니다`, 'success');
-  await loadProducts(); renderAdminProducts(); renderProducts();
+  await loadProducts(); renderAdminProducts(true); renderProducts();
   document.getElementById('p-check-all').checked = false;
   const btn = document.getElementById('p-bulk-del-btn');
   if (btn) btn.style.display = 'none';
