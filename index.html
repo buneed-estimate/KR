@@ -304,6 +304,10 @@ textarea.field-input{resize:vertical;min-height:52px;}
 .q-summary-table td:last-child{text-align:right;}
 .q-total-row td{font-weight:800;font-size:14px;color:#1B3A6B;border-top:2px solid var(--p-navy);padding-top:8px;}
 .r-q-total-row td{font-weight:800;font-size:14px;color:#1a56a0;border-top:2px solid var(--r-primary);padding-top:8px;}
+      .sv-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+      .sv-info-box{border:1px solid #e2e8f0;border-radius:6px;overflow:hidden;}
+      .sv-info-hd{background:#f1f5f9;padding:5px 10px;font-size:11px;font-weight:700;color:#1B3A6B;}
+      .sv-info-body{padding:8px 12px;background:#fff;font-size:12px;min-height:40px;}
 .q-footer-bar{margin-top:20px;border-top:1px solid var(--border);padding-top:10px;text-align:center;font-size:10px;color:#94a3b8;line-height:1.6;}
 .q-rental-info-box{background:#f0f8ff;border:1px solid var(--r-light);border-radius:8px;padding:10px 14px;margin-bottom:14px;}
 .q-rental-info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:6px;}
@@ -1032,7 +1036,7 @@ textarea.field-input{resize:vertical;min-height:52px;}
             </div>
             <!-- 렌탈 조건 -->
             <div class="form-section">
-              <div class="r-section-title">렌탈 조건</div>
+              <div class="r-section-title">📦 렌탈 조건</div>
               <div class="form-row">
                 <div>
                   <div class="field-label">렌탈 단위</div>
@@ -1311,8 +1315,8 @@ textarea.field-input{resize:vertical;min-height:52px;}
         </div>
       </div>
     </div>
-    <div class="modal-footer">
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#f0fdf4;border-radius:8px;border:1px solid #86efac;margin-bottom:8px;">
+    <div class="modal-footer" style="flex-direction:column;gap:8px;align-items:stretch;">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#f0fdf4;border-radius:8px;border:1px solid #86efac;">
         <span style="font-size:13px;color:#475569;font-weight:500;">합계 금액</span>
         <span id="r-atq-total-val" style="font-size:16px;font-weight:700;color:#166534;">0 원</span>
       </div>
@@ -1803,7 +1807,7 @@ async function showApp(email) {
 
   // 데이터 로드 (에러가 나도 이후 코드가 실행되도록 각각 try-catch)
   try { await loadAllData(); } catch(e) { console.warn('loadAllData 오류:', e); }
-  try { await rLoadRentalProducts(); } catch(e) { console.warn('rLoadRentalProducts 오류:', e); }
+  try { await rLoadRentalProducts(); rRenderProductList(); } catch(e) { console.warn('rLoadRentalProducts 오류:', e); }
   try { rInitQuoteNum(); } catch(e) { console.warn('rInitQuoteNum 오류:', e); }
   try { initQuoteNum(); } catch(e) { console.warn('initQuoteNum 오류:', e); }
 
@@ -2744,7 +2748,7 @@ function rUpdateAtqCalc() {
 }
 
 function rAddToQuote() {
-  const p = rProducts.find(x=>x.id===rCurrentProductId);
+  const p = rProducts.find(x=>String(x.id)===String(rCurrentProductId));
   if (!p) return;
   const unit = parseInt(document.getElementById('r-atq-unit').value)||0;
   const qty = parseInt(document.getElementById('r-atq-qty').value)||1;
@@ -2967,7 +2971,7 @@ function rPreviewQuote() {
         <div class="q-rental-info-item"><div class="label">렌탈 단위</div><div class="value">${rCurrentType} 단위</div></div>
         <div class="q-rental-info-item"><div class="label">렌탈 기간</div><div class="value">${durationLabel}</div></div>
         <div class="q-rental-info-item"><div class="label">시작일</div><div class="value">${startDate}</div></div>
-        <div class="q-rental-info-item"><div class="label">설치/납품 장소</div><div class="value">${deliveryLoc}</div></div>
+        <div class="q-rental-info-item"><div class="label">납품희망일</div><div class="value">${deliveryLoc||'미정'}</div></div>
         <div class="q-rental-info-item"><div class="label">반납/회수</div><div class="value">${returnMethod}</div></div>
         <div class="q-rental-info-item"><div class="label">견적 유효기간</div><div class="value">${validUntil||'견적일로부터 30일'}</div></div>
       </div>
@@ -2990,8 +2994,7 @@ function rPreviewQuote() {
       ${deposit>0?`<tr><td style="color:#1565c0;">보증금</td><td style="color:#1565c0;">${fmt(deposit)} 원</td></tr>`:''}
       <tr class="r-q-total-row"><td>최종 합계</td><td>${fmt(total)} 원</td></tr>
     </table>
-    ${memo?`<div style="margin-top:14px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px;font-size:12px;"><strong style="color:#1565c0;">📝 메모</strong><div style="margin-top:4px;color:#374151;">${memo}</div></div>`:''}
-    ${validUntil?`<div style="margin-top:8px;font-size:11px;color:#94a3b8;text-align:right;">유효기간: ${validUntil}</div>`:''}
+    ${memo?`<div class="sv-info-grid" style="margin-top:14px;"><div class="sv-info-box"><div class="sv-info-hd">특이사항</div><div class="sv-info-body" style="color:#374151;line-height:1.6;">${memo}</div></div></div>`:''}
     <div class="q-spacer"></div>
     <div class="q-footer-bar">주식회사 비유니드 | 경기도 하남시 미사강변한강로 135 다동 4층 445호 | 031.8028.0464 | www.buneed.co.kr</div>
   </div>`;

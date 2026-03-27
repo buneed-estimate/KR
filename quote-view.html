@@ -156,9 +156,9 @@ async function loadQuote() {
   // 납기/유효기간/메모 섹션
   const infoGrid = (q.delivery_date || q.valid_until || q.memo) ? `
     <div class="q-info-grid" style="margin-bottom:20px;">
-      ${q.delivery_date ? `<div class="q-info-item"><div class="label">📦 납기</div><div class="value">${q.delivery_date}</div></div>` : ''}
+      ${q.delivery_date ? `<div class="q-info-item"><div class="label">납품희망일</div><div class="value">${q.delivery_date}</div></div>` : ''}
       ${q.valid_until ? `<div class="q-info-item"><div class="label">📅 견적 유효기간</div><div class="value">${q.valid_until}</div></div>` : ''}
-      ${q.memo ? `<div class="q-info-item"><div class="label">📝 메모</div><div class="value">${q.memo}</div></div>` : ''}
+      ${q.memo ? `<div class="q-info-item"><div class="label">특이사항</div><div class="value">${q.memo}</div></div>` : ''}
     </div>
   ` : '';
 
