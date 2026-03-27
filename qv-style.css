@@ -15,7 +15,7 @@ body{font-family:'Pretendard','Apple SD Gothic Neo',sans-serif;background:#f0f2f
 .q-tel{display:none;}
 h1{font-size:22px;font-weight:800;color:#1a2e5a;text-align:left;margin-bottom:8px;letter-spacing:.05em;}
 .q-num{font-size:11px;color:#6b7a99;text-align:left;margin-top:2px;}
-.q-parties{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
+.q-parties{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;align-items:stretch;}
 .q-party{border:1px solid #d0d8ee;border-radius:8px;overflow:hidden;}
 .q-party-header{background:#0E76BB;color:#fff;padding:8px 14px;font-size:11px;font-weight:600;}
 .q-party-header.sup{background:#1B3A6B;color:#fff;}
@@ -60,9 +60,8 @@ tbody tr:nth-child(even){background:#f9fafc;}
   .q-parties { grid-template-columns: 1fr; gap: 10px; }
   .q-info-grid { grid-template-columns: 1fr 1fr; gap: 8px; padding: 10px 12px; }
   .q-summary table { width: 100%; }
-  .top-bar { flex-wrap: wrap; gap: 8px; }
-  .print-btn { display: none; }
-  .top-bar { justify-content: center; }
+  .top-bar { display: none; }
+  .q-num { display: block !important; }
   /* 테이블 폰트 축소로 가로 스크롤 제거 */
   table { font-size: 11px; }
   thead th { padding: 6px 6px; font-size: 10px; }
@@ -73,7 +72,8 @@ tbody tr:nth-child(even){background:#f9fafc;}
   .qdoc { padding: 14px 10px; }
   .q-info-grid { grid-template-columns: 1fr; }
   .q-header { gap: 10px; }
-  .q-num { text-align: left; margin-top: 0; }
+  .q-num { text-align: left; margin-top: 0; display: block !important; }
+  .q-header > div:first-child { display: flex; flex-direction: column; }
   h1 { font-size: 15px; letter-spacing: 0; }
 
   /* 렌탈 조건 그리드: 480px에서 2열로 */
