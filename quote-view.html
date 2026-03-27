@@ -90,7 +90,10 @@ async function loadRentalQuote(token) {
     <tr>
       <td style="text-align:center;">${i+1}</td>
       <td>
-        <strong>${it.product_name || ''}</strong>
+        ${it.info_url
+          ? `<a href="${it.info_url}" target="_blank" style="color:#1B3A6B;font-weight:700;text-decoration:none;">${it.product_name || ''}</a>`
+          : `<strong>${it.product_name || ''}</strong>`
+        }
         ${it.brand || it.category ? `<br><span style="font-size:10px;color:#6b7a99">${it.brand || ''}${it.category ? ' · '+it.category : ''}</span>` : ''}
       </td>
       <td style="font-size:10px;color:#6b7a99;">${it.product_spec || '-'}</td>

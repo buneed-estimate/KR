@@ -485,6 +485,10 @@
       <div class="form-group"><label>기본 단가 (원) *</label><input class="field-input" type="number" id="pm-price" placeholder="1000000"></div>
       <div class="form-group"><label>사양 설명</label><textarea class="field-input" id="pm-spec" rows="3" placeholder="CPU, RAM, SSD 등"></textarea></div>
       <div class="form-group"><label>제품 특징/설명</label><textarea class="field-input" id="pm-feature" rows="2" placeholder="주요 특징, 용도, 추가 정보 등"></textarea></div>
+      <div class="form-group">
+        <label>제품 소개 이미지 URL <span style="font-size:11px;color:#888;">(선택 · Supabase Storage URL 붙여넣기)</span></label>
+        <input class="field-input" id="pm-info-url" placeholder="https://...supabase.co/storage/v1/object/public/products/파일명.jpg">
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('modal-product')">취소</button>

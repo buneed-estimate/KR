@@ -154,7 +154,7 @@ function addToQuote() {
   quoteItems.push({
     product_id: p.id, product_name: p.name, brand: p.brand, category: p.category,
     spec_summary: specSummary || p.spec_summary, unit_price: unit, qty, total_price: unit*qty,
-    _fromDB: !!p._fromDB
+    _fromDB: !!p._fromDB, info_url: p.info_url || null
   });
   renderQuoteItems(); calcPrice(); closeModal('modal-aq');
   showToast(p.name+' 추가됨', 'success');
@@ -278,7 +278,8 @@ async function saveQuote() {
       unit_price: it.unit_price,
       qty: it.qty,
       total_price: it.total_price,
-      sort_order: i
+      sort_order: i,
+      info_url: it.info_url || null
     }));
     const {error:itemErr} = await db.from('quote_items').insert(itemsPayload);
     if (itemErr) throw new Error('품목 저장 실패: '+itemErr.message);
@@ -639,8 +640,10 @@ function openProductModal(pid) {
     document.getElementById('pm-price').value = p.base_price||'';
     document.getElementById('pm-spec').value = p.spec_summary||'';
     const pmFeature = document.getElementById('pm-feature'); if(pmFeature) pmFeature.value = p.feature||'';
+    const pmInfoUrl = document.getElementById('pm-info-url'); if(pmInfoUrl) pmInfoUrl.value = p.info_url||'';
   } else {
     ['pm-name','pm-price','pm-spec'].forEach(id=>{document.getElementById(id).value='';});
+    const pmInfoUrl = document.getElementById('pm-info-url'); if(pmInfoUrl) pmInfoUrl.value='';
   }
   openModal('modal-product');
 }
@@ -653,6 +656,7 @@ async function saveProduct() {
     base_price: parseInt(document.getElementById('pm-price').value)||0,
     spec_summary: document.getElementById('pm-spec').value,
     feature: document.getElementById('pm-feature')?.value || '',
+    info_url: document.getElementById('pm-info-url')?.value.trim() || null,
     is_active: true
   };
   if (editingProductId) {

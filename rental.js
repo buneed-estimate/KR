@@ -154,7 +154,8 @@ function rAddToQuote() {
   const qty = parseInt(document.getElementById('r-atq-qty').value)||1;
   rQuoteItems.push({
     product_id: p.id, product_name: p.name, product_spec: p.spec||p.spec_summary||'', brand: p.brand||'', category: p.category||'',
-    rental_type: rAtqType, unit_price: unit, quantity: qty, total_price: unit*qty
+    rental_type: rAtqType, unit_price: unit, quantity: qty, total_price: unit*qty,
+    info_url: p.info_url || null
   });
   rRenderQuoteItems(); rCalcPrice(); closeModal('r-modal-atq');
   showToast(p.name+' 추가됨','success');
@@ -271,7 +272,8 @@ async function rSaveQuote() {
     const {error:itemErr} = await db.from('rental_quote_items').insert(rQuoteItems.map((it,i)=>({
       quote_id:qId, product_id:it.product_id||null, product_name:it.product_name,
       product_spec:it.product_spec, rental_type:it.rental_type,
-      unit_price:it.unit_price, quantity:it.quantity, total_price:it.total_price, sort_order:i
+      unit_price:it.unit_price, quantity:it.quantity, total_price:it.total_price, sort_order:i,
+      info_url: it.info_url || null
     })));
     if (itemErr) throw new Error('렌탈 품목 저장 실패: '+itemErr.message);
     showToast('렌탈 견적이 저장되었습니다 ✅','success'); rLoadHistory();
@@ -307,7 +309,7 @@ function rPreviewQuote() {
         <div style="font-size:10px;color:#64748b;margin-top:2px;">${item.category||''}</div>
       </td>
       <td style="padding:8px 10px;border-bottom:1px solid #e8edf5;min-width:120px;">
-        <div style="font-weight:700;font-size:12.5px;color:#1e293b;">${item.product_name}</div>
+        ${item.info_url ? `<a href="${item.info_url}" target="_blank" style="font-weight:700;font-size:12.5px;color:#1B3A6B;text-decoration:none;">${item.product_name}</a>` : `<div style="font-weight:700;font-size:12.5px;color:#1e293b;">${item.product_name}</div>`}
         ${item.product_spec?`<div style="font-size:10.5px;color:#475569;margin-top:2px;line-height:1.4;">${fmtSpec(item.product_spec)}</div>`:''}
       </td>
       <td style="text-align:center;border-bottom:1px solid #e8edf5;vertical-align:middle;">
