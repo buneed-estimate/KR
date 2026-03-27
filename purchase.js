@@ -319,7 +319,7 @@ function previewQuote() {
         <div style="font-size:10px;color:#64748b;margin-top:2px;">${it.category||''}</div>
       </td>
       <td style="min-width:120px;padding:8px 10px;border-bottom:1px solid #e8edf5;">
-        ${it.info_url ? `<a href="${it.info_url}" target="_blank" style="font-weight:700;font-size:12.5px;color:#1B3A6B;text-decoration:none;">${it.product_name}</a>` : `<div style="font-weight:700;font-size:12.5px;color:#1e293b;">${it.product_name}</div>`}
+        ${it.info_url ? `<a href="${it.info_url}" target="_blank" style="font-weight:700;font-size:12px;color:#1B3A6B;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px;">${it.product_name}</a>` : `<div style="font-weight:700;font-size:12px;color:#1e293b;">${it.product_name}</div>`}
         ${specText ? `<div style="font-size:10.5px;color:#475569;line-height:1.5;margin-top:3px;">${specText}</div>` : ''}
       </td>
       <td style="text-align:right;white-space:nowrap;font-weight:600;font-size:12px;min-width:90px;border-bottom:1px solid #e8edf5;">${fmt(it.unit_price)}원</td>
@@ -331,7 +331,7 @@ function previewQuote() {
   <div class="qdoc">
     <div class="q-header">
       <div style="text-align:left;">
-        <h1 style="color:#1B3A6B;font-size:24px;font-weight:800;letter-spacing:0.05em;margin:0 0 8px 0;text-align:left;">구매 견적서</h1>
+        <h1 style="color:#1B3A6B;font-size:28px;font-weight:800;letter-spacing:0.05em;margin:0 0 8px 0;text-align:left;">구매 견적서</h1>
         <div class="q-header-meta" style="display:flex;flex-direction:column;align-items:flex-start;gap:3px;">
           <div class="q-date">작성일: ${today}</div>
           <div class="q-date">견적번호: ${currentQuoteNum}</div>
@@ -349,28 +349,28 @@ function previewQuote() {
         <!-- 수신 박스: 연한 파란 배경 + 네이비 헤더바 -->
         <div style="border:1px solid #b8cde8;border-radius:6px;overflow:hidden;">
           <div style="background:#0E76BB;padding:7px 14px;-webkit-print-color-adjust:exact;print-color-adjust:exact;display:flex;align-items:center;justify-content:space-between;">
-            <span style="font-size:12px;font-weight:700;color:#fff;letter-spacing:0.1em;">수 신</span>
+            <span style="font-size:13px;font-weight:700;color:#fff;letter-spacing:0.1em;">수 신</span>
           </div>
           <div style="background:#ffffff;padding:10px 12px;">
-            <table style="font-size:12px;width:100%;border-collapse:collapse;">
-              <tr><td style="color:#64748b;padding:3px 0;width:32%;font-size:11px;">업체명</td><td style="font-weight:700;color:#1e293b;">${company}</td></tr>
-              <tr><td style="color:#64748b;padding:3px 0;font-size:11px;">담당자</td><td>${contact||'-'}</td></tr>
-              <tr><td style="color:#64748b;padding:3px 0;font-size:11px;">연락처</td><td>${phone||'-'}</td></tr>
-              <tr><td style="color:#64748b;padding:3px 0;font-size:11px;">이메일</td><td>${email||'-'}</td></tr>
+            <table style="font-size:13px;width:100%;border-collapse:collapse;">
+              <tr><td style="color:#64748b;padding:3px 0;width:32%;font-size:12px;">업체명</td><td style="font-weight:700;color:#1e293b;">${company}</td></tr>
+              <tr><td style="color:#64748b;padding:3px 0;font-size:12px;">담당자</td><td>${contact||'-'}</td></tr>
+              <tr><td style="color:#64748b;padding:3px 0;font-size:12px;">연락처</td><td>${phone||'-'}</td></tr>
+              <tr><td style="color:#64748b;padding:3px 0;font-size:12px;">이메일</td><td>${email||'-'}</td></tr>
             </table>
           </div>
         </div>
         <!-- 공급 박스: 흰 배경 + 네이비 헤더바 -->
         <div style="border:1px solid #b8cde8;border-radius:6px;overflow:hidden;">
           <div style="background:#1B3A6B;padding:7px 14px;-webkit-print-color-adjust:exact;print-color-adjust:exact;display:flex;align-items:center;justify-content:space-between;">
-            <span style="font-size:12px;font-weight:700;color:#fff;letter-spacing:0.1em;">공 급</span>
+            <span style="font-size:13px;font-weight:700;color:#fff;letter-spacing:0.1em;">공 급</span>
           </div>
           <div style="background:#fff;padding:10px 12px;">
-            <table style="font-size:12px;width:100%;border-collapse:collapse;">
-              <tr><td style="color:#64748b;padding:3px 0;width:32%;font-size:11px;">업체명</td><td style="font-weight:700;color:#1e293b;">(주)비유니드</td></tr>
-              <tr><td style="color:#64748b;padding:3px 0;font-size:11px;">담당자</td><td style="font-weight:600;">${salesName||'-'}</td></tr>
-              <tr><td style="color:#64748b;padding:3px 0;font-size:11px;">연락처</td><td>${salesPhone||'031.8028.0464'}</td></tr>
-              <tr><td style="color:#64748b;padding:3px 0;font-size:11px;">이메일</td><td>${salesEmail||'sales@buneed.co.kr'}</td></tr>
+            <table style="font-size:13px;width:100%;border-collapse:collapse;">
+              <tr><td style="color:#64748b;padding:3px 0;width:32%;font-size:12px;">업체명</td><td style="font-weight:700;color:#1e293b;">(주) 비유니드</td></tr>
+              <tr><td style="color:#64748b;padding:3px 0;font-size:12px;">담당자</td><td style="font-weight:600;">${salesName||'-'}</td></tr>
+              <tr><td style="color:#64748b;padding:3px 0;font-size:12px;">연락처</td><td>${salesPhone||'031.8028.0464'}</td></tr>
+              <tr><td style="color:#64748b;padding:3px 0;font-size:12px;">이메일</td><td>${salesEmail||'sales@buneed.co.kr'}</td></tr>
             </table>
           </div>
         </div>
@@ -378,22 +378,22 @@ function previewQuote() {
       <div class="q-info-grid" style="margin-top:12px;">
         <div style="border:1px solid #bcd0ee;border-radius:6px;overflow:hidden;">
           <div style="background:#f1f5f9;padding:5px 10px;">
-            <span style="font-size:11px;font-weight:700;color:#1B3A6B;">납품 / 유효 기간</span>
+            <span style="font-size:13px;font-weight:700;color:#1B3A6B;">납품 / 유효 기간</span>
           </div>
           <div style="padding:8px 12px;background:#ffffff;">
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
-              <span style="font-size:11px;color:#64748b;min-width:64px;">납품희망일</span>
+              <span style="font-size:12px;color:#64748b;min-width:64px;">납품희망일</span>
               <span style="font-size:12px;font-weight:600;color:#1e293b;">${delivery||'미정'}</span>
             </div>
             <div style="display:flex;align-items:center;gap:8px;">
-              <span style="font-size:11px;color:#64748b;min-width:64px;">견적유효기간</span>
+              <span style="font-size:12px;color:#64748b;min-width:64px;">견적유효기간</span>
               <span style="font-size:12px;font-weight:600;color:#1e293b;">${validity||'견적일로부터 30일'}</span>
             </div>
           </div>
         </div>
         <div style="border:1px solid #bcd0ee;border-radius:6px;overflow:hidden;">
           <div style="background:#f1f5f9;padding:5px 10px;">
-            <span style="font-size:11px;font-weight:700;color:#1B3A6B;">특이사항</span>
+            <span style="font-size:13px;font-weight:700;color:#1B3A6B;">특이사항</span>
           </div>
           <div style="padding:8px 12px;background:#ffffff;min-height:60px;">
             <div style="font-size:12px;color:#374151;line-height:1.6;">${memo||''}</div>
@@ -406,10 +406,10 @@ function previewQuote() {
       <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
       <table class="q-table">
         <thead><tr>
-          <th style="width:24px;text-align:center;font-size:10px;">No</th>
-          <th style="text-align:center;width:65px;font-size:11px;">브랜드</th>
+          <th style="width:24px;text-align:center;font-size:12px;">No</th>
+          <th style="text-align:center;width:65px;font-size:12px;">브랜드</th>
           <th style="text-align:left;min-width:120px;">제품명 / 사양</th>
-          <th style="text-align:right;white-space:nowrap;width:75px;font-size:11px;">단가</th>
+          <th style="text-align:right;white-space:nowrap;width:75px;font-size:12px;">단가</th>
           <th style="text-align:center;width:52px;white-space:nowrap;">수량</th>
           <th style="text-align:right;white-space:nowrap;min-width:80px;">금액</th>
         </tr></thead>
@@ -427,7 +427,7 @@ function previewQuote() {
     </table>
 
     <div class="q-spacer"></div>
-    <div class="q-footer-bar">주식회사 비유니드 | 경기도 하남시 미사강변한강로 135 다동 4층 445호 | 031.8028.0464 | www.buneed.co.kr</div>
+    <div class="q-footer-bar">(주) 비유니드 | www.buneed.co.kr | 031.8028-0464 | 경기도 하남시 미사강변한강로 135 다동 4층 445호</div>
   </div>`;
   _lastPreviewHtml = html;
   document.getElementById('preview-content').innerHTML = html;
