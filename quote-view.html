@@ -34,9 +34,9 @@ h1{font-size:22px;font-weight:800;color:#1a2e5a;text-align:left;margin-bottom:8p
 .q-field{display:flex;gap:8px;padding:4px 0;font-size:11px;}
 .q-field .lbl{color:#6b7a99;width:50px;flex-shrink:0;}
 .q-field .val{font-weight:600;}
-.q-info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;background:#f5f7fc;border:1px solid #d0d8ee;border-radius:8px;padding:14px 18px;margin-bottom:20px;}
-.q-info-item .label{font-size:10px;color:#1e6fd9;font-weight:600;margin-bottom:2px;}
-.q-info-item .value{font-size:13px;font-weight:700;color:#1a2e5a;}
+.q-info-grid{display:flex;flex-direction:column;gap:0;background:#f5f7fc;border:1px solid #d0d8ee;border-radius:8px;padding:0;margin-bottom:20px;overflow:hidden;}
+.q-info-item{display:flex;align-items:baseline;gap:10px;padding:9px 16px;border-bottom:1px solid #e2e8f0;}.q-info-item:last-child{border-bottom:none;}.q-info-item .label{font-size:11px;color:#1e6fd9;font-weight:600;min-width:90px;flex-shrink:0;}
+.q-info-item .value{font-size:13px;font-weight:700;color:#1a2e5a;flex:1;}
 .q-section{margin-bottom:20px;}
 .q-section-title{font-size:11px;font-weight:700;color:#0d2d6b;margin-bottom:10px;text-transform:uppercase;letter-spacing:.05em;padding-bottom:6px;border-bottom:2px solid #c2d4f0;}
 table{width:100%;border-collapse:collapse;font-size:12px;}
@@ -116,6 +116,164 @@ function fmt(n) { return Number(n || 0).toLocaleString('ko-KR'); }
 
 async function loadQuote() {
   const params = new URLSearchParams(location.search);
+  const token = params.get('token') || params.get('share');
+  const isRental = params.get('type') === 'rental';
+
+  if (!token) {
+    document.getElementById('quote-doc').innerHTML = '<div class="error-box"><h2>❌ 잘못된 접근</h2><p>올바른 견적서 링크가 아닙니다.</p></div>';
+    return;
+  }
+
+  if (isRental) {
+    await loadRentalQuote(token);
+  } else {
+    await loadPurchaseQuote(token);
+  }
+}
+
+async function loadRentalQuote(token) {
+  const { data: q, error } = await db.from('rental_quotes').select('*').eq('share_token', token).single();
+  if (error || !q) {
+    document.getElementById('quote-doc').innerHTML = '<div class="error-box"><h2>❌ 견적서를 찾을 수 없습니다</h2><p>링크가 만료되었거나 유효하지 않습니다.</p></div>';
+    return;
+  }
+
+  const { data: items } = await db.from('rental_quote_items').select('*').eq('quote_id', q.id).order('sort_order');
+  const quoteItems = items || [];
+
+  const sub = q.subtotal || 0;
+  const discount = q.discount_amount || 0;
+  const installFee = q.installation_fee || 0;
+  const deposit = q.deposit || 0;
+  const supply = q.supply_price || (sub - discount + installFee);
+  const vat = q.vat || Math.round(supply * 0.1);
+  const total = q.total || (supply + vat + deposit);
+
+  const today = new Date(q.created_at).toLocaleDateString('ko-KR');
+  const typeLabel = q.rental_type === '일' ? '일 단위' : '월 단위';
+  const durationLabel = q.rental_type === '일' ? `${q.rental_duration}일` : `${q.rental_duration}개월`;
+
+  const introHtml = `<a href="${NEW_PDF_URL}" target="_blank" class="q-intro-btn" style="display:inline-block;padding:3px 12px;border:1.5px solid #1B3A6B;border-radius:99px;font-size:11px;color:#1B3A6B;font-weight:600;text-decoration:none;background:#fff;margin-top:4px;">회사소개서</a>`;
+
+  const company = (q.company_name || '').replace(/[\/\\:*?"<>|]/g, '_').trim();
+  const qnum = (q.quote_number || '').replace(/[\/\\:*?"<>|]/g, '_').trim();
+  if (company || qnum) {
+    document.title = '렌탈견적서' + (company ? '_' + company : '') + (qnum ? '_' + qnum : '') + ' - 비유니드';
+  }
+
+  const itemRows = quoteItems.map((it, i) => `
+    <tr>
+      <td style="text-align:center;">${i+1}</td>
+      <td>
+        <strong>${it.product_name || ''}</strong>
+        ${it.brand || it.category ? `<br><span style="font-size:10px;color:#6b7a99">${it.brand || ''}${it.category ? ' · '+it.category : ''}</span>` : ''}
+      </td>
+      <td style="font-size:10px;color:#6b7a99;">${it.product_spec || '-'}</td>
+      <td style="text-align:center;">
+        <span style="font-size:10px;background:${it.rental_type==='일'?'#fef3c7':'#dbeafe'};color:${it.rental_type==='일'?'#d97706':'#1a56a0'};padding:2px 6px;border-radius:99px;font-weight:600;">${it.rental_type||''}</span>
+      </td>
+      <td class="text-right">${fmt(it.unit_price)}</td>
+      <td style="text-align:center;">${it.quantity}</td>
+      <td class="text-right" style="font-weight:700;">${fmt(it.total_price)}</td>
+    </tr>
+  `).join('');
+
+  document.getElementById('quote-doc').innerHTML = `
+    <div class="q-header">
+      <div style="text-align:left;">
+        <h1 style="color:#1B3A6B;font-size:22px;font-weight:800;letter-spacing:0.05em;margin:0 0 8px 0;text-align:left;">렌탈 견적서</h1>
+        <div class="q-num" style="text-align:left;">견적번호: ${q.quote_number || '-'}</div>
+        <div class="q-num" style="text-align:left;">작성일: ${today}</div>
+      </div>
+      <div class="q-logo-area">
+        <img src="data:image/png;base64,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" alt="비유니드" style="height:64px;">
+        ${introHtml}
+      </div>
+    </div>
+
+    <div class="q-parties">
+      <div class="q-party">
+        <div class="q-party-header">수 신</div>
+        <div class="q-party-body">
+          <div class="q-field"><span class="lbl">업체명</span><span class="val">${q.company_name || '-'}</span></div>
+          <div class="q-field"><span class="lbl">담당자</span><span class="val">${q.contact_name || '-'}</span></div>
+          <div class="q-field"><span class="lbl">연락처</span><span class="val">${q.contact_tel || '-'}</span></div>
+          <div class="q-field"><span class="lbl">이메일</span><span class="val">${q.contact_email || '-'}</span></div>
+        </div>
+      </div>
+      <div class="q-party">
+        <div class="q-party-header sup">공 급</div>
+        <div class="q-party-body">
+          <div class="q-field"><span class="lbl">업체명</span><span class="val">(주)비유니드</span></div>
+          <div class="q-field"><span class="lbl">담당자</span><span class="val">${q.sales_name ? (q.sales_dept ? '['+q.sales_dept+'] ' : '') + q.sales_name : '-'}</span></div>
+          <div class="q-field"><span class="lbl">연락처</span><span class="val">${q.sales_phone || '031.8028.0464'}</span></div>
+          <div class="q-field"><span class="lbl">이메일</span><span class="val">${q.sales_email || 'sales@buneed.co.kr'}</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="border:1px solid #b8cde8;border-radius:6px;overflow:hidden;margin-bottom:20px;">
+      <div style="background:#1B3A6B;padding:7px 14px;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+        <span style="font-size:12px;font-weight:700;color:#fff;letter-spacing:0.1em;">렌 탈  조  건</span>
+      </div>
+      <div style="background:#fff;padding:10px 14px;">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+          <div><div style="font-size:10px;color:#64748b;font-weight:600;margin-bottom:2px;">렌탈 단위</div><div style="font-size:12px;font-weight:700;color:#1e293b;">${typeLabel}</div></div>
+          <div><div style="font-size:10px;color:#64748b;font-weight:600;margin-bottom:2px;">렌탈 시작일</div><div style="font-size:12px;font-weight:700;color:#1e293b;">${q.rental_start_date || '-'}</div></div>
+          <div><div style="font-size:10px;color:#64748b;font-weight:600;margin-bottom:2px;">렌탈 기간</div><div style="font-size:12px;font-weight:700;color:#1e293b;">${durationLabel}</div></div>
+          <div><div style="font-size:10px;color:#64748b;font-weight:600;margin-bottom:2px;">납품희망일</div><div style="font-size:12px;font-weight:700;color:#1e293b;">${q.delivery_location || '-'}</div></div>
+          <div><div style="font-size:10px;color:#64748b;font-weight:600;margin-bottom:2px;">반납/회수</div><div style="font-size:12px;font-weight:700;color:#1e293b;">${q.return_method || '-'}</div></div>
+          <div><div style="font-size:10px;color:#64748b;font-weight:600;margin-bottom:2px;">견적 유효기간</div><div style="font-size:12px;font-weight:700;color:#1e293b;">${q.valid_until || '견적일로부터 30일'}</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="q-section">
+      <div class="q-section-title">▪ 견적 내용</div>
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:28px;text-align:center;">No</th>
+              <th>제품명</th>
+              <th style="font-size:10px;">사양</th>
+              <th style="width:40px;text-align:center;">단위</th>
+              <th class="text-right" style="width:70px;">단가</th>
+              <th style="width:36px;text-align:center;">수량</th>
+              <th class="text-right" style="width:75px;">금액</th>
+            </tr>
+          </thead>
+          <tbody>${itemRows}</tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="q-summary">
+      <table>
+        <tr><td>소 계</td><td class="text-right">${fmt(sub)} 원</td></tr>
+        ${discount > 0 ? `<tr class="discount-row"><td>할인</td><td class="text-right">- ${fmt(discount)} 원</td></tr>` : ''}
+        ${installFee > 0 ? `<tr><td>설치비</td><td class="text-right">${fmt(installFee)} 원</td></tr>` : ''}
+        <tr><td style="font-weight:600;">공급가액</td><td class="text-right" style="font-weight:600;">${fmt(supply)} 원</td></tr>
+        <tr><td>부가세 (10%)</td><td class="text-right">${fmt(vat)} 원</td></tr>
+        ${deposit > 0 ? `<tr><td style="color:#1565c0;">보증금</td><td class="text-right" style="color:#1565c0;">${fmt(deposit)} 원</td></tr>` : ''}
+        <tr class="total-row"><td>최 종 합 계</td><td class="text-right">${fmt(total)} 원</td></tr>
+      </table>
+    </div>
+
+    ${q.memo ? `
+    <div style="border:1px solid #bcd0ee;border-radius:6px;overflow:hidden;margin-top:16px;">
+      <div style="background:#f1f5f9;padding:5px 10px;"><span style="font-size:11px;font-weight:700;color:#1B3A6B;">특이사항</span></div>
+      <div style="padding:8px 12px;background:#fff;font-size:12px;color:#374151;line-height:1.6;">${q.memo}</div>
+    </div>` : ''}
+
+    <div class="q-footer">
+      주식회사 비유니드 | 경기도 하남시 미사강변한강로 135 다동 4층 445호 | 031.8028.0464 | www.buneed.co.kr
+    </div>
+  `;
+}
+
+async function loadPurchaseQuote(token) {
+  const params = new URLSearchParams(location.search);
   const token = params.get('token');
   if (!token) {
     document.getElementById('quote-doc').innerHTML = '<div class="error-box"><h2>❌ 잘못된 접근</h2><p>올바른 견적서 링크가 아닙니다.</p></div>';
@@ -157,7 +315,7 @@ async function loadQuote() {
   const infoGrid = (q.delivery_date || q.valid_until || q.memo) ? `
     <div class="q-info-grid" style="margin-bottom:20px;">
       ${q.delivery_date ? `<div class="q-info-item"><div class="label">납품희망일</div><div class="value">${q.delivery_date}</div></div>` : ''}
-      ${q.valid_until ? `<div class="q-info-item"><div class="label">📅 견적 유효기간</div><div class="value">${q.valid_until}</div></div>` : ''}
+      ${q.valid_until ? `<div class="q-info-item"><div class="label">견적 유효기간</div><div class="value">${q.valid_until}</div></div>` : ''}
       ${q.memo ? `<div class="q-info-item"><div class="label">특이사항</div><div class="value">${q.memo}</div></div>` : ''}
     </div>
   ` : '';
@@ -175,7 +333,7 @@ async function loadQuote() {
   }
 
   // 회사소개서 버튼
-  const introHtml = '<a href="https://drive.google.com/file/d/1IWM2oVFwf7BT5k9Cm8LZA9g3AK8FatYx/view?usp=sharing" target="_blank" class="q-intro-btn" style="display:inline-block;padding:3px 12px;border:1.5px solid #1B3A6B;border-radius:99px;font-size:11px;color:#1B3A6B;font-weight:600;text-decoration:none;background:#fff;margin-top:4px;">회사소개서</a>';
+  const introHtml = '<a href="https://buneed-estimate.vercel.app/Buneed.pdf" target="_blank" class="q-intro-btn" style="display:inline-block;padding:3px 12px;border:1.5px solid #1B3A6B;border-radius:99px;font-size:11px;color:#1B3A6B;font-weight:600;text-decoration:none;background:#fff;margin-top:4px;">회사소개서</a>';
 
 
   document.getElementById('quote-doc').innerHTML = `
@@ -214,7 +372,7 @@ async function loadQuote() {
     ${infoGrid}
 
     <div class="q-section">
-      <div class="q-section-title">견적 품목</div>
+      <div class="q-section-title">▪ 견적 품목</div>
       <table>
         <thead>
           <tr>
@@ -244,6 +402,7 @@ async function loadQuote() {
       주식회사 비유니드 | 경기도 하남시 미사강변한강로 135 다동 4층 445호 | 031.8028.0464 | www.buneed.co.kr
     </div>
   `;
+}
 }
 
 loadQuote();
