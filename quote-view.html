@@ -40,17 +40,26 @@ function fmt(n) { return Number(n || 0).toLocaleString('ko-KR'); }
 async function loadQuote() {
   const params = new URLSearchParams(location.search);
   const token = params.get('token') || params.get('share');
-  const isRental = params.get('type') === 'rental';
+  const typeParam = params.get('type');
 
   if (!token) {
     document.getElementById('quote-doc').innerHTML = '<div class="error-box"><h2>❌ 잘못된 접근</h2><p>올바른 견적서 링크가 아닙니다.</p></div>';
     return;
   }
 
-  if (isRental) {
+  // type 파라미터 있으면 그대로, 없으면 자동 감지
+  if (typeParam === 'rental') {
     await loadRentalQuote(token);
-  } else {
+  } else if (typeParam === 'purchase') {
     await loadPurchaseQuote(token);
+  } else {
+    // 자동 감지: 구매 먼저 시도 → 없으면 렌탈
+    const { data: pq } = await db.from('quotes').select('id').eq('share_token', token).single();
+    if (pq) {
+      await loadPurchaseQuote(token);
+    } else {
+      await loadRentalQuote(token);
+    }
   }
 }
 
