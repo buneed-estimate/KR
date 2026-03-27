@@ -15,9 +15,6 @@
 <div class="page-wrap">
   <!-- 상단 바 (인쇄 시 숨김) -->
   <div class="top-bar no-print">
-    <div class="logo">
-      <img id="qv-logo-topbar" alt="비유니드" style="height:36px;">
-    </div>
     <button class="print-btn" onclick="window.print()">🖨️ 인쇄 / PDF 저장</button>
   </div>
 
@@ -100,7 +97,7 @@ async function loadRentalQuote(token) {
       <td style="text-align:center;">${i+1}</td>
       <td>
         ${it.info_url
-          ? `<a href="${it.info_url}" target="_blank" style="color:#1B3A6B;font-weight:700;text-decoration:none;">${it.product_name || ''}</a>`
+          ? `<a href="${it.info_url}" target="_blank" style="color:#1B3A6B;font-weight:700;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px;display:inline-flex;align-items:center;gap:0;">${it.product_name || ''}<svg width="10" height="10" viewBox="0 0 12 12" fill="none" style="display:inline;vertical-align:middle;margin-left:3px;flex-shrink:0;"><path d="M5 2H2a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V7" stroke="#1B3A6B" stroke-width="1.5"/><path d="M8 2h2v2M10 2 6 6" stroke="#1B3A6B" stroke-width="1.5" stroke-linecap="round"/></svg></a>`
           : `<strong>${it.product_name || ''}</strong>`
         }
         ${it.brand || it.category ? `<br><span style="font-size:10px;color:#6b7a99">${it.brand || ''}${it.category ? ' · '+it.category : ''}</span>` : ''}
@@ -141,7 +138,7 @@ async function loadRentalQuote(token) {
       <div class="q-party">
         <div class="q-party-header sup">공 급</div>
         <div class="q-party-body">
-          <div class="q-field"><span class="lbl">업체명</span><span class="val">(주)비유니드</span></div>
+          <div class="q-field"><span class="lbl">업체명</span><span class="val">(주) 비유니드</span></div>
           <div class="q-field"><span class="lbl">담당자</span><span class="val">${q.sales_name ? (q.sales_dept ? '['+q.sales_dept+'] ' : '') + q.sales_name : '-'}</span></div>
           <div class="q-field"><span class="lbl">연락처</span><span class="val">${q.sales_phone || '031.8028.0464'}</span></div>
           <div class="q-field"><span class="lbl">이메일</span><span class="val">${q.sales_email || 'sales@buneed.co.kr'}</span></div>
@@ -208,7 +205,7 @@ async function loadRentalQuote(token) {
 
 
     <div class="q-footer">
-      주식회사 비유니드 | 경기도 하남시 미사강변한강로 135 다동 4층 445호 | 031.8028.0464 | www.buneed.co.kr
+      (주) 비유니드 | www.buneed.co.kr | 031.8028-0464 | 경기도 하남시 미사강변한강로 135 다동 4층 445호
     </div>
   `;
 }
@@ -244,7 +241,7 @@ async function loadPurchaseQuote(token) {
       <td style="text-align:center;">${i+1}</td>
       <td>
         ${it.info_url
-          ? `<a href="${it.info_url}" target="_blank" style="color:#1B3A6B;font-weight:700;text-decoration:none;">${it.product_name || ''}</a>`
+          ? `<a href="${it.info_url}" target="_blank" style="color:#1B3A6B;font-weight:700;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px;display:inline-flex;align-items:center;gap:0;">${it.product_name || ''}<svg width="10" height="10" viewBox="0 0 12 12" fill="none" style="display:inline;vertical-align:middle;margin-left:3px;flex-shrink:0;"><path d="M5 2H2a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V7" stroke="#1B3A6B" stroke-width="1.5"/><path d="M8 2h2v2M10 2 6 6" stroke="#1B3A6B" stroke-width="1.5" stroke-linecap="round"/></svg></a>`
           : `<strong>${it.product_name || ''}</strong>`
         }
         ${it.brand || it.category ? `<br><span style="font-size:10px;color:#6b7a99">${it.brand || ''}${it.category ? ' · '+it.category : ''}</span>` : ''}
@@ -290,7 +287,6 @@ async function loadPurchaseQuote(token) {
       </div>
       <div class="q-logo-area">
         <img src="${LOGO_SRC}" alt="비유니드">
-      
         ${introHtml}
       </div>
     </div>
@@ -307,7 +303,7 @@ async function loadPurchaseQuote(token) {
       <div class="q-party">
         <div class="q-party-header sup">공 급</div>
         <div class="q-party-body">
-          <div class="q-field"><span class="lbl">업체명</span><span class="val">(주)비유니드</span></div>
+          <div class="q-field"><span class="lbl">업체명</span><span class="val">(주) 비유니드</span></div>
           <div class="q-field"><span class="lbl">담당자</span><span class="val">${q.sales_name ? (q.sales_dept ? '['+q.sales_dept+'] ' : '') + q.sales_name : '-'}</span></div>
           <div class="q-field"><span class="lbl">연락처</span><span class="val">${q.sales_phone || '031.8028.0464'}</span></div>
           <div class="q-field"><span class="lbl">이메일</span><span class="val">${q.sales_email || 'sales@buneed.co.kr'}</span></div>
@@ -344,7 +340,7 @@ async function loadPurchaseQuote(token) {
     </div>
 
     <div class="q-footer">
-      주식회사 비유니드 | 경기도 하남시 미사강변한강로 135 다동 4층 445호 | 031.8028.0464 | www.buneed.co.kr
+      (주) 비유니드 | www.buneed.co.kr | 031.8028-0464 | 경기도 하남시 미사강변한강로 135 다동 4층 445호
     </div>
   `;
 }
@@ -352,11 +348,7 @@ async function loadPurchaseQuote(token) {
 loadQuote();
 
 
-// 로고 src 설정 (script가 body 끝에 있으므로 DOM 즉시 접근 가능)
-(function() {
-  const topbarLogo = document.getElementById('qv-logo-topbar');
-  if (topbarLogo) topbarLogo.src = LOGO_SRC;
-})();
+
 </script>
 </body>
 </html>

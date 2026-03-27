@@ -1,84 +1,264 @@
-/* === quote-view Style 1 === */
-*{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Pretendard','Apple SD Gothic Neo',sans-serif;background:#f0f2f8;color:#1a2e5a;min-height:100vh;}
-.page-wrap{max-width:820px;margin:0 auto;padding:24px 16px;}
-.top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
-.top-bar .logo{display:flex;align-items:center;gap:10px;}
-.top-bar .logo img{height:36px;}
-.top-bar .badge{background:#1e6fd9;color:#fff;font-size:11px;padding:2px 8px;border-radius:99px;font-weight:600;}
-.print-btn{background:#1e6fd9;color:#fff;border:none;border-radius:6px;padding:8px 18px;font-size:12px;font-weight:600;cursor:pointer;}
-.print-btn:hover{background:#1558b0;}
-.qdoc{background:#fff;border-radius:12px;padding:36px 40px 52px;box-shadow:0 4px 20px rgba(0,0,0,.08);}
-.q-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;}
-.q-logo-area{display:flex;flex-direction:column;align-items:flex-end;}
-.q-logo-area img{height:64px;margin-bottom:4px;}
-.q-tel{display:none;}
-h1{font-size:22px;font-weight:800;color:#1a2e5a;text-align:left;margin-bottom:8px;letter-spacing:.05em;}
-.q-num{font-size:11px;color:#6b7a99;text-align:left;margin-top:2px;}
-.q-parties{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;align-items:stretch;}
-.q-party{border:1px solid #d0d8ee;border-radius:8px;overflow:hidden;}
-.q-party-header{background:#0E76BB;color:#fff;padding:8px 14px;font-size:11px;font-weight:600;}
-.q-party-header.sup{background:#1B3A6B;color:#fff;}
-.q-party-body{padding:12px 14px;}
-.q-field{display:flex;gap:8px;padding:4px 0;font-size:11px;}
-.q-field .lbl{color:#6b7a99;width:50px;flex-shrink:0;}
-.q-field .val{font-weight:600;}
-.q-info-grid{display:flex;flex-direction:column;gap:0;background:#f5f7fc;border:1px solid #d0d8ee;border-radius:8px;padding:0;margin-bottom:20px;overflow:hidden;}
-.q-info-item{display:flex;align-items:baseline;gap:10px;padding:9px 16px;border-bottom:1px solid #e2e8f0;}.q-info-item:last-child{border-bottom:none;}.q-info-item .label{font-size:11px;color:#1e6fd9;font-weight:600;min-width:90px;flex-shrink:0;}
-.q-info-item .value{font-size:13px;font-weight:700;color:#1a2e5a;flex:1;}
-.q-section{margin-bottom:20px;}
-.q-section-title{font-size:11px;font-weight:700;color:#0d2d6b;margin-bottom:10px;text-transform:uppercase;letter-spacing:.05em;padding-bottom:6px;border-bottom:2px solid #c2d4f0;}
-table{width:100%;border-collapse:collapse;font-size:12px;}
-thead th{background:#0d2d6b;color:#fff;padding:8px 10px;font-weight:600;text-align:left;}
-tbody td{padding:8px 10px;border-bottom:1px solid #f1f5f9;}
-tbody tr:nth-child(even){background:#f9fafc;}
-.text-right{text-align:right;}
-.q-summary{margin-bottom:0;}.q-summary table{width:340px;margin-left:auto;}
-.q-summary td{padding:6px 10px;border-bottom:1px solid #f1f5f9;}
-.total-row td{font-weight:800;font-size:15px;color:#0d2d6b;border-top:2px solid #0d2d6b;padding-top:10px;padding-bottom:12px;}
-.discount-row td{color:#ef4444;font-size:12px;}
-.q-footer{margin-top:48px;border-top:2px solid #e2e8f0;padding-top:20px;padding-bottom:16px;text-align:center;font-size:10px;color:#94a3b8;line-height:1.8;}
-.loading{text-align:center;padding:80px;color:#94a3b8;font-size:14px;}
-.error-box{text-align:center;padding:60px;color:#ef4444;}
-.error-box h2{font-size:18px;margin-bottom:12px;}
-.memo-box{background:#f5f7fc;border-radius:6px;padding:10px 14px;font-size:11px;color:#475569;}
-.q-intro-btn{display:inline-block;}
-@media print{
-  .top-bar{display:none;}
-  .q-intro-btn{display:none!important;}
-  body{background:#fff;}
-  .qdoc{box-shadow:none;border-radius:0;padding:20px;}
-  @page{margin:10mm;}
-  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
+/* ================================================================
+   quote-view Style  |  Font Scale 체계 정비
+   ------------------------------------------------------------------
+   --fs-xs   : 10px  라벨·배지·보조 텍스트
+   --fs-sm   : 12px  일반 본문·테이블 셀·필드값
+   --fs-md   : 13px  강조 본문·섹션 소제목
+   --fs-lg   : 16px  금액 소계 등 중간 강조
+   --fs-xl   : 20px  견적서 대제목 (h1)
+   ================================================================ */
+
+/* ── 리셋 & 기반 ── */
+*  { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif;
+  font-size: 12px;          /* 기본 = --fs-sm */
+  line-height: 1.6;
+  color: #1a2e5a;
+  background: #f0f2f8;
+  min-height: 100vh;
 }
 
-/* ── 모바일 반응형 (max-width: 768px) ── */
+/* ── 페이지 래퍼 ── */
+.page-wrap { max-width: 820px; margin: 0 auto; padding: 24px 16px; }
+
+/* ── 상단 바 ── */
+.top-bar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.print-btn {
+  background: #1e6fd9;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 20px;
+  font-size: 12px;          /* --fs-sm */
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+}
+.print-btn:hover { background: #1558b0; }
+
+/* ── 견적서 본문 카드 ── */
+.qdoc {
+  background: #fff;
+  border-radius: 12px;
+  padding: 36px 40px 52px;
+  box-shadow: 0 4px 20px rgba(0,0,0,.08);
+}
+
+/* ── 헤더 (제목 + 로고) ── */
+.q-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+.q-logo-area { display: flex; flex-direction: column; align-items: flex-end; }
+.q-logo-area img { height: 56px; margin-bottom: 6px; }
+
+/* h1 : 견적서 대제목 */
+h1 {
+  font-size: 20px;          /* --fs-xl */
+  font-weight: 800;
+  color: #1B3A6B;
+  letter-spacing: 0.05em;
+  margin: 0 0 6px 0;
+}
+
+/* 견적번호·작성일 */
+.q-num {
+  font-size: 11px;
+  color: #6b7a99;
+  margin-top: 2px;
+}
+
+/* ── 수신/공급 박스 ── */
+.q-parties {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+  align-items: stretch;
+}
+.q-party { border: 1px solid #d0d8ee; border-radius: 8px; overflow: hidden; }
+.q-party-header {
+  background: #0E76BB;
+  color: #fff;
+  padding: 7px 14px;
+  font-size: 11px;          /* --fs-xs+1 */
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+.q-party-header.sup { background: #1B3A6B; }
+.q-party-body { padding: 10px 14px; }
+
+/* 필드 행 */
+.q-field { display: flex; gap: 8px; padding: 3px 0; font-size: 12px; } /* --fs-sm */
+.q-field .lbl { color: #6b7a99; width: 48px; flex-shrink: 0; font-size: 11px; }
+.q-field .val { font-weight: 600; color: #1a2e5a; }
+
+/* ── 견적 조건 그리드 (info-grid) ── */
+.q-info-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  background: #f5f7fc;
+  border: 1px solid #d0d8ee;
+  border-radius: 8px;
+  padding: 0;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+.q-info-item {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 8px 16px;
+  border-bottom: 1px solid #e2e8f0;
+}
+.q-info-item:last-child { border-bottom: none; }
+.q-info-item .label {
+  font-size: 11px;          /* --fs-xs+1 */
+  color: #1e6fd9;
+  font-weight: 600;
+  min-width: 90px;
+  flex-shrink: 0;
+}
+.q-info-item .value {
+  font-size: 13px;          /* --fs-md */
+  font-weight: 700;
+  color: #1a2e5a;
+  flex: 1;
+}
+
+/* ── 섹션 ── */
+.q-section { margin-bottom: 20px; }
+.q-section-title {
+  font-size: 11px;          /* --fs-xs+1 */
+  font-weight: 700;
+  color: #0d2d6b;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid #c2d4f0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ── 품목 테이블 ── */
+table { width: 100%; border-collapse: collapse; font-size: 12px; } /* --fs-sm */
+thead th {
+  background: #0d2d6b;
+  color: #fff;
+  padding: 8px 10px;
+  font-size: 11px;          /* --fs-xs+1 */
+  font-weight: 600;
+  text-align: left;
+  letter-spacing: 0.03em;
+}
+tbody td {
+  padding: 8px 10px;
+  font-size: 12px;          /* --fs-sm */
+  border-bottom: 1px solid #f1f5f9;
+  color: #1a2e5a;
+}
+tbody tr:nth-child(even) { background: #f9fafc; }
+body tr:last-child td { border-bottom: 2px solid #0d2d6b; }
+tbody tr:last-child td { border-bottom: 2px solid #0d2d6b; }
+.text-right { text-align: right; }
+
+/* ── 합계 테이블 ── */
+.q-summary { margin-bottom: 0; }
+.q-summary table { width: 320px; margin-left: auto; }
+.q-summary td {
+  padding: 6px 10px;
+  font-size: 12px;          /* --fs-sm */
+  border-bottom: 1px solid #f1f5f9;
+}
+.discount-row td { color: #ef4444; font-size: 12px; }
+.total-row td {
+  font-weight: 800;
+  font-size: 15px;          /* --fs-lg - 1 */
+  color: #0d2d6b;
+  border-top: 2px solid #0d2d6b;
+  padding-top: 10px;
+  padding-bottom: 12px;
+}
+
+/* ── 메모 박스 ── */
+.memo-box {
+  background: #f5f7fc;
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 12px;          /* --fs-sm */
+  color: #475569;
+}
+
+/* ── 푸터 ── */
+.q-footer {
+  margin-top: 48px;
+  border-top: 2px solid #e2e8f0;
+  padding-top: 16px;
+  padding-bottom: 12px;
+  text-align: center;
+  font-size: 11px;          /* --fs-xs+1 */
+  color: #94a3b8;
+  line-height: 1.8;
+  letter-spacing: 0.01em;
+}
+
+/* ── 회사소개서 버튼 ── */
+.q-intro-btn { display: inline-block; }
+
+/* ── 로딩·에러 ── */
+.loading  { text-align: center; padding: 80px; color: #94a3b8; font-size: 13px; }
+.error-box { text-align: center; padding: 60px; color: #ef4444; }
+.error-box h2 { font-size: 17px; margin-bottom: 12px; font-weight: 700; }
+
+/* ================================================================
+   인쇄 / PDF 저장
+   ================================================================ */
+@media print {
+  .top-bar  { display: none !important; }
+  .q-intro-btn { display: none !important; }
+  body      { background: #fff; }
+  .qdoc     { box-shadow: none; border-radius: 0; padding: 20px; }
+  @page     { margin: 10mm; }
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+}
+
+/* ================================================================
+   반응형 — 태블릿 (≤ 768px)
+   ================================================================ */
 @media (max-width: 768px) {
-  .page-wrap { padding: 12px 8px; }
-  .qdoc { padding: 20px 16px; border-radius: 8px; }
-  h1 { font-size: 17px; }
-  .q-parties { grid-template-columns: 1fr; gap: 10px; }
-  .q-info-grid { grid-template-columns: 1fr 1fr; gap: 8px; padding: 10px 12px; }
+  .page-wrap   { padding: 12px 8px; }
+  .qdoc        { padding: 20px 16px; border-radius: 8px; }
+  h1           { font-size: 17px; }
+  .q-parties   { grid-template-columns: 1fr; gap: 10px; }
   .q-summary table { width: 100%; }
-  .top-bar { display: none; }
-  .q-num { display: block !important; }
-  /* 테이블 폰트 축소로 가로 스크롤 제거 */
-  table { font-size: 11px; }
-  thead th { padding: 6px 6px; font-size: 10px; }
-  tbody td { padding: 6px 6px; font-size: 11px; }
-  .text-right { font-size: 11px; }
+  .top-bar     { display: none; }
+  .q-num       { display: block !important; }
+  table        { font-size: 11px; }
+  thead th     { padding: 6px 6px; font-size: 10px; }
+  tbody td     { padding: 6px 6px; font-size: 11px; }
 }
-@media (max-width: 480px) {
-  .qdoc { padding: 14px 10px; }
-  .q-info-grid { grid-template-columns: 1fr; }
-  .q-header { gap: 10px; }
-  .q-num { text-align: left; margin-top: 0; display: block !important; }
-  .q-header > div:first-child { display: flex; flex-direction: column; }
-  h1 { font-size: 15px; letter-spacing: 0; }
 
-  /* 렌탈 조건 그리드: 480px에서 2열로 */
-  .q-rental-info-grid, [style*="grid-template-columns:repeat(3"] {
+/* ================================================================
+   반응형 — 모바일 (≤ 480px)
+   ================================================================ */
+@media (max-width: 480px) {
+  .qdoc        { padding: 14px 10px; }
+  .q-header    { gap: 10px; }
+  .q-num       { text-align: left; margin-top: 0; display: block !important; }
+  .q-header > div:first-child { display: flex; flex-direction: column; }
+  h1           { font-size: 15px; letter-spacing: 0; }
+
+  /* 렌탈 조건 그리드: 480px 에서 2열 */
+  .q-rental-info-grid,
+  [style*="grid-template-columns:repeat(3"] {
     grid-template-columns: repeat(2, 1fr) !important;
   }
 }
-
