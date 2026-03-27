@@ -129,7 +129,7 @@ async function loadRentalQuote(token) {
       <div class="q-party">
         <div class="q-party-header">수 신</div>
         <div class="q-party-body">
-          <div class="q-field"><span class="lbl">업체명</span><span class="val">${q.company_name || '-'}</span></div>
+          <div class="q-field"><span class="lbl">업체명</span><span class="val company-name">${q.company_name || '-'}</span></div>
           <div class="q-field"><span class="lbl">담당자</span><span class="val">${q.contact_name || '-'}</span></div>
           <div class="q-field"><span class="lbl">연락처</span><span class="val">${q.contact_tel || '-'}</span></div>
           <div class="q-field"><span class="lbl">이메일</span><span class="val">${q.contact_email || '-'}</span></div>
@@ -138,7 +138,7 @@ async function loadRentalQuote(token) {
       <div class="q-party">
         <div class="q-party-header sup">공 급</div>
         <div class="q-party-body">
-          <div class="q-field"><span class="lbl">업체명</span><span class="val">(주) 비유니드</span></div>
+          <div class="q-field"><span class="lbl">업체명</span><span class="val company-name">(주) 비유니드</span></div>
           <div class="q-field"><span class="lbl">담당자</span><span class="val">${q.sales_name ? (q.sales_dept ? '['+q.sales_dept+'] ' : '') + q.sales_name : '-'}</span></div>
           <div class="q-field"><span class="lbl">연락처</span><span class="val">${q.sales_phone || '031.8028.0464'}</span></div>
           <div class="q-field"><span class="lbl">이메일</span><span class="val">${q.sales_email || 'sales@buneed.co.kr'}</span></div>
@@ -239,14 +239,14 @@ async function loadPurchaseQuote(token) {
   const itemRows = quoteItems.map((it, i) => `
     <tr>
       <td style="text-align:center;">${i+1}</td>
+      <td style="text-align:center;font-size:11px;color:#475569;vertical-align:middle;">${it.brand || '-'}</td>
       <td>
         ${it.info_url
           ? `<a href="${it.info_url}" target="_blank" style="color:#1B3A6B;font-weight:700;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px;display:inline-flex;align-items:center;gap:0;">${it.product_name || ''}<svg width="10" height="10" viewBox="0 0 12 12" fill="none" style="display:inline;vertical-align:middle;margin-left:3px;flex-shrink:0;"><path d="M5 2H2a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V7" stroke="#1B3A6B" stroke-width="1.5"/><path d="M8 2h2v2M10 2 6 6" stroke="#1B3A6B" stroke-width="1.5" stroke-linecap="round"/></svg></a>`
           : `<strong>${it.product_name || ''}</strong>`
         }
-        ${it.brand || it.category ? `<br><span style="font-size:10px;color:#6b7a99">${it.brand || ''}${it.category ? ' · '+it.category : ''}</span>` : ''}
+        ${it.spec_summary ? `<div style="font-size:10px;color:#6b7a99;margin-top:2px;">${it.spec_summary}</div>` : ''}
       </td>
-      <td style="font-size:10px;color:#6b7a99;">${it.spec_summary || '-'}</td>
       <td class="text-right">${fmt(it.unit_price)}</td>
       <td style="text-align:center;">${it.qty}</td>
       <td class="text-right" style="font-weight:700;">${fmt(it.total_price)}</td>
@@ -294,7 +294,7 @@ async function loadPurchaseQuote(token) {
       <div class="q-party">
         <div class="q-party-header">수 신</div>
         <div class="q-party-body">
-          <div class="q-field"><span class="lbl">업체명</span><span class="val">${q.company_name || '-'}</span></div>
+          <div class="q-field"><span class="lbl">업체명</span><span class="val company-name">${q.company_name || '-'}</span></div>
           <div class="q-field"><span class="lbl">담당자</span><span class="val">${q.contact_name || '-'}</span></div>
           <div class="q-field"><span class="lbl">연락처</span><span class="val">${q.contact_tel || '-'}</span></div>
           <div class="q-field"><span class="lbl">이메일</span><span class="val">${q.contact_email || '-'}</span></div>
@@ -303,7 +303,7 @@ async function loadPurchaseQuote(token) {
       <div class="q-party">
         <div class="q-party-header sup">공 급</div>
         <div class="q-party-body">
-          <div class="q-field"><span class="lbl">업체명</span><span class="val">(주) 비유니드</span></div>
+          <div class="q-field"><span class="lbl">업체명</span><span class="val company-name">(주) 비유니드</span></div>
           <div class="q-field"><span class="lbl">담당자</span><span class="val">${q.sales_name ? (q.sales_dept ? '['+q.sales_dept+'] ' : '') + q.sales_name : '-'}</span></div>
           <div class="q-field"><span class="lbl">연락처</span><span class="val">${q.sales_phone || '031.8028.0464'}</span></div>
           <div class="q-field"><span class="lbl">이메일</span><span class="val">${q.sales_email || 'sales@buneed.co.kr'}</span></div>
@@ -317,12 +317,12 @@ async function loadPurchaseQuote(token) {
       <table>
         <thead>
           <tr>
-            <th style="width:36px;text-align:center;">No</th>
-            <th>제품명</th>
-            <th>사양</th>
-            <th style="text-align:right;">단가 (원)</th>
-            <th style="text-align:center;">수량</th>
-            <th style="text-align:right;">금액 (원)</th>
+            <th style="width:24px;text-align:center;">No</th>
+            <th style="text-align:center;width:65px;">브랜드</th>
+            <th style="text-align:left;">제품명 / 사양</th>
+            <th style="text-align:right;white-space:nowrap;">단가</th>
+            <th style="text-align:center;white-space:nowrap;">수량</th>
+            <th style="text-align:right;white-space:nowrap;">금액</th>
           </tr>
         </thead>
         <tbody>${itemRows}</tbody>

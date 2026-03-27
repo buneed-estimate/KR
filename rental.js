@@ -114,16 +114,18 @@ function rOpenAtqModal(pid) {
   if (!p) return;
   rCurrentProductId = pid;
   rAtqType = rCurrentType;
-  document.getElementById('r-atq-title').textContent = p.name + ' 추가';
+  document.getElementById('r-atq-title').textContent = '제품 상세';
   document.getElementById('r-atq-info').innerHTML = `
     <div class="atq-name" style="color:var(--r-primary);">${p.name}</div>
     <div class="atq-meta" style="color:var(--r-blue);">
       ${p.category?`<span>${p.category}</span>`:''}
       ${p.brand?`<span style="color:#94a3b8;">|</span><span>${p.brand}</span>`:''}
+      ${p.info_url?`<span style="color:#22c55e;font-size:11px;margin-left:4px;" title="이미지/링크 있음">✅</span>`:''}
       ${p.daily_price?`<span style="color:#94a3b8;">|</span><span style="color:var(--r-primary);font-weight:700;">일 ₩${fmt(p.daily_price)}</span>`:''}
       ${p.monthly_price?`<span style="color:#94a3b8;">/</span><span style="color:var(--r-primary);font-weight:700;">월 ₩${fmt(p.monthly_price)}</span>`:''}
     </div>
     ${p.spec?`<div class="atq-spec" style="background:rgba(255,255,255,0.7);">${p.spec}</div>`:''}
+    ${p.feature?`<div style="margin-top:6px;padding:6px 10px;background:#fff3cd;border:1px solid #ffc107;border-radius:6px;font-size:11px;color:#856404;line-height:1.5;">${p.feature}</div>`:''}
   `;
   document.getElementById('r-atq-daily-btn').classList.toggle('active', rAtqType==='일');
   document.getElementById('r-atq-monthly-btn').classList.toggle('active', rAtqType==='월');
@@ -309,7 +311,7 @@ function rPreviewQuote() {
         <div style="font-size:10px;color:#64748b;margin-top:2px;">${item.category||''}</div>
       </td>
       <td style="padding:8px 10px;border-bottom:1px solid #e8edf5;min-width:120px;">
-        ${item.info_url ? `<a href="${item.info_url}" target="_blank" style="font-weight:700;font-size:12.5px;color:#1B3A6B;text-decoration:none;">${item.product_name}</a>` : `<div style="font-weight:700;font-size:12.5px;color:#1e293b;">${item.product_name}</div>`}
+        ${item.info_url ? `<a href="${item.info_url}" target="_blank" style="font-weight:700;font-size:12.5px;color:#1B3A6B;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px;display:inline-flex;align-items:center;gap:0;">${item.product_name}<svg width="10" height="10" viewBox="0 0 12 12" fill="none" style="display:inline;vertical-align:middle;margin-left:3px;flex-shrink:0;"><path d="M5 2H2a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V7" stroke="#1B3A6B" stroke-width="1.5"/><path d="M8 2h2v2M10 2 6 6" stroke="#1B3A6B" stroke-width="1.5" stroke-linecap="round"/></svg></a>` : `<div style="font-weight:700;font-size:12.5px;color:#1e293b;">${item.product_name}</div>`}
         ${item.product_spec?`<div style="font-size:10.5px;color:#475569;margin-top:2px;line-height:1.4;">${fmtSpec(item.product_spec)}</div>`:''}
       </td>
       <td style="text-align:center;border-bottom:1px solid #e8edf5;vertical-align:middle;">
@@ -359,7 +361,7 @@ function rPreviewQuote() {
           <div style="background:#fff;padding:10px 12px;">
             <table style="font-size:12px;width:100%;border-collapse:collapse;">
               <tr><td style="color:#64748b;padding:3px 0;width:32%;font-size:11px;">업체명</td><td style="font-weight:700;color:#1e293b;">(주)비유니드</td></tr>
-              <tr><td style="color:#64748b;padding:3px 0;font-size:11px;">담당자</td><td style="font-weight:600;">${salesName||'-'}</td></tr>
+              <tr><td style="color:#64748b;padding:3px 0;font-size:11px;">담당자</td><td>${salesName||'-'}</td></tr>
               <tr><td style="color:#64748b;padding:3px 0;font-size:11px;">연락처</td><td>${salesPhone||'031.8028.0464'}</td></tr>
               <tr><td style="color:#64748b;padding:3px 0;font-size:11px;">이메일</td><td>${salesEmail||'sales@buneed.co.kr'}</td></tr>
             </table>

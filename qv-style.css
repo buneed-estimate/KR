@@ -97,9 +97,10 @@ h1 {
 .q-party-body { padding: 10px 14px; }
 
 /* 필드 행 */
-.q-field { display: flex; gap: 8px; padding: 3px 0; font-size: 13px; } /* --fs-md */
+.q-field { display: flex; gap: 8px; padding: 3px 0; font-size: 12px; } /* 13→12px */
 .q-field .lbl { color: #6b7a99; width: 52px; flex-shrink: 0; font-size: 12px; }
-.q-field .val { font-weight: 600; color: #1a2e5a; }
+.q-field .val { font-weight: 400; color: #1a2e5a; }
+.q-field .val.company-name { font-weight: 700; }
 
 /* ── 견적 조건 그리드 (info-grid) ── */
 .q-info-grid {
@@ -129,7 +130,7 @@ h1 {
   flex-shrink: 0;
 }
 .q-info-item .value {
-  font-size: 13px;          /* --fs-md */
+  font-size: 12px;          /* 13→12px */
   font-weight: 700;
   color: #1a2e5a;
   flex: 1;
@@ -138,7 +139,7 @@ h1 {
 /* ── 섹션 ── */
 .q-section { margin-bottom: 20px; }
 .q-section-title {
-  font-size: 13px;          /* q-party-header 와 동일 */
+  font-size: 12px;          /* 수신/공급과 통일 */
   font-weight: 700;
   color: #0d2d6b;
   margin-bottom: 10px;

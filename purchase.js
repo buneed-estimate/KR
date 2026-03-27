@@ -83,7 +83,7 @@ function openSpecModal(productId) {
   if (!p) return;
   currentSpecProductId = productId;
   selectedSpecOpts = {};
-  document.getElementById('aq-title').textContent = p.name;
+  document.getElementById('aq-title').textContent = '제품 상세';
   const specSummaryHtml = p.spec_summary ? '<div style="color:#64748b;font-size:11px;margin-top:4px;line-height:1.5;">'+fmtSpec(p.spec_summary)+'</div>' : '';
   const featureHtml = p.feature ? '<div style="color:#475569;font-size:11px;margin-top:4px;padding:6px 8px;background:#f8fafc;border-radius:4px;line-height:1.5;">'+p.feature+'</div>' : '';
   document.getElementById('aq-product-info').innerHTML = `
@@ -91,6 +91,7 @@ function openSpecModal(productId) {
     <div class="atq-meta">
       ${p.category?`<span>${p.category}</span>`:''}
       ${p.brand?`<span style="color:#94a3b8;">|</span><span>${p.brand}</span>`:''}
+      ${p.info_url?`<span style="color:#22c55e;font-size:11px;margin-left:4px;" title="이미지/링크 있음">✅</span>`:''}
       ${p.base_price?`<span style="color:#94a3b8;">|</span><span style="color:#1B3A6B;font-weight:700;">₩ ${fmt(p.base_price)}</span>`:''}
     </div>
     ${p.spec_summary?`<div class="atq-spec">${fmtSpec(p.spec_summary)}</div>`:''}
@@ -319,7 +320,7 @@ function previewQuote() {
         <div style="font-size:10px;color:#64748b;margin-top:2px;">${it.category||''}</div>
       </td>
       <td style="min-width:120px;padding:8px 10px;border-bottom:1px solid #e8edf5;">
-        ${it.info_url ? `<a href="${it.info_url}" target="_blank" style="font-weight:700;font-size:12px;color:#1B3A6B;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px;">${it.product_name}</a>` : `<div style="font-weight:700;font-size:12px;color:#1e293b;">${it.product_name}</div>`}
+        ${it.info_url ? `<a href="${it.info_url}" target="_blank" style="font-weight:700;font-size:12px;color:#1B3A6B;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px;display:inline-flex;align-items:center;gap:0;">${it.product_name}<svg width="10" height="10" viewBox="0 0 12 12" fill="none" style="display:inline;vertical-align:middle;margin-left:3px;flex-shrink:0;"><path d="M5 2H2a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V7" stroke="#1B3A6B" stroke-width="1.5"/><path d="M8 2h2v2M10 2 6 6" stroke="#1B3A6B" stroke-width="1.5" stroke-linecap="round"/></svg></a>` : `<div style="font-weight:700;font-size:12px;color:#1e293b;">${it.product_name}</div>`}
         ${specText ? `<div style="font-size:10.5px;color:#475569;line-height:1.5;margin-top:3px;">${specText}</div>` : ''}
       </td>
       <td style="text-align:right;white-space:nowrap;font-weight:600;font-size:12px;min-width:90px;border-bottom:1px solid #e8edf5;">${fmt(it.unit_price)}원</td>
@@ -352,11 +353,11 @@ function previewQuote() {
             <span style="font-size:13px;font-weight:700;color:#fff;letter-spacing:0.1em;">수 신</span>
           </div>
           <div style="background:#ffffff;padding:10px 12px;">
-            <table style="font-size:13px;width:100%;border-collapse:collapse;">
-              <tr><td style="color:#64748b;padding:3px 0;width:32%;font-size:12px;">업체명</td><td style="font-weight:700;color:#1e293b;">${company}</td></tr>
-              <tr><td style="color:#64748b;padding:3px 0;font-size:12px;">담당자</td><td>${contact||'-'}</td></tr>
-              <tr><td style="color:#64748b;padding:3px 0;font-size:12px;">연락처</td><td>${phone||'-'}</td></tr>
-              <tr><td style="color:#64748b;padding:3px 0;font-size:12px;">이메일</td><td>${email||'-'}</td></tr>
+            <table style="font-size:12px;width:100%;border-collapse:collapse;">
+              <tr><td style="color:#64748b;padding:3px 0;width:32%;font-size:11px;">업체명</td><td style="font-weight:700;color:#1e293b;">${company}</td></tr>
+              <tr><td style="color:#64748b;padding:3px 0;font-size:11px;">담당자</td><td>${contact||'-'}</td></tr>
+              <tr><td style="color:#64748b;padding:3px 0;font-size:11px;">연락처</td><td>${phone||'-'}</td></tr>
+              <tr><td style="color:#64748b;padding:3px 0;font-size:11px;">이메일</td><td>${email||'-'}</td></tr>
             </table>
           </div>
         </div>
@@ -366,11 +367,11 @@ function previewQuote() {
             <span style="font-size:13px;font-weight:700;color:#fff;letter-spacing:0.1em;">공 급</span>
           </div>
           <div style="background:#fff;padding:10px 12px;">
-            <table style="font-size:13px;width:100%;border-collapse:collapse;">
-              <tr><td style="color:#64748b;padding:3px 0;width:32%;font-size:12px;">업체명</td><td style="font-weight:700;color:#1e293b;">(주) 비유니드</td></tr>
-              <tr><td style="color:#64748b;padding:3px 0;font-size:12px;">담당자</td><td style="font-weight:600;">${salesName||'-'}</td></tr>
-              <tr><td style="color:#64748b;padding:3px 0;font-size:12px;">연락처</td><td>${salesPhone||'031.8028.0464'}</td></tr>
-              <tr><td style="color:#64748b;padding:3px 0;font-size:12px;">이메일</td><td>${salesEmail||'sales@buneed.co.kr'}</td></tr>
+            <table style="font-size:12px;width:100%;border-collapse:collapse;">
+              <tr><td style="color:#64748b;padding:3px 0;width:32%;font-size:11px;">업체명</td><td style="font-weight:700;color:#1e293b;">(주) 비유니드</td></tr>
+              <tr><td style="color:#64748b;padding:3px 0;font-size:11px;">담당자</td><td>${salesName||'-'}</td></tr>
+              <tr><td style="color:#64748b;padding:3px 0;font-size:11px;">연락처</td><td>${salesPhone||'031.8028.0464'}</td></tr>
+              <tr><td style="color:#64748b;padding:3px 0;font-size:11px;">이메일</td><td>${salesEmail||'sales@buneed.co.kr'}</td></tr>
             </table>
           </div>
         </div>
@@ -593,11 +594,11 @@ async function renderAdminProducts(forceRefresh = false) {
       data = [...products].sort((a,b) => (a.category||'').localeCompare(b.category||'', 'ko'));
     } else {
       const res = await db.from('products').select('*').order('category');
-      if (res.error) { body.innerHTML='<tr><td colspan="8" style="text-align:center;padding:20px;color:#ef4444">로드 오류</td></tr>'; return; }
+      if (res.error) { body.innerHTML='<tr><td colspan="9" style="text-align:center;padding:20px;color:#ef4444">로드 오류</td></tr>'; return; }
       data = res.data;
       if (data) products = data; // 전역 갱신
     }
-    if (!data?.length) { body.innerHTML='<tr><td colspan="8" style="text-align:center;padding:20px;color:#94a3b8">제품 없음</td></tr>'; return; }
+    if (!data?.length) { body.innerHTML='<tr><td colspan="9" style="text-align:center;padding:20px;color:#94a3b8">제품 없음</td></tr>'; return; }
     body.innerHTML = data.map(p=>`
       <tr>
         <td style="text-align:center;"><input type="checkbox" class="p-row-check" data-id="${p.id}" onchange="pCheckChange()" style="width:15px;height:15px;cursor:pointer;"></td>
@@ -605,6 +606,7 @@ async function renderAdminProducts(forceRefresh = false) {
         <td>${p.brand}</td>
         <td style="font-weight:600;">${p.name}</td>
         <td style="font-size:11px;color:#64748b;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.spec_summary||''}</td>
+        <td style="text-align:center;font-size:13px;">${p.info_url ? '✅' : ''}</td>
         <td style="text-align:right;font-weight:600;">${fmt(p.base_price)}원</td>
         <td style="display:flex;gap:5px;">
           <button class="btn btn-secondary btn-sm" onclick="openProductModal('${p.id}')">수정</button>
