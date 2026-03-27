@@ -8,7 +8,7 @@ body{font-family:'Pretendard','Apple SD Gothic Neo',sans-serif;background:#f0f2f
 .top-bar .badge{background:#1e6fd9;color:#fff;font-size:11px;padding:2px 8px;border-radius:99px;font-weight:600;}
 .print-btn{background:#1e6fd9;color:#fff;border:none;border-radius:6px;padding:8px 18px;font-size:12px;font-weight:600;cursor:pointer;}
 .print-btn:hover{background:#1558b0;}
-.qdoc{background:#fff;border-radius:12px;padding:36px 40px;box-shadow:0 4px 20px rgba(0,0,0,.08);}
+.qdoc{background:#fff;border-radius:12px;padding:36px 40px 52px;box-shadow:0 4px 20px rgba(0,0,0,.08);}
 .q-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;}
 .q-logo-area{display:flex;flex-direction:column;align-items:flex-end;}
 .q-logo-area img{height:64px;margin-bottom:4px;}
@@ -33,11 +33,11 @@ thead th{background:#0d2d6b;color:#fff;padding:8px 10px;font-weight:600;text-ali
 tbody td{padding:8px 10px;border-bottom:1px solid #f1f5f9;}
 tbody tr:nth-child(even){background:#f9fafc;}
 .text-right{text-align:right;}
-.q-summary table{width:340px;margin-left:auto;}
+.q-summary{margin-bottom:0;}.q-summary table{width:340px;margin-left:auto;}
 .q-summary td{padding:6px 10px;border-bottom:1px solid #f1f5f9;}
-.total-row td{font-weight:800;font-size:15px;color:#0d2d6b;border-top:2px solid #0d2d6b;padding-top:10px;}
+.total-row td{font-weight:800;font-size:15px;color:#0d2d6b;border-top:2px solid #0d2d6b;padding-top:10px;padding-bottom:12px;}
 .discount-row td{color:#ef4444;font-size:12px;}
-.q-footer{margin-top:28px;border-top:1px solid #e2e8f0;padding-top:16px;text-align:center;font-size:10px;color:#94a3b8;}
+.q-footer{margin-top:48px;border-top:2px solid #e2e8f0;padding-top:20px;padding-bottom:16px;text-align:center;font-size:10px;color:#94a3b8;line-height:1.8;}
 .loading{text-align:center;padding:80px;color:#94a3b8;font-size:14px;}
 .error-box{text-align:center;padding:60px;color:#ef4444;}
 .error-box h2{font-size:18px;margin-bottom:12px;}
