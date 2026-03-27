@@ -319,7 +319,7 @@ function previewQuote() {
         <div style="font-size:10px;color:#64748b;margin-top:2px;">${it.category||''}</div>
       </td>
       <td style="min-width:120px;padding:8px 10px;border-bottom:1px solid #e8edf5;">
-        <div style="font-weight:700;font-size:12.5px;color:#1e293b;">${it.product_name}</div>
+        ${it.info_url ? `<a href="${it.info_url}" target="_blank" style="font-weight:700;font-size:12.5px;color:#1B3A6B;text-decoration:none;">${it.product_name}</a>` : `<div style="font-weight:700;font-size:12.5px;color:#1e293b;">${it.product_name}</div>`}
         ${specText ? `<div style="font-size:10.5px;color:#475569;line-height:1.5;margin-top:3px;">${specText}</div>` : ''}
       </td>
       <td style="text-align:right;white-space:nowrap;font-weight:600;font-size:12px;min-width:90px;border-bottom:1px solid #e8edf5;">${fmt(it.unit_price)}원</td>
