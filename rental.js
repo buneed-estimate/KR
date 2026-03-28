@@ -69,16 +69,35 @@ function rInitQuoteNum() {
 }
 
 async function rLoadRentalProducts() {
+  // ── [1단계] localStorage 캐시 → 즉시 표시 (stale-while-revalidate) ──
+  let hasCacheHit = false;
+  try {
+    const cached = localStorage.getItem('buneed_rental_products_v1');
+    if (cached) {
+      const { data, ts } = JSON.parse(cached);
+      if (data && data.length > 0) {
+        rProducts = data;
+        hasCacheHit = true;
+        if (Date.now() - ts < 30 * 60 * 1000) return; // TTL 30분 이내: DB 생략
+      }
+    }
+  } catch(e) {}
+
+  // ── [2단계] DB 쿼리 ──
   try {
     const { data, error } = await db.from('rental_products').select('id,category,brand,name,spec_summary,feature,daily_price,monthly_price,rental_type,info_url,is_active').eq('is_active',true).order('category');
     if (error || !data || data.length === 0) {
-      // DB 비어있을 때 구매 제품 카탈로그와 동일 데이터 사용 (렌탈용 가격은 0)
-      rProducts = (typeof RENTAL_SAMPLE_PRODUCTS !== 'undefined') ? RENTAL_SAMPLE_PRODUCTS.map((p,i)=>({...p,id:i+1})) : [];
+      if (!hasCacheHit) {
+        rProducts = (typeof RENTAL_SAMPLE_PRODUCTS !== 'undefined') ? RENTAL_SAMPLE_PRODUCTS.map((p,i)=>({...p,id:i+1})) : [];
+      }
     } else {
       rProducts = data;
+      try { localStorage.setItem('buneed_rental_products_v1', JSON.stringify({ data: rProducts, ts: Date.now() })); } catch(e) {}
     }
   } catch(e) {
-    rProducts = (typeof RENTAL_SAMPLE_PRODUCTS !== 'undefined') ? RENTAL_SAMPLE_PRODUCTS.map((p,i)=>({...p,id:i+1})) : [];
+    if (!hasCacheHit) {
+      rProducts = (typeof RENTAL_SAMPLE_PRODUCTS !== 'undefined') ? RENTAL_SAMPLE_PRODUCTS.map((p,i)=>({...p,id:i+1})) : [];
+    }
   }
 }
 
@@ -363,7 +382,7 @@ function rPreviewQuote() {
         <div style="font-size:10px;color:#64748b;margin-top:2px;">${item.category||''}</div>
       </td>
       <td style="padding:8px 10px;border-bottom:${rowBorder};min-width:120px;">
-        ${item.info_url ? `<a href="${item.info_url}" target="_blank" style="font-weight:700;font-size:12.5px;color:#1B3A6B;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px;display:inline-flex;align-items:center;gap:0;">${item.product_name}<svg width="10" height="10" viewBox="0 0 12 12" fill="none" style="display:inline;vertical-align:middle;margin-left:3px;flex-shrink:0;"><path d="M5 2H2a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V7" stroke="#1B3A6B" stroke-width="1.5"/><path d="M8 2h2v2M10 2 6 6" stroke="#1B3A6B" stroke-width="1.5" stroke-linecap="round"/></svg></a>` : `<div style="font-weight:700;font-size:12.5px;color:#1e293b;">${item.product_name}</div>`}
+        <div style="font-weight:700;font-size:12.5px;color:#1e293b;">${item.product_name}</div>
         ${item.product_spec?`<div style="font-size:10.5px;color:#475569;margin-top:2px;line-height:1.4;">${fmtSpec(item.product_spec)}</div>`:''}
       </td>
       <td style="text-align:center;border-bottom:${rowBorder};vertical-align:middle;">

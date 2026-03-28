@@ -28,40 +28,49 @@ async function loadAllData() {
   }
 }
 async function loadProducts() {
-  // ── localStorage 캐시 확인 (TTL 10분) ──
+  // ── [1단계] localStorage 캐시 → 즉시 화면 표시 (stale-while-revalidate) ──
+  let hasCacheHit = false;
   try {
     const cached = localStorage.getItem('buneed_products_v2');
     if (cached) {
       const { data, ts } = JSON.parse(cached);
-      if (data && Date.now() - ts < 10 * 60 * 1000) {
+      if (data && data.length > 0) {
         products = data;
-        renderProducts();
-        return; // 캐시 히트: DB 쿼리 생략
+        renderProducts(); // 캐시 즉시 렌더 (빠른 표시)
+        hasCacheHit = true;
+        // TTL 30분 이내면 DB 쿼리 생략
+        if (Date.now() - ts < 30 * 60 * 1000) return;
+        // TTL 초과: 백그라운드에서 갱신 (화면은 이미 보임)
       }
     }
   } catch(e) { /* localStorage 에러 무시 */ }
 
-  // ── DB 쿼리: 전체 필드 (클릭 시 추가 쿼리 없음) ──
+  // ── [2단계] DB 쿼리 (캐시 없거나 TTL 초과 시) ──
   try {
     const { data, error } = await db.from('products')
       .select('id,category,brand,name,spec_summary,feature,base_price,info_url,is_active')
       .eq('is_active', true)
       .order('category');
     if (error || !data || data.length === 0) {
-      products = (typeof SAMPLE_PRODUCTS !== 'undefined')
-        ? SAMPLE_PRODUCTS.map((p,i) => ({...p, id:i+1}))
-        : [];
+      // DB 실패 → 캐시가 없을 때만 SAMPLE_PRODUCTS fallback
+      if (!hasCacheHit) {
+        products = (typeof SAMPLE_PRODUCTS !== 'undefined')
+          ? SAMPLE_PRODUCTS.map((p,i) => ({...p, id:i+1}))
+          : [];
+      }
     } else {
       products = data.map(p => ({...p, _fromDB:true}));
-      // 캐시 저장 (전체 필드 포함)
+      // 캐시 갱신
       try {
         localStorage.setItem('buneed_products_v2', JSON.stringify({ data: products, ts: Date.now() }));
       } catch(e) {}
     }
   } catch(e) {
-    products = (typeof SAMPLE_PRODUCTS !== 'undefined')
-      ? SAMPLE_PRODUCTS.map((p,i) => ({...p, id:i+1}))
-      : [];
+    if (!hasCacheHit) {
+      products = (typeof SAMPLE_PRODUCTS !== 'undefined')
+        ? SAMPLE_PRODUCTS.map((p,i) => ({...p, id:i+1}))
+        : [];
+    }
   }
   renderProducts();
 }
@@ -364,7 +373,7 @@ function previewQuote() {
         <div style="font-size:10px;color:#64748b;margin-top:2px;">${it.category||''}</div>
       </td>
       <td style="min-width:120px;padding:8px 10px;border-bottom:${rowBorder};">
-        ${it.info_url ? `<a href="${it.info_url}" target="_blank" style="font-weight:700;font-size:12px;color:#1B3A6B;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px;display:inline-flex;align-items:center;gap:0;">${it.product_name}<svg width="10" height="10" viewBox="0 0 12 12" fill="none" style="display:inline;vertical-align:middle;margin-left:3px;flex-shrink:0;"><path d="M5 2H2a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V7" stroke="#1B3A6B" stroke-width="1.5"/><path d="M8 2h2v2M10 2 6 6" stroke="#1B3A6B" stroke-width="1.5" stroke-linecap="round"/></svg></a>` : `<div style="font-weight:700;font-size:12px;color:#1e293b;">${it.product_name}</div>`}
+        <div style="font-weight:700;font-size:12px;color:#1e293b;">${it.product_name}</div>
         ${specText ? `<div style="font-size:10.5px;color:#475569;line-height:1.5;margin-top:3px;">${specText}</div>` : ''}
       </td>
       <td style="text-align:right;white-space:nowrap;font-weight:600;font-size:12px;min-width:90px;border-bottom:${rowBorder};">${fmt(it.unit_price)}원</td>

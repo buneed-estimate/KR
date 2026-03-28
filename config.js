@@ -362,6 +362,11 @@ async function doLogin() {
 
 // ===== 로그아웃 =====
 async function doLogout() {
+  // 제품 캐시 초기화 (다음 로그인 시 신선한 데이터 보장)
+  try {
+    localStorage.removeItem('buneed_products_v2');
+    localStorage.removeItem('buneed_rental_products_v1');
+  } catch(e) {}
   await db.auth.signOut();
   showLoginScreen();
 }

@@ -435,14 +435,41 @@ textarea.field-input{resize:vertical;min-height:52px;}
     font-size:11px !important;
     padding:8px 10px !important;
   }
+  /* ── 모바일 헤더: 2줄 레이아웃 (로그아웃 버튼 항상 보이도록) ── */
   .app-header {
     padding:0 10px !important;
-    height:48px !important;
+    height:auto !important;
+    min-height:48px !important;
+    flex-wrap:wrap !important;
+    align-items:center !important;
+    row-gap:0 !important;
   }
-  .h-nav-tab{padding:0 12px !important;font-size:11.5px !important;}
+  /* 1행: 로고(왼쪽) + 로그아웃(오른쪽) */
+  .h-logo {
+    order:1;
+    flex-shrink:0;
+  }
+  .h-right {
+    order:2;
+    margin-left:auto;
+    flex-shrink:0;
+  }
+  /* 2행: 탭 전체 너비 */
+  .h-nav-tabs {
+    order:3;
+    width:100% !important;
+    flex:none !important;
+    height:38px !important;
+    padding:0 0 !important;
+    border-top:1px solid #e8edf2;
+    overflow-x:auto;
+    scrollbar-width:none;
+  }
+  .h-nav-tabs::-webkit-scrollbar { display:none; }
+  .h-nav-tab{padding:0 16px !important;font-size:12px !important;}
   .h-logo-label{display:none;}
   .h-logo img {
-    height:24px !important;
+    height:26px !important;
   }
   /* 모바일: 인쇄 버튼 숨기고 공유 버튼 표시 */
   #modal-preview .modal-footer .btn-primary:not(.btn-mobile-share),
