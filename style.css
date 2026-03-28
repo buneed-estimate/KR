@@ -614,20 +614,23 @@ textarea.field-input{resize:vertical;min-height:52px;}
   background: #f1f5f9;
   border: 1.5px solid #e2e8f0;
   border-radius: 10px;
-  padding: 14px 16px;
+  padding: 16px 18px;
   margin-bottom: 16px;
 }
 .atq-product-info .atq-name {
-  font-size: 15px; font-weight: 800; color: #1B3A6B; margin-bottom: 4px; letter-spacing: -0.3px;
+  font-size: 15px; font-weight: 800; color: #1B3A6B; margin-bottom: 8px; letter-spacing: -0.3px;
   display: flex; align-items: center; gap: 0;
 }
 .atq-product-info .atq-meta {
-  font-size: 12px; color: #475569; margin-bottom: 6px; font-weight: 600;
+  font-size: 12px; color: #475569; margin-bottom: 10px; font-weight: 600;
   display: flex; align-items: center; gap: 6px;
 }
 .atq-product-info .atq-spec {
-  font-size: 11.5px; color: #475569; line-height: 1.7;
-  background: #fff; border-radius: 6px; padding: 5px 10px; margin-bottom: 2px;
+  font-size: 11.5px; color: #475569; line-height: 1.8;
+  background: #fff; border-radius: 6px; padding: 8px 12px; margin-bottom: 0;
+}
+.atq-product-info .atq-feature {
+  font-size: 11px; color: #94a3b8; line-height: 1.7; margin-top: 8px;
 }
 .atq-row-2col {
   display: grid;

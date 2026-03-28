@@ -1,5 +1,6 @@
 // ===== 비유니드 앱 설정 =====
 // 로고: HTML <picture> 태그로 WebP/PNG 자동 처리 (canvas 연산 불필요)
+const LOGO_SRC = './logo.webp';
 
 // ===== SUPABASE =====
 // ===== 관리자 이메일 목록 =====

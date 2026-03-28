@@ -137,7 +137,7 @@ async function openSpecModal(productId) {
       ${p.base_price?`<span style="color:#94a3b8;">|</span><span style="color:#1B3A6B;font-weight:700;">${fmt(p.base_price)} 원</span>`:''}
     </div>
     ${p.spec_summary?`<div class="atq-spec">${fmtSpec(p.spec_summary)}</div>`:''}
-    ${p.feature?`<div style="margin-top:5px;font-size:11px;color:#94a3b8;line-height:1.6;">${p.feature}</div>`:''}
+    ${p.feature?`<div class="atq-feature">${p.feature}</div>`:''}
   `;
   const cats = specCategories.filter(c=>c.product_categories?.includes(p.category)||!c.product_categories?.length);
   let optsHtml = '';
