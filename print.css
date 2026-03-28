@@ -127,11 +127,9 @@ td { padding: 5px 9px !important; border-bottom: 1px solid #e8edf5 !important;
   color: #1a56a0 !important; border-top: 2px solid #1a56a0 !important; padding-top: 6px !important; }
 
 /* 11. 렌탈 정보 */
-.q-rental-info-box { background: #f8fafc !important; border: 1px solid #cbd5e1 !important;
-  border-radius: 6px !important; padding: 10px 14px !important;
-  -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-.q-rental-info-grid { display: grid !important; grid-template-columns: repeat(3,1fr) !important;
-  gap: 8px !important; margin-top: 6px !important; }
+.q-rental-info-box { border: 1px solid #d0d8ee !important;
+  border-radius: 6px !important; overflow: hidden !important; margin-bottom: 14px !important; }
+.q-rental-info-grid { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 0 !important; }
 
 /* 12. 섹션 제목 */
 .q-section-title, .r-q-section-title { font-size: 10px !important; font-weight: 700 !important;

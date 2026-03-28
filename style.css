@@ -292,7 +292,7 @@ textarea.field-input{resize:vertical;min-height:52px;}
       .sv-info-body{padding:8px 12px;background:#fff;font-size:12px;min-height:40px;}
 .q-footer-bar{margin-top:20px;border-top:1px solid var(--border);padding-top:10px;text-align:center;font-size:10px;color:#94a3b8;line-height:1.6;}
 .q-rental-info-box{background:#f0f8ff;border:1px solid var(--r-light);border-radius:8px;padding:10px 14px;margin-bottom:14px;}
-.q-rental-info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:6px;}
+.q-rental-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;}
 .q-rental-info-item .label{font-size:10px;color:var(--r-primary);font-weight:600;margin-bottom:2px;}
 .q-rental-info-item .value{font-size:12px;font-weight:700;}
 /* 스크롤바 */
@@ -382,7 +382,10 @@ textarea.field-input{resize:vertical;min-height:52px;}
   .q-summary-table td:last-child {
     text-align:right !important;
   }
-  .q-info-grid {
+  .q-info-grid,
+  .q-rental-info-grid,
+  [style*="grid-template-columns:1fr 1fr"],
+  [style*="grid-template-columns: 1fr 1fr"] {
     grid-template-columns:1fr !important;
   }
   #preview-content.modal-body,

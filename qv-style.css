@@ -257,10 +257,12 @@ tbody tr:nth-child(even) { background: #f9fafc; }
   .q-header > div:first-child { display: flex; flex-direction: column; }
   h1           { font-size: 15px; letter-spacing: 0; }
 
-  /* 렌탈 조건 그리드: 480px 에서 2열 */
+  /* 렌탈 조건 그리드: 480px 이하 1열 */
   .q-rental-info-grid,
-  [style*="grid-template-columns:repeat(3"] {
-    grid-template-columns: repeat(2, 1fr) !important;
+  [class*="q-rental-info"] div[style*="display:grid"],
+  [style*="grid-template-columns:1fr 1fr"],
+  [style*="grid-template-columns: 1fr 1fr"] {
+    grid-template-columns: 1fr !important;
   }
 }
 

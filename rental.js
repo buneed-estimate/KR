@@ -425,7 +425,7 @@ function rPreviewQuote() {
       </div>
     </div>
     <div class="q-rental-info-box" style="border:1px solid #d0d8ee;border-radius:6px;overflow:hidden;margin-bottom:14px;">
-      <div style="background:#f5f7fc;">
+      <div style="background:transparent;">
         <div class="q-rental-info-grid" style="display:grid;grid-template-columns:1fr 1fr;">
           <div style="display:flex;align-items:baseline;gap:6px;padding:8px 14px;border-bottom:1px solid #e2e8f0;border-right:1px solid #e2e8f0;"><span style="font-size:10px;color:#1e6fd9;font-weight:600;min-width:52px;white-space:nowrap;">렌탈 시작일</span><span style="font-size:12px;font-weight:700;color:#1e293b;">${startDate||'-'}</span></div>
           <div style="display:flex;align-items:baseline;gap:6px;padding:8px 14px;border-bottom:1px solid #e2e8f0;"><span style="font-size:10px;color:#1e6fd9;font-weight:600;min-width:52px;white-space:nowrap;">렌탈 종료일</span><span style="font-size:12px;font-weight:700;color:#1e293b;">${computedEndDate||'-'}</span></div>
