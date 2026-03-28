@@ -3,7 +3,7 @@
 
 async function rCopyHistoryLink() {
   if (!rCurrentShareToken) { showToast('먼저 견적을 불러오세요', 'error'); return; }
-  const url = `${location.origin}${location.pathname}?share=${rCurrentShareToken}`;
+  const url = `${location.origin}/quote-view.html?token=${rCurrentShareToken}&type=rental`;
   try {
     await navigator.clipboard.writeText(url);
     showToast('렌탈 견적 링크 복사됨!', 'success');
@@ -18,7 +18,7 @@ async function rCopyHistoryLink() {
 
 async function rMobileShareQuote() {
   if (!rCurrentQuoteId) { showToast('먼저 저장하세요','error'); return; }
-  const url = location.origin+location.pathname+'?share='+rCurrentShareToken+'&type=rental';
+  const url = location.origin+'/quote-view.html?token='+rCurrentShareToken+'&type=rental';
   if (navigator.share) {
     try { await navigator.share({ title: '렌탈 견적서', text: '비유니드 렌탈 견적서를 확인하세요.', url }); }
     catch(e) { if (e.name !== 'AbortError') showToast('공유 실패: '+e.message,'error'); }
@@ -325,6 +325,7 @@ async function rSaveQuote() {
 }
 
 function rPreviewQuote() {
+  if (!rCurrentQuoteId) { showToast('먼저 저장 후 미리보기 가능합니다','error'); return; }
   if (!rQuoteItems.length) { showToast('제품을 추가하세요','error'); return; }
   const co = v => (document.getElementById(v)||{}).value||'';
   const company=co('r-company')||'(미입력)', contact=co('r-contact'), phone=co('r-phone'), email=co('r-email');
@@ -423,10 +424,7 @@ function rPreviewQuote() {
       </div>
     </div>
     <div class="q-rental-info-box" style="border:1px solid #b8cde8;border-radius:6px;overflow:hidden;margin-bottom:14px;">
-      <div style="background:#1B3A6B;padding:7px 14px;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
-        <span style="font-size:12px;font-weight:700;color:#fff;letter-spacing:0.05em;">렌탈 조건</span>
-      </div>
-      <div style="background:#fff;">
+      <div style="background:#eef4ff;">
         <div class="q-rental-info-grid" style="display:grid;grid-template-columns:repeat(3,1fr);">
           <div style="display:flex;align-items:baseline;gap:6px;padding:8px 12px;border-bottom:1px solid #e8edf5;border-right:1px solid #e8edf5;"><span style="font-size:10px;color:#3b82f6;font-weight:600;min-width:52px;white-space:nowrap;">렌탈 시작일</span><span style="font-size:12px;font-weight:700;color:#1e293b;">${startDate}</span></div>
           <div style="display:flex;align-items:baseline;gap:6px;padding:8px 12px;border-bottom:1px solid #e8edf5;border-right:1px solid #e8edf5;"><span style="font-size:10px;color:#3b82f6;font-weight:600;min-width:52px;white-space:nowrap;">렌탈 종료일</span><span style="font-size:12px;font-weight:700;color:#1e293b;">${computedEndDate||'-'}</span></div>
@@ -475,7 +473,7 @@ function rPrintQuote() {
 
 async function rCopyShareLink() {
   if (!rCurrentQuoteId) { showToast('먼저 저장하세요','error'); return; }
-  const url = location.origin+location.pathname+'?share='+rCurrentShareToken+'&type=rental';
+  const url = location.origin+'/quote-view.html?token='+rCurrentShareToken+'&type=rental';
   await navigator.clipboard.writeText(url);
   showToast('렌탈 공유 링크가 복사되었습니다 🔗','success');
 }

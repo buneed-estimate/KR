@@ -300,20 +300,20 @@
                 <div class="ps-editable" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end;">
                   <input class="field-input small r-field-input" type="number" id="r-discount-rate" value="0" min="0" max="100" style="width:55px;text-align:right;" oninput="rCalcPriceByRate()" placeholder="0"> <span style="font-size:11px;">%</span>
                   <span style="font-size:11px;color:#94a3b8;">|</span>
-                  <input class="field-input small r-field-input" type="number" id="r-discount" value="0" style="width:90px;text-align:right;" oninput="rCalcPrice()" placeholder="0"> <span style="font-size:11px;">원</span>
+                  <input class="field-input small r-field-input" type="text" inputmode="numeric" pattern="[0-9]*" id="r-discount" value="0" style="width:90px;text-align:right;" oninput="rCalcPrice()" placeholder="0"> <span style="font-size:11px;">원</span>
                 </div>
               </div>
               <div class="ps-row">
                 <span>설치비</span>
                 <div class="ps-editable">
-                  <input class="field-input small r-field-input" type="number" id="r-install-fee" value="0" style="width:100px;text-align:right;" oninput="rCalcPrice()">
+                  <input class="field-input small r-field-input" type="text" inputmode="numeric" pattern="[0-9]*" id="r-install-fee" value="0" style="width:100px;text-align:right;" oninput="rCalcPrice()">
                   <span style="font-size:11px;">원</span>
                 </div>
               </div>
               <div class="ps-row">
                 <span>보증금</span>
                 <div class="ps-editable">
-                  <input class="field-input small r-field-input" type="number" id="r-deposit" value="0" style="width:100px;text-align:right;" oninput="rCalcPrice()">
+                  <input class="field-input small r-field-input" type="text" inputmode="numeric" pattern="[0-9]*" id="r-deposit" value="0" style="width:100px;text-align:right;" oninput="rCalcPrice()">
                   <span style="font-size:11px;">원</span>
                 </div>
               </div>
