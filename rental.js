@@ -277,6 +277,7 @@ async function rSaveQuote() {
       rental_type: rCurrentType,
       rental_duration: parseInt((document.getElementById('r-duration')||{}).value)||null,
       rental_start_date: (document.getElementById('r-start-date')||{}).value||null,
+      rental_end_date: (document.getElementById('r-end-date')||{}).value||null,
       delivery_location: (document.getElementById('r-delivery-loc')||{}).value||null,
       return_method: (document.getElementById('r-return-method')||{}).value||null,
       subtotal:sub, discount_amount:discount, installation_fee:installFee,
@@ -329,6 +330,7 @@ function rPreviewQuote() {
   const company=co('r-company')||'(미입력)', contact=co('r-contact'), phone=co('r-phone'), email=co('r-email');
   const salesName=co('r-sales-name'), salesPhone=co('r-sales-phone'), salesEmail=co('r-sales-email'), salesDept=co('r-sales-dept');
   const qNum=co('r-quote-num'), duration=co('r-duration'), startDate=co('r-start-date')||'-';
+  const endDate=co('r-end-date')||'-';
   const deliveryLoc=co('r-delivery-loc')||'-', returnMethod=co('r-return-method')||'-';
   const memo=co('r-memo'), validUntil=co('r-valid');
   const sub = rQuoteItems.reduce((s,i)=>s+i.total_price,0);
@@ -338,6 +340,16 @@ function rPreviewQuote() {
   const today=new Date().toLocaleDateString('ko-KR');
   const rIntroHtml = '<a href="https://buneed-estimate.vercel.app/Buneed.pdf" target="_blank" class="q-intro-btn" style="display:inline-block;padding:3px 12px;border:1.5px solid #1B3A6B;border-radius:99px;font-size:11px;color:#1B3A6B;font-weight:600;text-decoration:none;background:#fff;margin-top:4px;">회사소개서</a>';
   const durationLabel = rCurrentType==='일'?`${duration}일`:`${duration}개월`;
+  // endDate 자동계산 (종료일 없으면 시작일+기간으로 계산)
+  let computedEndDate = endDate;
+  if ((!computedEndDate || computedEndDate==='-') && startDate && startDate!=='-' && parseInt(duration)>0) {
+    try {
+      const sd = new Date(startDate);
+      if (rCurrentType==='일') sd.setDate(sd.getDate()+parseInt(duration)-1);
+      else sd.setMonth(sd.getMonth()+parseInt(duration));
+      if(!isNaN(sd)) computedEndDate = sd.toISOString().split('T')[0];
+    } catch(e){}
+  }
   const itemsHtml = rQuoteItems.map((item,i)=>{
     const isLast = i === rQuoteItems.length - 1;
     const rowBorder = isLast ? '1px solid #1a56a0' : '1px solid #e8edf5';
@@ -414,18 +426,19 @@ function rPreviewQuote() {
       <div style="background:#1B3A6B;padding:7px 14px;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
         <span style="font-size:12px;font-weight:700;color:#fff;letter-spacing:0.05em;">렌탈 조건</span>
       </div>
-      <div style="background:#fff;padding:10px 14px;">
-        <div class="q-rental-info-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
-          <div><div style="font-size:10px;color:#64748b;font-weight:600;margin-bottom:2px;">렌탈 단위</div><div style="font-size:12px;font-weight:700;color:#1e293b;">${rCurrentType} 단위</div></div>
-          <div><div style="font-size:10px;color:#64748b;font-weight:600;margin-bottom:2px;">렌탈 시작일</div><div style="font-size:12px;font-weight:700;color:#1e293b;">${startDate}</div></div>
-          <div><div style="font-size:10px;color:#64748b;font-weight:600;margin-bottom:2px;">렌탈 기간</div><div style="font-size:12px;font-weight:700;color:#1e293b;">${durationLabel}</div></div>
-          <div><div style="font-size:10px;color:#64748b;font-weight:600;margin-bottom:2px;">납품희망일</div><div style="font-size:12px;font-weight:700;color:#1e293b;">${deliveryLoc||'미정'}</div></div>
-          <div><div style="font-size:10px;color:#64748b;font-weight:600;margin-bottom:2px;">반납/회수</div><div style="font-size:12px;font-weight:700;color:#1e293b;">${returnMethod||'-'}</div></div>
-          <div><div style="font-size:10px;color:#64748b;font-weight:600;margin-bottom:2px;">견적 유효기간</div><div style="font-size:12px;font-weight:700;color:#1e293b;">${validUntil||'견적일로부터 30일'}</div></div>
+      <div style="background:#fff;">
+        <div class="q-rental-info-grid" style="display:grid;grid-template-columns:repeat(3,1fr);">
+          <div style="display:flex;align-items:baseline;gap:6px;padding:8px 12px;border-bottom:1px solid #e8edf5;border-right:1px solid #e8edf5;"><span style="font-size:10px;color:#3b82f6;font-weight:600;min-width:52px;white-space:nowrap;">렌탈 시작일</span><span style="font-size:12px;font-weight:700;color:#1e293b;">${startDate}</span></div>
+          <div style="display:flex;align-items:baseline;gap:6px;padding:8px 12px;border-bottom:1px solid #e8edf5;border-right:1px solid #e8edf5;"><span style="font-size:10px;color:#3b82f6;font-weight:600;min-width:52px;white-space:nowrap;">렌탈 종료일</span><span style="font-size:12px;font-weight:700;color:#1e293b;">${computedEndDate||'-'}</span></div>
+          <div style="display:flex;align-items:baseline;gap:6px;padding:8px 12px;border-bottom:1px solid #e8edf5;"><span style="font-size:10px;color:#3b82f6;font-weight:600;min-width:52px;white-space:nowrap;">렌탈 기간</span><span style="font-size:12px;font-weight:700;color:#1e293b;">${durationLabel}</span></div>
+          <div style="display:flex;align-items:baseline;gap:6px;padding:8px 12px;${memo?'border-bottom:1px solid #e8edf5;':''}border-right:1px solid #e8edf5;"><span style="font-size:10px;color:#3b82f6;font-weight:600;min-width:52px;white-space:nowrap;">납품 희망일</span><span style="font-size:12px;font-weight:700;color:#1e293b;">${deliveryLoc||'미정'}</span></div>
+          <div style="display:flex;align-items:baseline;gap:6px;padding:8px 12px;${memo?'border-bottom:1px solid #e8edf5;':''}border-right:1px solid #e8edf5;"><span style="font-size:10px;color:#3b82f6;font-weight:600;min-width:52px;white-space:nowrap;">견적 유효기간</span><span style="font-size:12px;font-weight:700;color:#1e293b;">${validUntil||'견적일로부터 30일'}</span></div>
+          <div style="display:flex;align-items:baseline;gap:6px;padding:8px 12px;${memo?'border-bottom:1px solid #e8edf5;':''}"><span style="font-size:10px;color:#3b82f6;font-weight:600;min-width:52px;white-space:nowrap;">반납/회수</span><span style="font-size:12px;font-weight:700;color:#1e293b;">${returnMethod||'-'}</span></div>
+          ${memo?`<div style="grid-column:1/-1;display:flex;align-items:baseline;gap:6px;padding:8px 12px;"><span style="font-size:10px;color:#3b82f6;font-weight:600;min-width:52px;white-space:nowrap;">특이사항</span><span style="font-size:12px;font-weight:700;color:#374151;line-height:1.5;flex:1;">${memo}</span></div>`:''}
         </div>
       </div>
     </div>
-    <div class="q-section">
+        <div class="q-section">
       <div class="r-q-section-title">▪ 견적 내용</div>
       <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
       <table class="q-table">
@@ -441,7 +454,7 @@ function rPreviewQuote() {
       <tr><td>부가세 (10%)</td><td>${fmt(vat)} 원</td></tr>
       <tr class="r-q-total-row"><td>합 계</td><td>${fmt(total)} 원</td></tr>
     </table>
-    ${memo?`<div class="sv-info-grid" style="margin-top:14px;"><div class="sv-info-box"><div class="sv-info-hd">특이사항</div><div class="sv-info-body" style="color:#374151;line-height:1.6;">${memo}</div></div></div>`:''}
+
     <div class="q-spacer"></div>
     <div class="q-footer-bar">(주) 비유니드 | 경기도 하남시 미사강변한강로 135 다동 4층 445호 | 031.8028.0464 | www.buneed.co.kr</div>
   </div>`;
@@ -506,8 +519,8 @@ async function rLoadQuote(qId) {
   setV('r-quote-num',q.quote_number);
   setV('r-company',q.company_name); setV('r-contact',q.contact_name);
   setV('r-phone',q.contact_tel); setV('r-email',q.contact_email);
-  setV('r-duration',q.rental_duration);
-  setV('r-start-date',q.rental_start_date); setV('r-delivery-loc',q.delivery_location);
+  setV('r-duration',q.rental_duration); setV('r-duration-display',q.rental_duration||'');
+  setV('r-start-date',q.rental_start_date); setV('r-end-date',q.rental_end_date||''); setV('r-delivery-loc',q.delivery_location);
   setV('r-return-method',q.return_method);
   setV('r-discount',q.discount_amount||0); setV('r-install-fee',q.installation_fee||0);
   setV('r-deposit',q.deposit||0); setV('r-memo',q.memo);
@@ -538,7 +551,7 @@ function rResetQuote() {
   rQuoteItems=[]; rCurrentQuoteId=null; rCurrentShareToken=null;
   rRenderQuoteItems(); rCalcPrice();
   ['r-company','r-contact','r-phone','r-email','r-duration','r-start-date',
-   'r-delivery-loc','r-return-method','r-memo'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+   'r-delivery-loc','r-return-method','r-memo','r-end-date','r-duration-display'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('r-discount').value=0;
   document.getElementById('r-install-fee').value=0;
   document.getElementById('r-deposit').value=0;

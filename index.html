@@ -247,23 +247,28 @@
             <!-- 렌탈 조건 -->
             <div class="form-section">
               <div class="r-section-title">📦 렌탈 조건</div>
-              <div class="form-row">
-                <div>
-                  <div class="field-label">렌탈 단위</div>
-                  <div class="rental-type-toggle" id="r-type-toggle">
-                    <button class="rtt-btn active" data-type="일" onclick="setRentalType('일',this)">일 단위</button>
-                    <button class="rtt-btn" data-type="월" onclick="setRentalType('월',this)">월 단위</button>
-                  </div>
+              <!-- 렌탈 단위 토글 (숨김 - 모달에서 사용) -->
+              <div style="display:none;">
+                <div class="rental-type-toggle" id="r-type-toggle">
+                  <button class="rtt-btn active" data-type="일" onclick="setRentalType('일',this)">일 단위</button>
+                  <button class="rtt-btn" data-type="월" onclick="setRentalType('월',this)">월 단위</button>
                 </div>
-                <div>
-                  <div class="field-label" id="r-duration-label">렌탈 기간 (일)</div>
-                  <input class="field-input r-field-input" type="number" id="r-duration" placeholder="30">
-                </div>
+                <input type="hidden" id="r-duration" value="30">
               </div>
               <div class="form-row">
                 <div>
                   <div class="field-label">렌탈 시작일</div>
-                  <input class="field-input r-field-input" type="date" id="r-start-date">
+                  <input class="field-input r-field-input" type="date" id="r-start-date" oninput="rCalcEndDate()">
+                </div>
+                <div>
+                  <div class="field-label">렌탈 종료일</div>
+                  <input class="field-input r-field-input" type="date" id="r-end-date" oninput="rCalcDuration()">
+                </div>
+              </div>
+              <div class="form-row">
+                <div>
+                  <div class="field-label" id="r-duration-label">렌탈 기간 <span style="font-size:10px;color:#888;">(자동계산)</span></div>
+                  <input class="field-input r-field-input" type="text" id="r-duration-display" placeholder="시작일·종료일 입력 시 자동계산" readonly style="background:#f8fafc;cursor:default;">
                 </div>
                 <div>
                   <div class="field-label">견적 유효기간</div>
@@ -601,5 +606,47 @@
 <script src="config.js" defer></script>
 <script src="purchase.js" defer></script>
 <script src="rental.js" defer></script>
+
+<script>
+// 렌탈 기간 ↔ 종료일 자동계산
+function rCalcEndDate() {
+  const start = document.getElementById('r-start-date').value;
+  const dur = parseInt((document.getElementById('r-duration')||{}).value) || 0;
+  if (!start) return;
+  const type = typeof rCurrentType !== 'undefined' ? rCurrentType : '일';
+  const d = new Date(start);
+  if (type === '일') d.setDate(d.getDate() + dur - 1);
+  else d.setMonth(d.getMonth() + dur);
+  if (!isNaN(d)) {
+    const endDate = d.toISOString().split('T')[0];
+    document.getElementById('r-end-date').value = endDate;
+    rUpdateDurationDisplay();
+  }
+}
+function rCalcDuration() {
+  const start = document.getElementById('r-start-date').value;
+  const end = document.getElementById('r-end-date').value;
+  if (!start || !end) return;
+  const type = typeof rCurrentType !== 'undefined' ? rCurrentType : '일';
+  const s = new Date(start), e = new Date(end);
+  if (isNaN(s) || isNaN(e) || e < s) return;
+  let dur;
+  if (type === '일') {
+    dur = Math.round((e - s) / 86400000) + 1;
+  } else {
+    dur = (e.getFullYear() - s.getFullYear()) * 12 + (e.getMonth() - s.getMonth());
+    if (dur < 1) dur = 1;
+  }
+  const el = document.getElementById('r-duration');
+  if (el) el.value = dur;
+  rUpdateDurationDisplay();
+}
+function rUpdateDurationDisplay() {
+  const dur = parseInt((document.getElementById('r-duration')||{}).value) || 0;
+  const disp = document.getElementById('r-duration-display');
+  if (disp && dur > 0) disp.value = dur; // number input이므로 숫자만
+}
+</script>
+
 </body>
 </html>
