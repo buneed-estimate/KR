@@ -68,7 +68,7 @@
 .app-header.rental-theme{ background:#ffffff; }
 .app-header.admin-theme{ background:#ffffff; }
 .h-logo{ display:flex;align-items:center;gap:8px;text-decoration:none;flex-shrink:0; }
-.h-logo img{ height:36px;width:auto;border-radius:8px; }
+.h-logo img{ height:40px;width:auto;border-radius:8px; }
 .h-logo .name{ font-size:16px;font-weight:800;color:#1B3A6B;letter-spacing:-0.5px; }
 .h-divider{ width:1px;height:20px;background:#e2e8f0;margin:0 4px; }
 
@@ -442,7 +442,7 @@ textarea.field-input{resize:vertical;min-height:52px;}
   .h-nav-tab{padding:0 12px !important;font-size:11.5px !important;}
   .h-logo-label{display:none;}
   .h-logo img {
-    height:22px !important;
+    height:24px !important;
   }
   /* 모바일: 인쇄 버튼 숨기고 공유 버튼 표시 */
   #modal-preview .modal-footer .btn-primary:not(.btn-mobile-share),
