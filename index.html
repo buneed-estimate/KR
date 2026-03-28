@@ -258,17 +258,17 @@
               <div class="form-row">
                 <div>
                   <div class="field-label">렌탈 시작일</div>
-                  <input class="field-input r-field-input" type="date" id="r-start-date" oninput="rCalcEndDate()">
+                  <input class="field-input r-field-input" type="date" id="r-start-date" onchange="rCalcFromStart()">
                 </div>
                 <div>
                   <div class="field-label">렌탈 종료일</div>
-                  <input class="field-input r-field-input" type="date" id="r-end-date" oninput="rCalcDuration()">
+                  <input class="field-input r-field-input" type="date" id="r-end-date" onchange="rCalcDuration()">
                 </div>
               </div>
               <div class="form-row">
                 <div>
                   <div class="field-label" id="r-duration-label">렌탈 기간 <span style="font-size:10px;color:#888;">(자동계산)</span></div>
-                  <input class="field-input r-field-input" type="text" id="r-duration-display" placeholder="시작일·종료일 입력 시 자동계산" readonly style="background:#f8fafc;cursor:default;">
+                  <input class="field-input r-field-input" type="number" id="r-duration-display" placeholder="기간 입력 또는 시작·종료일 자동계산" min="1" oninput="rSyncDuration()" style="background:#fff;">
                 </div>
                 <div>
                   <div class="field-label">견적 유효기간</div>
@@ -608,43 +608,71 @@
 <script src="rental.js" defer></script>
 
 <script>
-// 렌탈 기간 ↔ 종료일 자동계산
+// 렌탈 기간 ↔ 종료일 자동계산 (lock으로 순환 방지)
+let _rCalcLock = false;
+
+// [기간 직접 입력] r-duration-display 변경 시 hidden 동기화 후 종료일 계산
+function rSyncDuration() {
+  if (_rCalcLock) return;
+  const disp = document.getElementById('r-duration-display');
+  const hidden = document.getElementById('r-duration');
+  if (disp && hidden) { hidden.value = disp.value; }
+  rCalcEndDate();
+}
+
+// 기간 → 종료일 계산
 function rCalcEndDate() {
-  const start = document.getElementById('r-start-date').value;
-  const dur = parseInt((document.getElementById('r-duration')||{}).value) || 0;
-  if (!start) return;
-  const type = typeof rCurrentType !== 'undefined' ? rCurrentType : '일';
-  const d = new Date(start);
-  if (type === '일') d.setDate(d.getDate() + dur - 1);
-  else d.setMonth(d.getMonth() + dur);
-  if (!isNaN(d)) {
-    const endDate = d.toISOString().split('T')[0];
-    document.getElementById('r-end-date').value = endDate;
-    rUpdateDurationDisplay();
-  }
+  if (_rCalcLock) return;
+  _rCalcLock = true;
+  try {
+    const start = document.getElementById('r-start-date').value;
+    const dur = parseInt((document.getElementById('r-duration')||{}).value) || 0;
+    if (!start || dur < 1) return;
+    const type = typeof rCurrentType !== 'undefined' ? rCurrentType : '일';
+    const d = new Date(start);
+    if (type === '일') d.setDate(d.getDate() + dur - 1);
+    else d.setMonth(d.getMonth() + dur);
+    if (!isNaN(d)) {
+      document.getElementById('r-end-date').value = d.toISOString().split('T')[0];
+    }
+  } finally { _rCalcLock = false; }
 }
+
+// 종료일 → 기간 계산 (사용자가 종료일 직접 변경할 때만 호출 - onchange)
 function rCalcDuration() {
-  const start = document.getElementById('r-start-date').value;
-  const end = document.getElementById('r-end-date').value;
-  if (!start || !end) return;
-  const type = typeof rCurrentType !== 'undefined' ? rCurrentType : '일';
-  const s = new Date(start), e = new Date(end);
-  if (isNaN(s) || isNaN(e) || e < s) return;
-  let dur;
-  if (type === '일') {
-    dur = Math.round((e - s) / 86400000) + 1;
-  } else {
-    dur = (e.getFullYear() - s.getFullYear()) * 12 + (e.getMonth() - s.getMonth());
-    if (dur < 1) dur = 1;
-  }
-  const el = document.getElementById('r-duration');
-  if (el) el.value = dur;
-  rUpdateDurationDisplay();
+  if (_rCalcLock) return;
+  _rCalcLock = true;
+  try {
+    const start = document.getElementById('r-start-date').value;
+    const end = document.getElementById('r-end-date').value;
+    if (!start || !end) return;
+    const type = typeof rCurrentType !== 'undefined' ? rCurrentType : '일';
+    const s = new Date(start), e = new Date(end);
+    if (isNaN(s) || isNaN(e) || e < s) return;
+    let dur;
+    if (type === '일') {
+      dur = Math.round((e - s) / 86400000) + 1;
+    } else {
+      dur = (e.getFullYear() - s.getFullYear()) * 12 + (e.getMonth() - s.getMonth());
+      if (dur < 1) dur = 1;
+    }
+    const hidden = document.getElementById('r-duration');
+    if (hidden) hidden.value = dur;
+    const disp = document.getElementById('r-duration-display');
+    if (disp) disp.value = dur;
+  } finally { _rCalcLock = false; }
 }
+
+// 시작일 변경 → 종료일이 있으면 기간 재계산, 없으면 기간으로 종료일 계산
+function rCalcFromStart() {
+  const end = (document.getElementById('r-end-date')||{}).value;
+  if (end) { rCalcDuration(); } else { rCalcEndDate(); }
+}
+
 function rUpdateDurationDisplay() {
   const dur = parseInt((document.getElementById('r-duration')||{}).value) || 0;
   const disp = document.getElementById('r-duration-display');
-  if (disp && dur > 0) disp.value = dur; // number input이므로 숫자만
+  if (disp && dur > 0) disp.value = dur;
 }
 </script>
 
