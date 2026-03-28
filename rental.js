@@ -311,6 +311,7 @@ async function rSaveQuote() {
       quote_id:qId, product_id:it.product_id||null, product_name:it.product_name,
       product_spec:it.product_spec, rental_type:it.rental_type,
       unit_price:it.unit_price, quantity:it.quantity, item_duration:(it.item_duration||1), total_price:it.total_price, sort_order:i,
+      brand: it.brand||null, category: it.category||null,
       info_url: it.info_url || null
     })));
     if (itemErr) throw new Error('렌탈 품목 저장 실패: '+itemErr.message);
@@ -370,7 +371,7 @@ function rPreviewQuote() {
       </td>
       <td style="text-align:right;white-space:nowrap;font-weight:600;font-size:12px;min-width:90px;border-bottom:${rowBorder};">${fmt(item.unit_price)}원</td>
       <td style="text-align:center;font-weight:600;border-bottom:${rowBorder};white-space:nowrap;font-size:11px;">
-        ${item.quantity}개 × ${item.item_duration||1}${item.rental_type==='일'?'일':'개월'}
+        ${item.quantity} × ${item.item_duration||1}${item.rental_type==='일'?'일':'개월'}
       </td>
       <td style="text-align:right;font-weight:700;white-space:nowrap;font-size:12px;color:#1B3A6B;border-bottom:${rowBorder};">${fmt(item.total_price)}원</td>
     </tr>`

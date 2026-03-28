@@ -426,13 +426,11 @@ async function showApp(email) {
   try { rRenderProductList(); } catch(e) {}
   try { rInitQuoteNum(); } catch(e) {}
   try { initQuoteNum(); } catch(e) {}
-  // 관리자 제품 목록: 이미 로드된 전역 변수 재사용 (DB 재조회 없음)
-  try { renderAdminProducts(); } catch(e) { console.warn('renderAdminProducts 오류:', e); }
-  try { rRenderAdminProducts(); } catch(e) { console.warn('rRenderAdminProducts 오류:', e); }
+  // 관리자 제품 목록: 탭 전환 시 lazy-load (초기 로딩 제거 → UX 개선)
+  // switchTopTab('admin')에서 renderAdminProducts/rRenderAdminProducts 호출됨
 
-  // ── 2단계: 이력은 카탈로그 블로킹 없이 백그라운드 로드 ──
-  // await 없이 실행 → 카탈로그가 먼저 표시된 후 이력이 채워짐
-  Promise.allSettled([loadHistory(), rLoadHistory()]);
+  // ── 2단계: 이력은 sub-tab 전환 시 lazy-load (초기 로딩 제거) ──
+  // switchSubTab('history')에서 loadHistory/rLoadHistory 호출됨
 }
 
 
