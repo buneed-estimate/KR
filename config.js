@@ -1,6 +1,5 @@
 // ===== 비유니드 앱 설정 =====
-// WebP 지원 시 logo.webp, 미지원 시 logo.png
-const LOGO_SRC = (function(){const c=document.createElement('canvas');return c.toDataURL('image/webp').indexOf('data:image/webp')===0?'./logo.webp':'./logo.png';})();
+// 로고: HTML <picture> 태그로 WebP/PNG 자동 처리 (canvas 연산 불필요)
 
 // ===== SUPABASE =====
 // ===== 관리자 이메일 목록 =====
@@ -419,11 +418,12 @@ async function showApp(email) {
 
   // loadAllData 내부의 loadProducts()가 완료되면 renderProducts() 자동 호출
   // rLoadRentalProducts() 완료 후 rRenderProductList() 수동 호출
-  await Promise.allSettled([
-    loadAllData(),
-    rLoadRentalProducts()
-  ]);
-  try { rRenderProductList(); } catch(e) {}
+  // 구매 제품만 먼저 로드 (화면 즉시 표시)
+  await loadAllData();
+  // 렌탈 제품은 백그라운드 로드 (렌탈 탭 진입 시 화면 갱신)
+  rLoadRentalProducts().then(() => {
+    try { rRenderProductList(); } catch(e) {}
+  }).catch(() => {});
   try { rInitQuoteNum(); } catch(e) {}
   try { initQuoteNum(); } catch(e) {}
   // 관리자 제품 목록: 탭 전환 시 lazy-load (초기 로딩 제거 → UX 개선)
@@ -483,6 +483,18 @@ function switchTopTab(tab, el) {
   document.querySelectorAll('.h-nav-tab').forEach(t=>t.classList.remove('active'));
   const activeTab = document.getElementById('ttab-' + tab);
   if (activeTab) activeTab.classList.add('active');
+  // 렌탈 탭 진입 시: rProducts 없으면 lazy load
+  if (tab === 'rental') {
+    if (typeof rProducts !== 'undefined' && rProducts.length === 0) {
+      if (typeof rLoadRentalProducts === 'function') {
+        rLoadRentalProducts().then(() => {
+          try { rRenderProductList(); } catch(e) {}
+        }).catch(() => {});
+      }
+    } else {
+      try { if (typeof rRenderProductList === 'function') rRenderProductList(); } catch(e) {}
+    }
+  }
   // 관리자 탭으로 전환 시 데이터 로드 (권한 있는 경우만)
   if (tab === 'admin') {
     try { if (typeof renderAdminProducts === 'function') renderAdminProducts(); } catch(e){}
@@ -531,10 +543,4 @@ function copyRentalQuoteLink(token) {
 
 
 
-// 로고 이미지 src 설정 (중복 base64 제거용)
-document.addEventListener('DOMContentLoaded', function() {
-  const loginLogo = document.getElementById('logo-login');
-  const headerLogo = document.getElementById('logo-header');
-  if (loginLogo) loginLogo.src = LOGO_SRC;
-  if (headerLogo) headerLogo.src = LOGO_SRC;
-});
+// 로고 src: <picture> 태그가 WebP/PNG 자동 처리 (별도 JS 불필요)

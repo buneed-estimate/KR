@@ -22,19 +22,46 @@ function initQuoteNum() {
 async function loadAllData() {
   // 카탈로그(제품목록) 우선 로드 → spec 데이터는 백그라운드
   await loadProducts();
-  Promise.all([loadSpecCategories(), loadSpecOptions()]); // 백그라운드
+  // _specDataPromise를 전역에 설정 → ensureSpecData와 공유 (중복 쿼리 방지)
+  if (!_specDataPromise) {
+    _specDataPromise = Promise.all([loadSpecCategories(), loadSpecOptions()]);
+  }
 }
 async function loadProducts() {
+  // ── localStorage 캐시 확인 (TTL 10분) ──
   try {
-    const { data, error } = await db.from('products').select('id,category,brand,name,spec_summary,feature,base_price,info_url,is_active').eq('is_active',true).order('category');
+    const cached = localStorage.getItem('buneed_products_v2');
+    if (cached) {
+      const { data, ts } = JSON.parse(cached);
+      if (data && Date.now() - ts < 10 * 60 * 1000) {
+        products = data;
+        renderProducts();
+        return; // 캐시 히트: DB 쿼리 생략
+      }
+    }
+  } catch(e) { /* localStorage 에러 무시 */ }
+
+  // ── DB 쿼리: 전체 필드 (클릭 시 추가 쿼리 없음) ──
+  try {
+    const { data, error } = await db.from('products')
+      .select('id,category,brand,name,spec_summary,feature,base_price,info_url,is_active')
+      .eq('is_active', true)
+      .order('category');
     if (error || !data || data.length === 0) {
-      // DB 데이터 없을 때 샘플 데이터 사용
-      products = (typeof SAMPLE_PRODUCTS !== 'undefined') ? SAMPLE_PRODUCTS.map((p,i)=>({...p,id:i+1})) : [];
+      products = (typeof SAMPLE_PRODUCTS !== 'undefined')
+        ? SAMPLE_PRODUCTS.map((p,i) => ({...p, id:i+1}))
+        : [];
     } else {
-      products = data.map(p=>({...p, _fromDB:true}));
+      products = data.map(p => ({...p, _fromDB:true}));
+      // 캐시 저장 (전체 필드 포함)
+      try {
+        localStorage.setItem('buneed_products_v2', JSON.stringify({ data: products, ts: Date.now() }));
+      } catch(e) {}
     }
   } catch(e) {
-    products = (typeof SAMPLE_PRODUCTS !== 'undefined') ? SAMPLE_PRODUCTS.map((p,i)=>({...p,id:i+1})) : [];
+    products = (typeof SAMPLE_PRODUCTS !== 'undefined')
+      ? SAMPLE_PRODUCTS.map((p,i) => ({...p, id:i+1}))
+      : [];
   }
   renderProducts();
 }
@@ -80,9 +107,23 @@ function renderProducts() {
     </div>`).join('');
 }
 
-function openSpecModal(productId) {
+// ── 스펙 옵션 데이터 보장 (첫 모달 오픈 시 1회 로드) ──
+let _specDataPromise = null;
+async function ensureSpecData() {
+  if (specCategories.length > 0 && specOptions.length > 0) return; // 이미 로드됨
+  if (!_specDataPromise) {
+    _specDataPromise = Promise.all([loadSpecCategories(), loadSpecOptions()]);
+  }
+  await _specDataPromise;
+}
+
+async function openSpecModal(productId) {
   const p = products.find(x=>String(x.id)===String(productId));
   if (!p) return;
+
+  // ── 스펙 옵션 보장 (백그라운드 로드 완료 대기, 보통 즉시 반환) ──
+  await ensureSpecData();
+
   currentSpecProductId = productId;
   selectedSpecOpts = {};
   document.getElementById('aq-title').textContent = '제품 상세';
@@ -663,6 +704,13 @@ function openProductModal(pid) {
   }
   openModal('modal-product');
 }
+// ── localStorage 제품 캐시 무효화 ──
+function invalidateProductCache() {
+  try {
+    localStorage.removeItem('buneed_products_v1'); // 구 버전 정리
+    localStorage.removeItem('buneed_products_v2');
+  } catch(e) {}
+}
 async function saveProduct() {
   const name = document.getElementById('pm-name').value.trim();
   if (!name) { showToast('제품명을 입력하세요','error'); return; }
@@ -682,7 +730,7 @@ async function saveProduct() {
   }
   try {
     closeModal('modal-product');
-    await loadProducts(); renderAdminProducts(true); renderProducts();
+    invalidateProductCache(); await loadProducts(); renderAdminProducts(true); renderProducts();
     showToast('저장되었습니다','success');
   } catch(e) {
     showToast('저장 중 오류: ' + (e.message||e), 'error');
@@ -691,7 +739,7 @@ async function saveProduct() {
 async function deleteProduct(pid) {
   if (!confirm('제품을 삭제하시겠습니까?')) return;
   await db.from('products').delete().eq('id',pid);
-  await loadProducts(); renderAdminProducts(true); renderProducts();
+  invalidateProductCache(); await loadProducts(); renderAdminProducts(true); renderProducts();
   showToast('삭제되었습니다','success');
 }
 
@@ -718,7 +766,7 @@ async function pBulkDelete() {
   const { error } = await db.from('products').delete().in('id', ids);
   if (error) { showToast('삭제 오류: ' + error.message, 'error'); return; }
   showToast(`${ids.length}개 제품이 삭제되었습니다`, 'success');
-  await loadProducts(); renderAdminProducts(true); renderProducts();
+  invalidateProductCache(); await loadProducts(); renderAdminProducts(true); renderProducts();
   document.getElementById('p-check-all').checked = false;
   const btn = document.getElementById('p-bulk-del-btn');
   if (btn) btn.style.display = 'none';
