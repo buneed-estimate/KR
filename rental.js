@@ -423,20 +423,18 @@ function rPreviewQuote() {
         </div>
       </div>
     </div>
-    <div class="q-rental-info-box" style="border:1px solid #b8cde8;border-radius:6px;overflow:hidden;margin-bottom:14px;">
-      <div style="background:#eef4ff;">
-        <div class="q-rental-info-grid" style="display:grid;grid-template-columns:repeat(3,1fr);">
-          <div style="display:flex;align-items:baseline;gap:6px;padding:8px 12px;border-bottom:1px solid #e8edf5;border-right:1px solid #e8edf5;"><span style="font-size:10px;color:#3b82f6;font-weight:600;min-width:52px;white-space:nowrap;">렌탈 시작일</span><span style="font-size:12px;font-weight:700;color:#1e293b;">${startDate}</span></div>
-          <div style="display:flex;align-items:baseline;gap:6px;padding:8px 12px;border-bottom:1px solid #e8edf5;border-right:1px solid #e8edf5;"><span style="font-size:10px;color:#3b82f6;font-weight:600;min-width:52px;white-space:nowrap;">렌탈 종료일</span><span style="font-size:12px;font-weight:700;color:#1e293b;">${computedEndDate||'-'}</span></div>
-          <div style="display:flex;align-items:baseline;gap:6px;padding:8px 12px;border-bottom:1px solid #e8edf5;"><span style="font-size:10px;color:#3b82f6;font-weight:600;min-width:52px;white-space:nowrap;">렌탈 기간</span><span style="font-size:12px;font-weight:700;color:#1e293b;">${durationLabel}</span></div>
-          <div style="display:flex;align-items:baseline;gap:6px;padding:8px 12px;${memo?'border-bottom:1px solid #e8edf5;':''}border-right:1px solid #e8edf5;"><span style="font-size:10px;color:#3b82f6;font-weight:600;min-width:52px;white-space:nowrap;">납품 희망일</span><span style="font-size:12px;font-weight:700;color:#1e293b;">${deliveryLoc||'미정'}</span></div>
-          <div style="display:flex;align-items:baseline;gap:6px;padding:8px 12px;${memo?'border-bottom:1px solid #e8edf5;':''}border-right:1px solid #e8edf5;"><span style="font-size:10px;color:#3b82f6;font-weight:600;min-width:52px;white-space:nowrap;">견적 유효기간</span><span style="font-size:12px;font-weight:700;color:#1e293b;">${validUntil||'견적일로부터 30일'}</span></div>
-          <div style="display:flex;align-items:baseline;gap:6px;padding:8px 12px;${memo?'border-bottom:1px solid #e8edf5;':''}"><span style="font-size:10px;color:#3b82f6;font-weight:600;min-width:52px;white-space:nowrap;">반납/회수</span><span style="font-size:12px;font-weight:700;color:#1e293b;">${returnMethod||'-'}</span></div>
-          ${memo?`<div style="grid-column:1/-1;display:flex;align-items:baseline;gap:6px;padding:8px 12px;"><span style="font-size:10px;color:#3b82f6;font-weight:600;min-width:52px;white-space:nowrap;">특이사항</span><span style="font-size:12px;font-weight:700;color:#374151;line-height:1.5;flex:1;">${memo}</span></div>`:''}
+    <div class="q-rental-info-box" style="border:1px solid #d0d8ee;border-radius:6px;overflow:hidden;margin-bottom:14px;">
+      <div style="background:#f5f7fc;">
+        <div class="q-rental-info-grid" style="display:grid;grid-template-columns:1fr 1fr;">
+          <div style="display:flex;align-items:baseline;gap:6px;padding:8px 14px;border-bottom:1px solid #e2e8f0;border-right:1px solid #e2e8f0;"><span style="font-size:10px;color:#1e6fd9;font-weight:600;min-width:52px;white-space:nowrap;">렌탈 시작일</span><span style="font-size:12px;font-weight:700;color:#1e293b;">${startDate||'-'}</span></div>
+          <div style="display:flex;align-items:baseline;gap:6px;padding:8px 14px;border-bottom:1px solid #e2e8f0;"><span style="font-size:10px;color:#1e6fd9;font-weight:600;min-width:52px;white-space:nowrap;">렌탈 종료일</span><span style="font-size:12px;font-weight:700;color:#1e293b;">${computedEndDate||'-'}</span></div>
+          <div style="display:flex;align-items:baseline;gap:6px;padding:8px 14px;${memo?'border-bottom:1px solid #e2e8f0;':''}border-right:1px solid #e2e8f0;"><span style="font-size:10px;color:#1e6fd9;font-weight:600;min-width:52px;white-space:nowrap;">견적 유효기간</span><span style="font-size:12px;font-weight:700;color:#1e293b;">${validUntil||'견적일로부터 30일'}</span></div>
+          <div style="display:flex;align-items:baseline;gap:6px;padding:8px 14px;${memo?'border-bottom:1px solid #e2e8f0;':''}"><span style="font-size:10px;color:#1e6fd9;font-weight:600;min-width:52px;white-space:nowrap;">반납/회수</span><span style="font-size:12px;font-weight:700;color:#1e293b;">${returnMethod||'-'}</span></div>
+          ${memo?`<div style="grid-column:1/-1;display:flex;align-items:baseline;gap:6px;padding:8px 14px;"><span style="font-size:10px;color:#1e6fd9;font-weight:600;min-width:52px;white-space:nowrap;">특이사항</span><span style="font-size:12px;font-weight:700;color:#374151;line-height:1.5;flex:1;">${memo}</span></div>`:''}
         </div>
       </div>
     </div>
-        <div class="q-section">
+            <div class="q-section">
       <div class="r-q-section-title">▪ 견적 내용</div>
       <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
       <table class="q-table">
