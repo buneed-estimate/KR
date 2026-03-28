@@ -131,6 +131,10 @@ function rOpenAtqModal(pid) {
   document.getElementById('r-atq-monthly-btn').classList.toggle('active', rAtqType==='월');
   document.getElementById('r-atq-unit').value = rAtqType==='일' ? (p.daily_price||0) : (p.monthly_price||0);
   document.getElementById('r-atq-qty').value = 1;
+  document.getElementById('r-atq-duration').value = 1;
+  // 기간 레이블 초기화
+  const durLbl2 = document.getElementById('r-atq-duration-label');
+  if (durLbl2) durLbl2.innerHTML = rAtqType==='일' ? '기간 <span style="font-size:10px;color:#94a3b8;font-weight:400;">(일)</span>' : '기간 <span style="font-size:10px;color:#94a3b8;font-weight:400;">(개월)</span>';
   rUpdateAtqCalc();
   openModal('r-modal-atq');
 }
@@ -139,6 +143,9 @@ function rSetAtqType(type) {
   rAtqType = type;
   document.getElementById('r-atq-daily-btn').classList.toggle('active', type==='일');
   document.getElementById('r-atq-monthly-btn').classList.toggle('active', type==='월');
+  // 기간 레이블 동적 변경
+  const durLbl = document.getElementById('r-atq-duration-label');
+  if (durLbl) durLbl.innerHTML = type==='일' ? '기간 <span style="font-size:10px;color:#94a3b8;font-weight:400;">(일)</span>' : '기간 <span style="font-size:10px;color:#94a3b8;font-weight:400;">(개월)</span>';
   const p = rProducts.find(x=>String(x.id)===String(rCurrentProductId));
   if (p) document.getElementById('r-atq-unit').value = type==='일'?(p.daily_price||0):(p.monthly_price||0);
   rUpdateAtqCalc();
@@ -146,7 +153,13 @@ function rSetAtqType(type) {
 function rUpdateAtqCalc() {
   const unit = parseInt(document.getElementById('r-atq-unit').value)||0;
   const qty = parseInt(document.getElementById('r-atq-qty').value)||1;
-  document.getElementById('r-atq-total-val').textContent = fmt(unit*qty)+' 원';
+  const dur = parseInt(document.getElementById('r-atq-duration').value)||1;
+  const total = unit * qty * dur;
+  const typeLabel = rAtqType === '일' ? '일' : '개월';
+  document.getElementById('r-atq-total-val').textContent = fmt(total)+' 원';
+  // 계산식 힌트 표시
+  const hint = document.getElementById('r-atq-calc-hint');
+  if (hint) hint.textContent = `${fmt(unit)}원 × ${qty}개 × ${dur}${typeLabel}`;
 }
 
 function rAddToQuote() {
@@ -154,9 +167,11 @@ function rAddToQuote() {
   if (!p) return;
   const unit = parseInt(document.getElementById('r-atq-unit').value)||0;
   const qty = parseInt(document.getElementById('r-atq-qty').value)||1;
+  const dur = parseInt(document.getElementById('r-atq-duration').value)||1;
   rQuoteItems.push({
     product_id: p.id, product_name: p.name, product_spec: p.spec||p.spec_summary||'', brand: p.brand||'', category: p.category||'',
-    rental_type: rAtqType, unit_price: unit, quantity: qty, total_price: unit*qty,
+    rental_type: rAtqType, unit_price: unit, quantity: qty, item_duration: dur,
+    total_price: unit * qty * dur,
     info_url: p.info_url || null
   });
   rRenderQuoteItems(); rCalcPrice(); closeModal('r-modal-atq');
@@ -169,7 +184,7 @@ function rRenderQuoteItems() {
     el.innerHTML='<div class="no-products" style="padding:16px 0">좌측 카탈로그에서 제품을 클릭하여 추가하세요</div>';
     return;
   }
-  el.innerHTML = `<table class="items-table"><thead><tr><th style="width:70px;">브랜드</th><th>제품명 / 사양</th><th style="text-align:center;width:50px;">단위</th><th style="text-align:right;min-width:90px;">단가</th><th style="text-align:center;min-width:100px;">수량</th><th></th></tr></thead><tbody>
+  el.innerHTML = `<table class="items-table"><thead><tr><th style="width:70px;">브랜드</th><th>제품명 / 사양</th><th style="text-align:center;width:50px;">단위</th><th style="text-align:right;min-width:90px;">단가</th><th style="text-align:center;min-width:130px;">수량 / 기간</th><th></th></tr></thead><tbody>
     ${rQuoteItems.map((it,i)=>`<tr>
       <td style="text-align:center;vertical-align:middle;padding:6px 4px;">
         <div style="font-size:10.5px;font-weight:700;color:#1B3A6B;white-space:nowrap;">${it.brand||''}</div>
@@ -178,11 +193,26 @@ function rRenderQuoteItems() {
       <td><strong>${it.product_name}</strong>${it.product_spec?`<div style="font-size:10px;color:#64748b;margin-top:2px;line-height:1.4;">${fmtSpec(it.product_spec)}</div>`:''}​</td>
       <td><span class="badge ${it.rental_type==='일'?'badge-daily':'badge-monthly'}">${it.rental_type}</span></td>
       <td style="text-align:right;font-size:12px;">${fmt(it.unit_price)}원</td>
-      <td style="text-align:center;">
-        <div class="qty-stepper">
-          <button class="qty-btn" onclick="rChangeQty(${i},${it.quantity}-1)">−</button>
-          <span class="qty-display">${it.quantity}</span>
-          <button class="qty-btn" onclick="rChangeQty(${i},${it.quantity}+1)">+</button>
+      <td style="text-align:center;min-width:120px;">
+        <div style="display:flex;flex-direction:column;gap:4px;align-items:center;">
+          <div style="display:flex;align-items:center;gap:2px;">
+            <span style="font-size:10px;color:#94a3b8;">수량</span>
+            <div class="qty-stepper" style="margin:0 2px;">
+              <button class="qty-btn" onclick="rChangeQty(${i},${it.quantity}-1)">−</button>
+              <span class="qty-display">${it.quantity}</span>
+              <button class="qty-btn" onclick="rChangeQty(${i},${it.quantity}+1)">+</button>
+            </div>
+            <span style="font-size:10px;color:#94a3b8;">개</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:2px;">
+            <span style="font-size:10px;color:#94a3b8;">기간</span>
+            <div class="qty-stepper" style="margin:0 2px;">
+              <button class="qty-btn" onclick="rChangeDuration(${i},(${it.item_duration||1})-1)">−</button>
+              <span class="qty-display">${it.item_duration||1}</span>
+              <button class="qty-btn" onclick="rChangeDuration(${i},(${it.item_duration||1})+1)">+</button>
+            </div>
+            <span style="font-size:10px;color:#94a3b8;">${it.rental_type==='일'?'일':'개월'}</span>
+          </div>
         </div>
       </td>
       <td><button class="btn-rm" onclick="rRemoveItem(${i})">✕</button></td>
@@ -191,7 +221,12 @@ function rRenderQuoteItems() {
 }
 function rChangeQty(i,v) {
   rQuoteItems[i].quantity = parseInt(v)||1;
-  rQuoteItems[i].total_price = rQuoteItems[i].unit_price * rQuoteItems[i].quantity;
+  rQuoteItems[i].total_price = rQuoteItems[i].unit_price * rQuoteItems[i].quantity * (rQuoteItems[i].item_duration||1);
+  rRenderQuoteItems(); rCalcPrice();
+}
+function rChangeDuration(i,v) {
+  rQuoteItems[i].item_duration = Math.max(1, parseInt(v)||1);
+  rQuoteItems[i].total_price = rQuoteItems[i].unit_price * rQuoteItems[i].quantity * rQuoteItems[i].item_duration;
   rRenderQuoteItems(); rCalcPrice();
 }
 function rRemoveItem(i) { rQuoteItems.splice(i,1); rRenderQuoteItems(); rCalcPrice(); }
@@ -274,7 +309,7 @@ async function rSaveQuote() {
     const {error:itemErr} = await db.from('rental_quote_items').insert(rQuoteItems.map((it,i)=>({
       quote_id:qId, product_id:it.product_id||null, product_name:it.product_name,
       product_spec:it.product_spec, rental_type:it.rental_type,
-      unit_price:it.unit_price, quantity:it.quantity, total_price:it.total_price, sort_order:i,
+      unit_price:it.unit_price, quantity:it.quantity, item_duration:(it.item_duration||1), total_price:it.total_price, sort_order:i,
       info_url: it.info_url || null
     })));
     if (itemErr) throw new Error('렌탈 품목 저장 실패: '+itemErr.message);
@@ -321,7 +356,9 @@ function rPreviewQuote() {
         <span style="background:${item.rental_type==='일'?'#fef3c7':'#dbeafe'};color:${item.rental_type==='일'?'#d97706':'#1a56a0'};padding:2px 7px;border-radius:99px;font-size:10px;font-weight:600;">${item.rental_type}</span>
       </td>
       <td style="text-align:right;white-space:nowrap;font-weight:600;font-size:12px;min-width:90px;border-bottom:${rowBorder};">${fmt(item.unit_price)}원</td>
-      <td style="text-align:center;font-weight:600;border-bottom:${rowBorder};">${item.quantity}</td>
+      <td style="text-align:center;font-weight:600;border-bottom:${rowBorder};white-space:nowrap;font-size:11px;">
+        ${item.quantity}개 × ${item.item_duration||1}${item.rental_type==='일'?'일':'개월'}
+      </td>
       <td style="text-align:right;font-weight:700;white-space:nowrap;font-size:12px;color:#1B3A6B;border-bottom:${rowBorder};">${fmt(item.total_price)}원</td>
     </tr>`
   }).join('');
@@ -329,10 +366,10 @@ function rPreviewQuote() {
   <div class="qdoc">
     <div class="q-header">
       <div style="text-align:left;">
-        <h1 style="color:#1B3A6B;font-size:24px;font-weight:800;letter-spacing:0.05em;margin:0 0 8px 0;text-align:left;">렌탈 견적서</h1>
+        <h1 style="color:#1B3A6B;font-size:28px;font-weight:800;letter-spacing:0.05em;margin:0 0 8px 0;text-align:left;">렌탈 견적서</h1>
         <div class="q-header-meta" style="display:flex;flex-direction:column;align-items:flex-start;gap:3px;">
-          <div class="q-date">작성일: ${today}</div>
           <div class="q-date">견적번호: ${qNum}</div>
+          <div class="q-date">작성일: ${today}</div>
         </div>
       </div>
       <div class="q-logo-area" style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
@@ -346,7 +383,7 @@ function rPreviewQuote() {
         <!-- 수신 박스 -->
         <div style="border:1px solid #b8cde8;border-radius:6px;overflow:hidden;">
           <div style="background:#0E76BB;padding:7px 14px;-webkit-print-color-adjust:exact;print-color-adjust:exact;display:flex;align-items:center;justify-content:space-between;">
-            <span style="font-size:12px;font-weight:700;color:#fff;letter-spacing:0.1em;">수 신</span>
+            <span style="font-size:13px;font-weight:700;color:#fff;letter-spacing:0.1em;">수 신</span>
           </div>
           <div style="background:#ffffff;padding:10px 12px;">
             <table style="font-size:12px;width:100%;border-collapse:collapse;">
@@ -360,7 +397,7 @@ function rPreviewQuote() {
         <!-- 공급 박스 -->
         <div style="border:1px solid #b8cde8;border-radius:6px;overflow:hidden;">
           <div style="background:#1B3A6B;padding:7px 14px;-webkit-print-color-adjust:exact;print-color-adjust:exact;display:flex;align-items:center;justify-content:space-between;">
-            <span style="font-size:12px;font-weight:700;color:#fff;letter-spacing:0.1em;">공 급</span>
+            <span style="font-size:13px;font-weight:700;color:#fff;letter-spacing:0.1em;">공 급</span>
           </div>
           <div style="background:#fff;padding:10px 12px;">
             <table style="font-size:12px;width:100%;border-collapse:collapse;">
@@ -373,12 +410,12 @@ function rPreviewQuote() {
         </div>
       </div>
     </div>
-    <div style="border:1px solid #b8cde8;border-radius:6px;overflow:hidden;margin-bottom:14px;">
+    <div class="q-rental-info-box" style="border:1px solid #b8cde8;border-radius:6px;overflow:hidden;margin-bottom:14px;">
       <div style="background:#1B3A6B;padding:7px 14px;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
-        <span style="font-size:12px;font-weight:700;color:#fff;letter-spacing:0.1em;">렌 탈  조  건</span>
+        <span style="font-size:12px;font-weight:700;color:#fff;letter-spacing:0.05em;">렌탈 조건</span>
       </div>
       <div style="background:#fff;padding:10px 14px;">
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+        <div class="q-rental-info-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
           <div><div style="font-size:10px;color:#64748b;font-weight:600;margin-bottom:2px;">렌탈 단위</div><div style="font-size:12px;font-weight:700;color:#1e293b;">${rCurrentType} 단위</div></div>
           <div><div style="font-size:10px;color:#64748b;font-weight:600;margin-bottom:2px;">렌탈 시작일</div><div style="font-size:12px;font-weight:700;color:#1e293b;">${startDate}</div></div>
           <div><div style="font-size:10px;color:#64748b;font-weight:600;margin-bottom:2px;">렌탈 기간</div><div style="font-size:12px;font-weight:700;color:#1e293b;">${durationLabel}</div></div>
@@ -392,7 +429,7 @@ function rPreviewQuote() {
       <div class="r-q-section-title">▪ 견적 내용</div>
       <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
       <table class="q-table">
-        <thead><tr><th style="width:24px;text-align:center;font-size:10px;">No</th><th style="text-align:center;width:65px;font-size:11px;">브랜드</th><th style="text-align:left;min-width:120px;">제품명 / 사양</th><th style="text-align:center;width:45px;font-size:11px;">단위</th><th style="text-align:right;width:72px;font-size:11px;">단가</th><th style="text-align:center;width:52px;white-space:nowrap;font-size:11px;">수량</th><th style="text-align:right;width:80px;font-size:11px;">금액</th></tr></thead>
+        <thead><tr><th style="width:24px;text-align:center;font-size:10px;">No</th><th style="text-align:center;width:65px;font-size:11px;">브랜드</th><th style="text-align:left;min-width:120px;">제품명 / 사양</th><th style="text-align:center;width:45px;font-size:11px;">단위</th><th style="text-align:right;width:72px;font-size:11px;">단가</th><th style="text-align:center;width:80px;white-space:nowrap;font-size:11px;">수량×기간</th><th style="text-align:right;width:80px;font-size:11px;">금액</th></tr></thead>
         <tbody>${itemsHtml}</tbody>
       </table>
       </div>
@@ -400,11 +437,9 @@ function rPreviewQuote() {
     <table class="q-summary-table">
       <tr><td>소 계</td><td>${fmt(sub)} 원</td></tr>
       ${discount>0?`<tr><td style="color:#ef4444;">할인</td><td style="color:#ef4444;">- ${fmt(discount)} 원</td></tr>`:''}
-      ${installFee>0?`<tr><td>설치비</td><td>${fmt(installFee)} 원</td></tr>`:''}
       <tr><td style="font-weight:600;">공급가액</td><td style="font-weight:600;">${fmt(supply)} 원</td></tr>
       <tr><td>부가세 (10%)</td><td>${fmt(vat)} 원</td></tr>
-      ${deposit>0?`<tr><td style="color:#1565c0;">보증금</td><td style="color:#1565c0;">${fmt(deposit)} 원</td></tr>`:''}
-      <tr class="r-q-total-row"><td>최종 합계</td><td>${fmt(total)} 원</td></tr>
+      <tr class="r-q-total-row"><td>합 계</td><td>${fmt(total)} 원</td></tr>
     </table>
     ${memo?`<div class="sv-info-grid" style="margin-top:14px;"><div class="sv-info-box"><div class="sv-info-hd">특이사항</div><div class="sv-info-body" style="color:#374151;line-height:1.6;">${memo}</div></div></div>`:''}
     <div class="q-spacer"></div>
@@ -523,7 +558,7 @@ async function rRenderAdminProducts(forceRefresh = false) {
       data = [...rProducts].sort((a,b) => (a.category||'').localeCompare(b.category||'', 'ko'));
     } else {
       const res = await db.from('rental_products').select('*').order('category');
-      if (res.error) { body.innerHTML='<tr><td colspan="8" style="text-align:center;padding:20px;color:#ef4444">로드 오류</td></tr>'; return; }
+      if (res.error) { body.innerHTML='<tr><td colspan="8" style="text-align:center;padding:20px;color:#ef4444">⚠️ 목록 로드 실패: '+res.error.message+'</td></tr>'; return; }
       data = res.data;
       if (data) rProducts = data; // 전역 갱신
     }

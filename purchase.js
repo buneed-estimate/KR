@@ -338,8 +338,8 @@ function previewQuote() {
       <div style="text-align:left;">
         <h1 style="color:#1B3A6B;font-size:28px;font-weight:800;letter-spacing:0.05em;margin:0 0 8px 0;text-align:left;">구매 견적서</h1>
         <div class="q-header-meta" style="display:flex;flex-direction:column;align-items:flex-start;gap:3px;">
-          <div class="q-date">작성일: ${today}</div>
           <div class="q-date">견적번호: ${currentQuoteNum}</div>
+          <div class="q-date">작성일: ${today}</div>
         </div>
       </div>
       <div class="q-logo-area" style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
@@ -591,6 +591,8 @@ async function bulkInsertSampleProducts() {
 async function renderAdminProducts(forceRefresh = false) {
   const body = document.getElementById('admin-product-body');
   if (!body) return;
+  // 로딩 표시
+  body.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:20px;color:#94a3b8">로딩 중...</td></tr>';
   try {
     let data;
     if (!forceRefresh && products && products.length > 0) {
@@ -598,11 +600,11 @@ async function renderAdminProducts(forceRefresh = false) {
       data = [...products].sort((a,b) => (a.category||'').localeCompare(b.category||'', 'ko'));
     } else {
       const res = await db.from('products').select('*').order('category');
-      if (res.error) { body.innerHTML='<tr><td colspan="9" style="text-align:center;padding:20px;color:#ef4444">로드 오류</td></tr>'; return; }
+      if (res.error) { body.innerHTML='<tr><td colspan="9" style="text-align:center;padding:20px;color:#ef4444">⚠️ 목록 로드 실패: '+res.error.message+'</td></tr>'; return; }
       data = res.data;
       if (data) products = data; // 전역 갱신
     }
-    if (!data?.length) { body.innerHTML='<tr><td colspan="9" style="text-align:center;padding:20px;color:#94a3b8">제품 없음</td></tr>'; return; }
+    if (!data?.length) { body.innerHTML='<tr><td colspan="9" style="text-align:center;padding:20px;color:#94a3b8">등록된 제품이 없습니다</td></tr>'; return; }
     body.innerHTML = data.map(p=>`
       <tr>
         <td style="text-align:center;"><input type="checkbox" class="p-row-check" data-id="${p.id}" onchange="pCheckChange()" style="width:15px;height:15px;cursor:pointer;"></td>

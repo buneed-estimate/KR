@@ -121,8 +121,10 @@ td { padding: 5px 9px !important; border-bottom: 1px solid #e8edf5 !important;
   border-collapse: collapse !important; font-size: 11px !important; margin-top: 10px !important; }
 .q-summary-table td { padding: 4px 6px !important; border: none !important; color: #374151 !important; }
 .q-summary-table td:last-child { text-align: right !important; }
-.q-total-row td, .r-q-total-row td { font-weight: 800 !important; font-size: 14px !important;
-  border-top: 2px solid #1B3A6B !important; padding-top: 6px !important; }
+.q-total-row td { font-weight: 800 !important; font-size: 14px !important;
+  color: #1B3A6B !important; border-top: 2px solid #1B3A6B !important; padding-top: 6px !important; }
+.r-q-total-row td { font-weight: 800 !important; font-size: 14px !important;
+  color: #1a56a0 !important; border-top: 2px solid #1a56a0 !important; padding-top: 6px !important; }
 
 /* 11. 렌탈 정보 */
 .q-rental-info-box { background: #f8fafc !important; border: 1px solid #cbd5e1 !important;

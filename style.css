@@ -265,6 +265,7 @@ textarea.field-input{resize:vertical;min-height:52px;}
 .q-party-box.supplier h4{color:var(--p-navy);}
 .q-party-box.r-supplier h4{color:var(--r-primary);}
 .q-table{
+  min-width:480px;
   width:100%;border-collapse:collapse;margin-top:8px;font-size:12.5px;
 }
 .q-table th{
@@ -376,6 +377,10 @@ textarea.field-input{resize:vertical;min-height:52px;}
   }
   .q-summary-table {
     width:100% !important;
+    margin-left:0 !important;
+  }
+  .q-summary-table td:last-child {
+    text-align:right !important;
   }
   .q-info-grid {
     grid-template-columns:1fr !important;

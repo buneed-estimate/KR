@@ -509,19 +509,28 @@
       </div>
       <div class="atq-row-2col">
         <div class="form-group">
-          <label>수량</label>
+          <label>수량 <span style="font-size:10px;color:#94a3b8;font-weight:400;">(개)</span></label>
           <input class="field-input" type="number" id="r-atq-qty" value="1" min="1" oninput="rUpdateAtqCalc()">
         </div>
         <div class="form-group">
-          <label>단가 <span style="font-size:10px;color:#94a3b8;font-weight:400;">(직접 수정 가능)</span></label>
-          <input class="field-input" type="number" id="r-atq-unit" oninput="rUpdateAtqCalc()">
+          <label id="r-atq-duration-label">기간 <span style="font-size:10px;color:#94a3b8;font-weight:400;">(일)</span></label>
+          <input class="field-input" type="number" id="r-atq-duration" value="1" min="1" oninput="rUpdateAtqCalc()">
         </div>
+      </div>
+      <div class="form-group" style="margin-top:8px;">
+        <label>단가 <span style="font-size:10px;color:#94a3b8;font-weight:400;">(직접 수정 가능)</span></label>
+        <input class="field-input" type="number" id="r-atq-unit" oninput="rUpdateAtqCalc()">
       </div>
     </div>
     <div class="modal-footer" style="flex-direction:column;gap:8px;align-items:stretch;">
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#f0fdf4;border-radius:8px;border:1px solid #86efac;">
-        <span style="font-size:13px;color:#475569;font-weight:500;">합계 금액</span>
-        <span id="r-atq-total-val" style="font-size:16px;font-weight:700;color:#166534;">0 원</span>
+      <div style="display:flex;flex-direction:column;gap:4px;padding:8px 12px;background:#f0fdf4;border-radius:8px;border:1px solid #86efac;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:13px;color:#475569;font-weight:500;">합계 금액</span>
+          <span id="r-atq-total-val" style="font-size:16px;font-weight:700;color:#166534;">0 원</span>
+        </div>
+        <div style="text-align:right;">
+          <span id="r-atq-calc-hint" style="font-size:11px;color:#64748b;"></span>
+        </div>
       </div>
       <div style="display:flex;gap:8px;justify-content:flex-end;">
         <button class="btn btn-r-secondary" onclick="closeModal('r-modal-atq')">취소</button>
