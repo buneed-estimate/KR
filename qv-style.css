@@ -229,6 +229,14 @@ tbody tr:nth-child(even) { background: #f9fafc; }
   .qdoc     { box-shadow: none; border-radius: 0; padding: 20px; }
   @page     { margin: 10mm; }
   * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+  /* 인쇄 시 제품 링크 밑줄·아이콘 숨김 (텍스트만 표시) */
+  a.product-link {
+    text-decoration: none !important;
+    color: #1e293b !important;
+    pointer-events: none !important;
+  }
+  a.product-link .product-link-icon { display: none !important; }
 }
 
 /* ================================================================

@@ -116,6 +116,18 @@ td { padding: 5px 9px !important; border-bottom: 1px solid #e8edf5 !important;
 /* 견적 테이블 마지막 행 – 네이비 구분선 */
 .q-table tbody tr:last-child td { border-bottom: 1px solid #1B3A6B !important; }
 
+/* 9-1. 인쇄 시 제품 링크 밑줄·아이콘 숨김 (텍스트만 표시) */
+a.product-link {
+  text-decoration: none !important;
+  color: #1e293b !important;
+  pointer-events: none !important;
+}
+a.product-link .product-link-icon { display: none !important; }
+/* quote-view.html 인쇄 시도 동일 처리 */
+.no-print { display: none !important; }
+a[href] { text-decoration: none !important; color: inherit !important; }
+a[href] svg { display: none !important; }
+
 /* 10. 합계 */
 .q-summary-table { width: 260px !important; margin-left: auto !important;
   border-collapse: collapse !important; font-size: 11px !important; margin-top: 10px !important; }

@@ -86,14 +86,16 @@ window.addEventListener('DOMContentLoaded', async () => {
   // getSession()만 쓰면 세션 복원 타이밍에 따라 null이 반환돼 흰 화면이 생기므로
   // 이벤트 기반으로 처리하는 것이 더 안정적임.
   db.auth.onAuthStateChange(async (event, session) => {
-    if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN') {
+    // SIGNED_IN: doLogin()에서 이미 showApp() 호출하므로 중복 실행 방지
+    if (event === 'INITIAL_SESSION') {
       if (session && !appInitialized) {
         appInitialized = true;
         await showApp(session.user.email);
-      } else if (!session && event === 'INITIAL_SESSION') {
+      } else if (!session) {
         showLoginScreen();
       }
     }
+    // SIGNED_IN은 doLogin()에서 직접 처리하므로 여기서는 무시
     if (event === 'SIGNED_OUT') {
       appInitialized = false;
       showLoginScreen();
@@ -345,19 +347,20 @@ async function doLogin() {
   try {
     const { data, error } = await db.auth.signInWithPassword({ email, password: pw });
     if (error) throw error;
-    // SIGNED_IN 이벤트 대기 없이 직접 실행 → 흰 화면 없음
+    // 로그인 성공 → 바로 앱 표시 (버튼 복구 없이 화면 전환)
     if (!appInitialized) {
       appInitialized = true;
       await showApp(data.user.email);
     }
+    // 성공 시 여기서 return → finally의 버튼 복구 실행 안 함
+    return;
   } catch (e) {
     err.style.display = 'block';
     err.textContent   = e.message || '로그인 중 오류가 발생했습니다.';
-  } finally {
-    // 항상 버튼 복구 (로그인 성공 시 화면이 전환되므로 실질적으로 실패 시만 보임)
-    btn.textContent = '로그인';
-    btn.disabled    = false;
   }
+  // 실패 시에만 버튼 복구
+  btn.textContent = '로그인';
+  btn.disabled    = false;
 }
 
 // ===== 로그아웃 =====
@@ -386,12 +389,13 @@ function showLoginScreen() {
 }
 
 async function showApp(email) {
+  // ── [즉시] 화면 전환: 로그인 숨기고 앱 바로 표시 ──────────────
   const loginScreen = document.getElementById('login-screen');
   const app = document.getElementById('app');
   if (loginScreen) { loginScreen.style.display = 'none'; loginScreen.classList.add('hidden'); }
-  if (app) app.style.display = 'flex';
+  if (app) { app.style.display = 'flex'; app.classList.remove('hidden'); }
 
-  // 초기 패널: CSS 클래스만 사용 (inline style 제거해야 switchTopTab이 동작함)
+  // 초기 패널 활성화 (CSS 클래스만 사용)
   document.querySelectorAll('.top-panel').forEach(p => {
     p.style.display = '';
     p.classList.remove('active');
@@ -406,34 +410,29 @@ async function showApp(email) {
   const emailEl = document.getElementById('user-email-display');
   if (emailEl) emailEl.textContent = email;
 
-  // ── 관리자 권한 체크 ──────────────────────────────────────────
-  // 로그인된 모든 사용자에게 관리자 기능 제공
-  const adminTab  = document.getElementById('ttab-admin');
+  // 관리자 탭 표시
+  const adminTab   = document.getElementById('ttab-admin');
   const adminBadge = document.querySelector('.h-badge.admin-badge');
-  if (adminTab)  { adminTab.style.display  = ''; }
-  if (adminBadge){ adminBadge.style.display = 'inline-flex'; }
-  // ─────────────────────────────────────────────────────────────
+  if (adminTab)   adminTab.style.display   = '';
+  if (adminBadge) adminBadge.style.display = 'inline-flex';
 
-  // ── 1단계: 카탈로그 우선 로드 (사용자가 즉시 보는 영역) ──
-  // 로딩 중 스피너 표시 (product-list 안에만 표시 → catalog-panel 구조 유지)
+  // ── [비동기] 데이터 로드: 화면 전환 후 백그라운드에서 실행 ──────
   const spinnerHtml = '<div style="display:flex;align-items:center;justify-content:center;padding:24px 0;color:#94a3b8;font-size:12px;gap:8px;"><span style="display:inline-block;width:16px;height:16px;border:2px solid #e2e8f0;border-top-color:#1B3A6B;border-radius:50%;animation:spin .7s linear infinite;"></span>로딩 중...</div>';
-  const productList = document.getElementById('product-list');
+  const productList  = document.getElementById('product-list');
   const rProductList = document.getElementById('r-product-list');
-  if (productList) productList.innerHTML = spinnerHtml;
+  if (productList)  productList.innerHTML  = spinnerHtml;
   if (rProductList) rProductList.innerHTML = spinnerHtml;
 
-  // loadAllData 내부의 loadProducts()가 완료되면 renderProducts() 자동 호출
-  // rLoadRentalProducts() 완료 후 rRenderProductList() 수동 호출
-  // 구매 제품만 먼저 로드 (화면 즉시 표시)
+  try { initQuoteNum();  } catch(e) {}
+  try { rInitQuoteNum(); } catch(e) {}
+
+  // 구매 제품 로드 (await → 카탈로그 스피너 → 완료 시 자동 렌더)
   await loadAllData();
-  // 렌탈 제품은 백그라운드 로드 (렌탈 탭 진입 시 화면 갱신)
+  // 렌탈 제품은 완전 백그라운드 (렌탈 탭 진입 시 화면 갱신)
   rLoadRentalProducts().then(() => {
     try { rRenderProductList(); } catch(e) {}
   }).catch(() => {});
-  try { rInitQuoteNum(); } catch(e) {}
-  try { initQuoteNum(); } catch(e) {}
-  // 관리자 제품 목록: 탭 전환 시 lazy-load (초기 로딩 제거 → UX 개선)
-  // switchTopTab('admin')에서 renderAdminProducts/rRenderAdminProducts 호출됨
+  // 관리자 제품 목록: switchTopTab('admin') 시 lazy-load
 
   // ── 2단계: 이력은 sub-tab 전환 시 lazy-load (초기 로딩 제거) ──
   // switchSubTab('history')에서 loadHistory/rLoadHistory 호출됨
