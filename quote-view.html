@@ -257,7 +257,7 @@ async function loadPurchaseQuote(token) {
     </tr>
   `).join('');
 
-  // 납기/유효기간/메모 섹션
+  // 납기/유효기간/메모 섹션 — 단일 박스 안에 행으로 통합
   const infoGrid = (q.delivery_date || q.valid_until || q.memo) ? `
     <div class="q-info-grid" style="margin-bottom:20px;">
       ${q.delivery_date ? `<div class="q-info-item"><div class="label">납품희망일</div><div class="value">${q.delivery_date}</div></div>` : ''}

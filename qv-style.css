@@ -263,3 +263,10 @@ tbody tr:nth-child(even) { background: #f9fafc; }
     grid-template-columns: repeat(2, 1fr) !important;
   }
 }
+
+/* 구매 공유링크 납품/메모 박스 — 모바일 1열 */
+@media (max-width: 600px) {
+  .q-info-2col {
+    grid-template-columns: 1fr !important;
+  }
+}
