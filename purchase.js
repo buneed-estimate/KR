@@ -130,15 +130,14 @@ async function openSpecModal(productId) {
   const specSummaryHtml = p.spec_summary ? '<div style="color:#64748b;font-size:11px;margin-top:4px;line-height:1.5;">'+fmtSpec(p.spec_summary)+'</div>' : '';
   const featureHtml = p.feature ? '<div style="color:#475569;font-size:11px;margin-top:4px;padding:6px 8px;background:#f8fafc;border-radius:4px;line-height:1.5;">'+p.feature+'</div>' : '';
   document.getElementById('aq-product-info').innerHTML = `
-    <div class="atq-name">${p.name}</div>
+    <div class="atq-name">${p.name}${p.info_url?'<span style="display:inline-block;width:7px;height:7px;background:#22c55e;border-radius:50%;margin-left:5px;vertical-align:super;flex-shrink:0;" title="이미지/링크 있음"></span>':''}</div>
     <div class="atq-meta">
       ${p.category?`<span>${p.category}</span>`:''}
       ${p.brand?`<span style="color:#94a3b8;">|</span><span>${p.brand}</span>`:''}
-      ${p.info_url?`<span style="color:#22c55e;font-size:11px;margin-left:4px;" title="이미지/링크 있음">✅</span>`:''}
-      ${p.base_price?`<span style="color:#94a3b8;">|</span><span style="color:#1B3A6B;font-weight:700;">₩ ${fmt(p.base_price)}</span>`:''}
+      ${p.base_price?`<span style="color:#94a3b8;">|</span><span style="color:#1B3A6B;font-weight:700;">${fmt(p.base_price)} 원</span>`:''}
     </div>
     ${p.spec_summary?`<div class="atq-spec">${fmtSpec(p.spec_summary)}</div>`:''}
-    ${p.feature?`<div style="margin-top:6px;padding:6px 10px;background:#fff3cd;border:1px solid #ffc107;border-radius:6px;font-size:11px;color:#856404;line-height:1.5;">${p.feature}</div>`:''}
+    ${p.feature?`<div style="margin-top:5px;font-size:11px;color:#94a3b8;line-height:1.6;">${p.feature}</div>`:''}
   `;
   const cats = specCategories.filter(c=>c.product_categories?.includes(p.category)||!c.product_categories?.length);
   let optsHtml = '';

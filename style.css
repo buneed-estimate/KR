@@ -32,37 +32,39 @@
 /* ===== 헤더 ===== */
 /* ===== 앱 헤더 (모던 SaaS 스타일) ===== */
 .app-header{
-  height:60px;display:flex;align-items:center;padding:0 20px;
-  background:#1B3A6B;border-bottom:none;
+  height:56px;display:flex;align-items:center;padding:0 24px;
+  background:#ffffff;border-bottom:1.5px solid #e8edf2;
   flex-shrink:0;gap:0;position:relative;z-index:10;
-  box-shadow:0 2px 8px rgba(27,58,107,.18);
+  box-shadow:none;
 }
-/* h-nav-tabs: 헤더 중앙 탭 */
-.h-nav-tabs{display:flex;align-items:center;flex:1;height:100%;padding:0 16px;gap:6px;}
+/* h-nav-tabs: 헤더 중앙 탭 — A안 언더라인 스타일 */
+.h-nav-tabs{display:flex;align-items:stretch;flex:1;height:100%;padding:0 8px;gap:0;}
 .h-nav-tab{
-  padding:0 20px;height:36px;min-width:96px;font-size:13px;font-weight:600;
-  color:rgba(255,255,255,.75);cursor:pointer;
-  background:rgba(255,255,255,.12);border-radius:8px;
-  white-space:nowrap;transition:all .18s;flex-shrink:0;
+  padding:0 22px;height:100%;font-size:13px;font-weight:500;
+  color:#94a3b8;cursor:pointer;
+  background:transparent;border-radius:0;
+  white-space:nowrap;transition:color .15s;flex-shrink:0;
   font-family:'Pretendard',system-ui,sans-serif;
-  border:1.5px solid rgba(255,255,255,.18);
+  border:none;border-bottom:2.5px solid transparent;
+  display:flex;align-items:center;
 }
-.h-nav-tab:hover{color:#fff;background:rgba(255,255,255,.1);}
+.h-nav-tab:hover{color:#475569;}
 .h-nav-tab.active{
-  background:#ffffff;color:#1B3A6B;
-  border-color:#ffffff;font-weight:700;
+  color:#1B3A6B;font-weight:700;
+  border-bottom-color:#1B3A6B;
 }
-.h-nav-tab.active.rental{color:#2563eb;}
-.h-nav-tab.active.admin{color:#374151;}
+.h-nav-tab.active.rental{color:#2563eb;border-bottom-color:#2563eb;}
+.h-nav-tab.active.admin{color:#374151;border-bottom-color:#64748b;}
 /* h-right */
 .h-right{display:flex;align-items:center;gap:10px;flex-shrink:0;}
 /* 로고 레이블 흰색 */
-.h-logo-label{font-size:14px;font-weight:800;color:#ffffff;margin-left:8px;letter-spacing:-0.3px;white-space:nowrap;}
-/* 이메일 흰색 */
-.h-email{font-size:11px;color:rgba(255,255,255,.7);}
+.h-logo-label{font-size:14px;font-weight:800;color:#1B3A6B;margin-left:8px;letter-spacing:-0.3px;white-space:nowrap;}
+/* 이메일 */
+.h-email{font-size:11px;color:#94a3b8;}
 /* 로그아웃 버튼 */
-.btn-logout{padding:5px 12px;border:1.5px solid rgba(255,255,255,.45);border-radius:6px;background:transparent;color:#fff;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;}
-.btn-logout:hover{background:rgba(255,255,255,.15);}
+.btn-logout{padding:5px 10px;border:1.5px solid #e2e8f0;border-radius:6px;background:transparent;color:#64748b;font-size:11px;font-weight:500;cursor:pointer;transition:all .15s;}
+.btn-logout:hover{background:#f1f5f9;color:#1e293b;border-color:#cbd5e1;}
+/* 모든 탭에서 동일한 흰색 헤더 유지 */
 .app-header.rental-theme{ background:#ffffff; }
 .app-header.admin-theme{ background:#ffffff; }
 .h-logo{ display:flex;align-items:center;gap:8px;text-decoration:none;flex-shrink:0; }
@@ -74,12 +76,7 @@
 .h-spacer{ flex:1; }
 .h-email{ font-size:12px;color:#94a3b8;display:none; }
 @media screen and (min-width:640px){ .h-email{ display:block; } }
-.app-header.rental-theme .btn-logout, .app-header.admin-theme .btn-logout{
-  border-color:#e2e8f0;color:#64748b;
-}
-.app-header.rental-theme .btn-logout:hover, .app-header.admin-theme .btn-logout:hover{
-  background:#f1f5f9;border-color:#cbd5e1;color:#334155;
-}
+/* 로그아웃: 테마 무관 동일 스타일 (위에서 통일됨) */
 
 /* ===== 최상위 탭 (구매/렌탈/관리자) ===== */
 /* .top-tabs 제거됨 - 옵션B 적용 (h-nav-tab으로 통합) */
@@ -310,7 +307,8 @@ textarea.field-input{resize:vertical;min-height:52px;}
   .form-panel{overflow-y:auto;}
   .top-tab{padding:0 12px;height:44px;font-size:12px;gap:4px;}
   .top-tabs{padding:0 8px;}
-  .app-header{padding:0 10px;}
+  .app-header{padding:0 12px;}
+  .h-nav-tab{padding:0 14px;font-size:12px;}
   .h-logo-text .name{font-size:13px;}
   .h-badge{display:none;}
   .form-row{grid-template-columns:1fr!important;}
@@ -438,8 +436,11 @@ textarea.field-input{resize:vertical;min-height:52px;}
     padding:8px 10px !important;
   }
   .app-header {
-    padding:8px 12px !important;
+    padding:0 10px !important;
+    height:48px !important;
   }
+  .h-nav-tab{padding:0 12px !important;font-size:11.5px !important;}
+  .h-logo-label{display:none;}
   .h-logo img {
     height:22px !important;
   }
@@ -617,15 +618,16 @@ textarea.field-input{resize:vertical;min-height:52px;}
   margin-bottom: 16px;
 }
 .atq-product-info .atq-name {
-  font-size: 16px; font-weight: 800; color: #1B3A6B; margin-bottom: 5px; letter-spacing: -0.3px;
+  font-size: 15px; font-weight: 800; color: #1B3A6B; margin-bottom: 4px; letter-spacing: -0.3px;
+  display: flex; align-items: center; gap: 0;
 }
 .atq-product-info .atq-meta {
-  font-size: 12px; color: #475569; margin-bottom: 7px; font-weight: 600;
+  font-size: 12px; color: #475569; margin-bottom: 6px; font-weight: 600;
   display: flex; align-items: center; gap: 6px;
 }
 .atq-product-info .atq-spec {
   font-size: 11.5px; color: #475569; line-height: 1.7;
-  background: #fff; border-radius: 6px; padding: 6px 10px;
+  background: #fff; border-radius: 6px; padding: 5px 10px; margin-bottom: 2px;
 }
 .atq-row-2col {
   display: grid;

@@ -50,9 +50,9 @@
     </div>
     <!-- 중앙: 메인 탭 (구매/렌탈/관리자) -->
     <div class="h-nav-tabs">
-      <button class="h-nav-tab active purchase" id="ttab-purchase" onclick="switchTopTab('purchase',this)">🖊️ 구매견적서</button>
-      <button class="h-nav-tab rental" id="ttab-rental" onclick="switchTopTab('rental',this)">📋 렌탈견적서</button>
-      <button class="h-nav-tab admin" id="ttab-admin" onclick="switchTopTab('admin',this)">⚙️ 관리자</button>
+      <button class="h-nav-tab active purchase" id="ttab-purchase" onclick="switchTopTab('purchase',this)"> 구매견적</button>
+      <button class="h-nav-tab rental" id="ttab-rental" onclick="switchTopTab('rental',this)"> 렌탈견적</button>
+      <button class="h-nav-tab admin" id="ttab-admin" onclick="switchTopTab('admin',this)"> 관리자</button>
     </div>
     <!-- 오른쪽: 이메일 + 로그아웃 -->
     <div class="h-right">
@@ -69,8 +69,8 @@
   <!-- ════════════════════════ 구매견적 패널 ════════════════════════ -->
   <div class="top-panel active" id="panel-purchase">
     <div class="sub-tabs">
-      <button class="sub-tab active p-sub" onclick="switchSubTab('p','quote',this)">✏️ 견적 작성</button>
-      <button class="sub-tab p-sub" onclick="switchSubTab('p','history',this)">📋 견적 이력</button>
+      <button class="sub-tab active p-sub" onclick="switchSubTab('p','quote',this)"> 견적 작성</button>
+      <button class="sub-tab p-sub" onclick="switchSubTab('p','history',this)"> 견적 이력</button>
     </div>
 
     <!-- 견적 작성 -->
@@ -191,8 +191,8 @@
   <!-- ════════════════════════ 렌탈견적 패널 ════════════════════════ -->
   <div class="top-panel" id="panel-rental">
     <div class="sub-tabs">
-      <button class="sub-tab active r-sub" onclick="switchSubTab('r','quote',this)">✏️ 견적 작성</button>
-      <button class="sub-tab r-sub" onclick="switchSubTab('r','history',this)">📋 견적 이력</button>
+      <button class="sub-tab active r-sub" onclick="switchSubTab('r','quote',this)"> 견적 작성</button>
+      <button class="sub-tab r-sub" onclick="switchSubTab('r','history',this)"> 견적 이력</button>
     </div>
 
     <!-- 렌탈 견적 작성 -->
@@ -357,8 +357,8 @@
   <!-- ════════════════════════ 관리자 패널 ════════════════════════ -->
   <div class="top-panel" id="panel-admin">
     <div class="admin-sub-tabs" style="background:#fff;border-bottom:1.5px solid var(--border);">
-      <button class="admin-sub-tab active" onclick="switchAdminTab('p-products',this)">📦 구매 제품</button>
-      <button class="admin-sub-tab" onclick="switchAdminTab('r-products',this)">🖥️ 렌탈 제품</button>
+      <button class="admin-sub-tab active" onclick="switchAdminTab('p-products',this)"> 구매 제품</button>
+      <button class="admin-sub-tab" onclick="switchAdminTab('r-products',this)"> 렌탈 제품</button>
       
     </div>
     <!-- 구매 제품 관리 -->
