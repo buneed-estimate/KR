@@ -503,7 +503,7 @@ function printQuote() {
 
 async function copyQuoteLink(shareToken, quoteNum) {
   if (!shareToken) { showToast('공유 링크가 없습니다', 'error'); return; }
-  const url = `${location.origin}${location.pathname}?share=${shareToken}`;
+  const url = `${location.origin}/quote-view.html?token=${shareToken}`;
   try {
     await navigator.clipboard.writeText(url);
     showToast(`[${quoteNum}] 링크 복사됨!`, 'success');
@@ -518,7 +518,7 @@ async function copyQuoteLink(shareToken, quoteNum) {
 
 async function copyHistoryLink() {
   if (!currentShareToken) { showToast('먼저 견적을 불러오세요', 'error'); return; }
-  const url = `${location.origin}${location.pathname}?share=${currentShareToken}`;
+  const url = `${location.origin}/quote-view.html?token=${currentShareToken}`;
   try {
     await navigator.clipboard.writeText(url);
     showToast('구매 견적 링크 복사됨!', 'success');
@@ -731,22 +731,27 @@ async function saveProduct() {
     info_url: document.getElementById('pm-info-url')?.value.trim() || null,
     is_active: true
   };
-  if (editingProductId) {
-    await db.from('products').update(payload).eq('id',editingProductId);
-  } else {
-    await db.from('products').insert(payload);
-  }
   try {
+    let error;
+    if (editingProductId) {
+      ({ error } = await db.from('products').update(payload).eq('id', editingProductId));
+    } else {
+      ({ error } = await db.from('products').insert(payload));
+    }
+    if (error) throw new Error(error.message);
     closeModal('modal-product');
     invalidateProductCache(); await loadProducts(); renderAdminProducts(true); renderProducts();
     showToast('저장되었습니다','success');
   } catch(e) {
-    showToast('저장 중 오류: ' + (e.message||e), 'error');
+    console.error('saveProduct 오류:', e);
+    showToast('⚠️ 저장 실패: ' + (e.message||e), 'error');
+    alert('⚠️ 제품 저장 실패\n' + (e.message||e) + '\n\n브라우저 콘솔(F12)에서 자세한 오류를 확인하세요.');
   }
 }
 async function deleteProduct(pid) {
   if (!confirm('제품을 삭제하시겠습니까?')) return;
-  await db.from('products').delete().eq('id',pid);
+  const { error } = await db.from('products').delete().eq('id',pid);
+  if (error) { showToast('⚠️ 삭제 실패: ' + error.message, 'error'); return; }
   invalidateProductCache(); await loadProducts(); renderAdminProducts(true); renderProducts();
   showToast('삭제되었습니다','success');
 }

@@ -540,7 +540,7 @@ function setRentalType(type, btn) {
 
 function copyRentalQuoteLink(token) {
   if (!token) { showToast('저장된 견적만 링크 복사가 가능합니다','error'); return; }
-  const url = `${location.origin}${location.pathname}?share=${token}&type=rental`;
+  const url = `${location.origin}/quote-view.html?token=${token}&type=rental`;
   navigator.clipboard.writeText(url).then(()=>showToast('링크가 복사되었습니다!','success')).catch(()=>showToast('복사 실패','error'));
 }
 

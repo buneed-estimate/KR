@@ -223,20 +223,85 @@ tbody tr:nth-child(even) { background: #f9fafc; }
    인쇄 / PDF 저장
    ================================================================ */
 @media print {
-  .top-bar  { display: none !important; }
-  .q-intro-btn { display: none !important; }
-  body      { background: #fff; }
-  .qdoc     { box-shadow: none; border-radius: 0; padding: 20px; }
-  @page     { margin: 10mm; }
-  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  @page { margin: 10mm 12mm; }
 
-  /* 인쇄 시 제품 링크 밑줄·아이콘 숨김 (텍스트만 표시) */
+  body      { background: #fff !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  *         { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+  .top-bar        { display: none !important; }
+  .q-intro-btn    { display: none !important; }
+  .no-print       { display: none !important; }
+
+  .page-wrap { padding: 0 !important; max-width: 100% !important; }
+  .qdoc      { box-shadow: none !important; border-radius: 0 !important; padding: 16px 20px !important; }
+
+  /* ── 헤더: 항상 좌우 배치 ── */
+  .q-header {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: flex-start !important;
+  }
+  .q-header > div:first-child { flex: 1 !important; }
+  .q-logo-area img { height: 52px !important; }
+  h1 { font-size: 22px !important; }
+
+  /* ── 수신/공급 박스: 항상 좌우 2열 ── */
+  .q-parties {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 12px !important;
+    align-items: stretch !important;
+  }
+  .q-party { break-inside: avoid !important; }
+  .q-party-header,
+  .q-party-header.sup {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* ── 렌탈 조건 그리드 (인라인 style 포함) 항상 2열 ── */
+  .q-rental-info-grid,
+  [style*="grid-template-columns:1fr 1fr"],
+  [style*="grid-template-columns: 1fr 1fr"] {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  /* ── 테이블 ── */
+  table { width: 100% !important; font-size: 11px !important; }
+  thead th {
+    background: #0d2d6b !important;
+    color: #fff !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    font-size: 11px !important;
+    padding: 6px 8px !important;
+  }
+  tbody td { font-size: 11px !important; padding: 5px 8px !important; }
+
+  /* ── 합계 테이블 ── */
+  .q-summary table { width: 280px !important; margin-left: auto !important; }
+  .total-row td {
+    font-size: 13px !important;
+    border-top: 2px solid #0d2d6b !important;
+    -webkit-print-color-adjust: exact !important;
+  }
+
+  /* ── 제품 링크 인쇄 시 텍스트만 ── */
   a.product-link {
     text-decoration: none !important;
     color: #1e293b !important;
     pointer-events: none !important;
   }
   a.product-link .product-link-icon { display: none !important; }
+  a[href] { text-decoration: none !important; color: inherit !important; }
+
+  /* ── 푸터 ── */
+  .q-footer {
+    margin-top: 24px !important;
+    font-size: 9px !important;
+  }
 }
 
 /* ================================================================

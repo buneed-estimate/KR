@@ -711,3 +711,29 @@ textarea.field-input{resize:vertical;min-height:52px;}
         .sv-co{text-align:left;}
         .sv-tbl{min-width:360px;}
       }
+
+/* ===== 인쇄(Print) 전용 – 수신/공급 좌우 2열 강제 유지 ===== */
+@media print {
+  /* 수신/공급 박스: 모바일 미디어쿼리 1열 오버라이드 방지 */
+  .q-party-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+  }
+  /* 납품/특이사항, 렌탈 정보 등 동일 처리 */
+  .q-info-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+  }
+  .q-rental-info-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 0 !important;
+  }
+  /* 모든 1fr 1fr 인라인 스타일 grid도 보호 */
+  [style*="grid-template-columns:1fr 1fr"],
+  [style*="grid-template-columns: 1fr 1fr"] {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
