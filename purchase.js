@@ -346,7 +346,8 @@ async function saveQuote() {
 }
 
 function previewQuote() {
-  if (!quoteItems.length) { showToast('견적 품목을 추가하세요','error'); return; }
+  if (!quoteItems.length) { showToast('견적 품목을 추가하세요', 'error'); return; }
+  if (!editingQuoteId) { showToast('💾 먼저 저장 버튼을 눌러주세요', 'error'); return; }
   const co = v=>(document.getElementById(v)||{}).value||'';
   const company = co('f-company')||'(미입력)';
   const contact = co('f-contact'), phone = co('f-phone'), email = co('f-email');

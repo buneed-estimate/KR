@@ -345,8 +345,8 @@ async function rSaveQuote() {
 }
 
 function rPreviewQuote() {
-  if (!rCurrentQuoteId) { showToast('먼저 저장 후 미리보기 가능합니다','error'); return; }
-  if (!rQuoteItems.length) { showToast('제품을 추가하세요','error'); return; }
+  if (!rQuoteItems.length) { showToast('제품을 추가하세요', 'error'); return; }
+  if (!rCurrentQuoteId) { showToast('💾 먼저 저장 버튼을 눌러주세요', 'error'); return; }
   const co = v => (document.getElementById(v)||{}).value||'';
   const company=co('r-company')||'(미입력)', contact=co('r-contact'), phone=co('r-phone'), email=co('r-email');
   const salesName=co('r-sales-name'), salesPhone=co('r-sales-phone'), salesEmail=co('r-sales-email'), salesDept=co('r-sales-dept');
@@ -637,18 +637,27 @@ async function rSaveProduct() {
     monthly_price:parseInt(document.getElementById('r-pm-monthly').value)||0,
     spec:document.getElementById('r-pm-spec').value, is_active:true
   };
-  if (rEditingProductId) {
-    await db.from('rental_products').update(payload).eq('id',rEditingProductId);
-  } else {
-    await db.from('rental_products').insert(payload);
+  try {
+    let error;
+    if (rEditingProductId) {
+      ({ error } = await db.from('rental_products').update(payload).eq('id', rEditingProductId));
+    } else {
+      ({ error } = await db.from('rental_products').insert(payload));
+    }
+    if (error) throw new Error(error.message);
+    closeModal('r-modal-product');
+    await rLoadRentalProducts(); rRenderAdminProducts(true); rRenderProductList();
+    showToast('저장되었습니다','success');
+  } catch(e) {
+    console.error('rSaveProduct 오류:', e);
+    showToast('⚠️ 저장 실패: ' + (e.message||e), 'error');
+    alert('⚠️ 렌탈 제품 저장 실패\n' + (e.message||e) + '\n\n브라우저 콘솔(F12)에서 자세한 오류를 확인하세요.');
   }
-  closeModal('r-modal-product');
-  await rLoadRentalProducts(); rRenderAdminProducts(true); rRenderProductList();
-  showToast('저장되었습니다','success');
 }
 async function rDeleteProduct(pid) {
   if (!confirm('렌탈 제품을 삭제하시겠습니까?')) return;
-  await db.from('rental_products').delete().eq('id',pid);
+  const { error } = await db.from('rental_products').delete().eq('id',pid);
+  if (error) { showToast('⚠️ 삭제 실패: ' + error.message, 'error'); return; }
   await rLoadRentalProducts(); rRenderAdminProducts(true); rRenderProductList();
   showToast('삭제되었습니다','success');
 }
