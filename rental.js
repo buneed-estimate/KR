@@ -66,6 +66,7 @@ function rFilterAdminProducts() {
 let rProducts = [];
 let rQuoteItems = [];
 let rCurrentType = '일'; // '일' or '월'
+let currentSortR = 'newest'; // 렌탈 카탈로그 정렬 상태
 let rCurrentQuoteId = null;
 let rCurrentShareToken = null;
 let rCurrentProductId = null;
@@ -129,9 +130,11 @@ function rRenderProducts() {
   if (typeof rRenderProductList === 'function') rRenderProductList();
 }
 function rRenderProductList() {
-  let list = rProducts;
+  let list = [...rProducts];
   if (rCurrentFilterCat) list = list.filter(p=>p.category===rCurrentFilterCat);
   if (typeof rCurrentFilterBrand !== 'undefined' && rCurrentFilterBrand) list = list.filter(p=>(p.brand||'')===(rCurrentFilterBrand));
+  // 정렬 적용
+  list = rSortProductList(list, currentSortR);
   const el = document.getElementById('r-product-list');
   if (!list.length) { el.innerHTML='<div class="no-products">제품 없음</div>'; return; }
   el.innerHTML = list.map(p=>`
@@ -140,6 +143,28 @@ function rRenderProductList() {
       <div class="pc-brand">${p.category||''} · ${p.brand||''}</div>
       <div class="pc-price">일 ${fmt(p.daily_price||0)} / 월 ${fmt(p.monthly_price||0)}원</div>
     </div>`).join('');
+}
+
+function rSortProductList(list, sort) {
+  return [...list].sort((a, b) => {
+    switch(sort) {
+      case 'name':       return (a.name||'').localeCompare(b.name||'','ko');
+      case 'price_asc':  return (a.daily_price||0) - (b.daily_price||0);
+      case 'price_desc': return (b.daily_price||0) - (a.daily_price||0);
+      case 'newest': default:
+        if (a.created_at && b.created_at) return new Date(b.created_at) - new Date(a.created_at);
+        return (b.id||0) - (a.id||0);
+    }
+  });
+}
+
+function setSortR(val) {
+  currentSortR = val;
+  // 버튼 active 상태 갱신
+  document.querySelectorAll('#r-sort-btns .sort-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.sort === val);
+  });
+  rRenderProductList();
 }
 
 function rOpenAtqModal(pid) {

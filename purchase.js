@@ -870,6 +870,8 @@ async function renderAdminProducts(forceRefresh = false) {
           <button class="btn btn-danger btn-sm" onclick="deleteProduct('${p.id}')">삭제</button>
         </td>
       </tr>`).join('');
+    // 렌더링 후 검색 필터 재적용
+    filterAdminProducts();
   } catch(e) {
     console.error('renderAdminProducts 오류:', e);
     if (body) body.innerHTML='<tr><td colspan="8" style="text-align:center;color:#ef4444">오류 발생: '+e.message+'</td></tr>';
@@ -877,6 +879,15 @@ async function renderAdminProducts(forceRefresh = false) {
 }
 
 // 관리자 구매 제품 검색 필터
+function filterAdminProducts() {
+  const q = (document.getElementById('admin-product-search')?.value || '').toLowerCase().trim();
+  const rows = document.querySelectorAll('#admin-product-body tr');
+  rows.forEach(row => {
+    if (row.cells.length < 3) return; // 로딩/빈 행 건너뜀
+    const text = row.textContent.toLowerCase();
+    row.style.display = (!q || text.includes(q)) ? '' : 'none';
+  });
+}
 
 // ===== 견적 이력 검색 =====
 function filterHistory() {

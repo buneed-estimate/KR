@@ -355,9 +355,24 @@ textarea.field-input{resize:vertical;min-height:52px;}
     font-size:16px !important;
     letter-spacing:0 !important;
   }
+  /* 수신/공급 박스: 모바일에서 2열 유지, 폰트/패딩만 줄임 */
   .q-party-grid {
-    grid-template-columns:1fr !important;
-    gap:8px !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 6px !important;
+  }
+  /* 박스 내부 헤더(수신/공급 타이틀) */
+  .q-party-grid > div > div:first-child span {
+    font-size: 10px !important;
+    padding: 4px 8px !important;
+    letter-spacing: 0.06em !important;
+  }
+  /* 박스 내부 테이블 폰트 */
+  .q-party-grid table {
+    font-size: 10px !important;
+  }
+  .q-party-grid table td {
+    padding: 2px 0 !important;
+    font-size: 10px !important;
   }
   .q-table th, .q-table td {
     padding:4px 5px !important;
@@ -1487,6 +1502,14 @@ textarea.field-input{resize:vertical;min-height:52px;}
   border-color: #1B3A6B;
   font-weight: 700;
 }
+/* 렌탈 정렬버튼 active 색상 */
+.r-sort-btn:hover { border-color: #93c5fd; color: var(--r-primary); background: #eff6ff; }
+.r-sort-btn.active {
+  background: var(--r-primary);
+  color: #fff;
+  border-color: var(--r-primary);
+  font-weight: 700;
+}
 
 /* ══════════════════════════════════════════════════════════
    ■ 구매 모달 (aq-modal) – 스펙 선택 개편
@@ -1807,8 +1830,28 @@ textarea.field-input{resize:vertical;min-height:52px;}
   .sort-bar { padding: 4px 6px !important; gap: 3px !important; }
   .sort-btn { font-size: 10.5px !important; padding: 2px 7px !important; }
 
-  /* 모달 */
-  .aq-modal-body { padding: 10px 12px !important; }
+  /* ── 제품 상세(aq) 모달: bottom-sheet 스타일 ── */
+  #modal-aq.modal-overlay.open {
+    align-items: flex-end !important;
+    padding: 0 !important;
+  }
+  .aq-modal-box {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    max-height: 92dvh !important;
+    border-radius: 16px 16px 0 0 !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  .aq-modal-body {
+    padding: 10px 12px !important;
+    overflow-y: auto !important;
+    flex: 1 !important;
+    min-height: 0 !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
   .aq-base-row, .aq-unit-row, .aq-qty-row { padding: 7px 10px !important; }
   .aq-base-input { font-size: 14px !important; }
   .aq-unit-input { font-size: 15px !important; }
@@ -1817,13 +1860,34 @@ textarea.field-input{resize:vertical;min-height:52px;}
   /* 스펙 헤더 숨김 */
   .spec-dd-header { display: none !important; }
   .spec-dd-row {
-    grid-template-columns: 50px 1fr 80px !important;
+    grid-template-columns: 50px 1fr 78px !important;
     gap: 5px !important;
     padding: 5px 8px !important;
   }
   .spec-dd-label { font-size: 10.5px !important; min-width: 0 !important; }
   .spec-dd-select { font-size: 11px !important; height: 28px !important; }
   .spec-dd-price { font-size: 11px !important; height: 28px !important; }
+
+  /* ── 렌탈 제품 상세(r-atq) 모달도 bottom-sheet ── */
+  #r-modal-atq.modal-overlay.open {
+    align-items: flex-end !important;
+    padding: 0 !important;
+  }
+  #r-modal-atq .modal-box {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    max-height: 92dvh !important;
+    border-radius: 16px 16px 0 0 !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  #r-modal-atq .modal-body {
+    overflow-y: auto !important;
+    flex: 1 !important;
+    min-height: 0 !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
 
   /* 품목 테이블 */
   .items-table { min-width: 480px !important; }

@@ -106,10 +106,9 @@
           <!-- 정렬 버튼 -->
           <div class="sort-bar" id="p-sort-btns">
             <button class="sort-btn active" data-sort="newest" onclick="setSortP('newest')">최신순</button>
-            <button class="sort-btn" data-sort="name" onclick="setSortP('name')">가나다</button>
+            <button class="sort-btn" data-sort="name" onclick="setSortP('name')">이름순</button>
             <button class="sort-btn" data-sort="price_asc" onclick="setSortP('price_asc')">가격↑</button>
             <button class="sort-btn" data-sort="price_desc" onclick="setSortP('price_desc')">가격↓</button>
-            <button class="sort-btn" data-sort="category" onclick="setSortP('category')">분류</button>
           </div>
           <div class="product-list" id="product-list"><div class="no-products">로딩 중...</div></div>
         </div>
@@ -240,6 +239,12 @@
               <option value="">전체 브랜드</option>
               <option>HP</option><option>Samsung</option><option>LG</option><option>Dell</option><option>Lenovo</option><option>기타</option>
             </select>
+          </div>
+          <div class="sort-bar" id="r-sort-btns">
+            <button class="sort-btn r-sort-btn active" data-sort="newest" onclick="setSortR('newest')">최신순</button>
+            <button class="sort-btn r-sort-btn" data-sort="name" onclick="setSortR('name')">이름순</button>
+            <button class="sort-btn r-sort-btn" data-sort="price_asc" onclick="setSortR('price_asc')">가격↑</button>
+            <button class="sort-btn r-sort-btn" data-sort="price_desc" onclick="setSortR('price_desc')">가격↓</button>
           </div>
           <div class="product-list" id="r-product-list"><div class="no-products">로딩 중...</div></div>
         </div>
