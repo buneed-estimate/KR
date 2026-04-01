@@ -297,8 +297,7 @@ textarea.field-input{resize:vertical;min-height:52px;}
   .h-logo-text .name{font-size:13px;}
   .h-badge{display:none;}
   .form-row{grid-template-columns:1fr!important;}
-  .q-party-grid{grid-template-columns:1fr!important;}
-  .q-party-grid{grid-template-columns:1fr!important;gap:8px;}
+  /* q-party-grid: 768px에서는 건드리지 않음 (600px 이하에서만 처리) */
   .history-header{flex-direction:column;align-items:flex-start;gap:8px;}
   .data-table th, .data-table td{font-size:11px;padding:6px 4px;}
   .admin-card{padding:10px;}
@@ -355,18 +354,18 @@ textarea.field-input{resize:vertical;min-height:52px;}
     font-size:16px !important;
     letter-spacing:0 !important;
   }
-  /* 수신/공급 박스: 모바일에서 2열 유지, 폰트/패딩만 줄임 */
+  /* 수신/공급 박스: 모바일 2열 유지, 폰트/패딩 축소 */
   .q-party-grid {
     grid-template-columns: 1fr 1fr !important;
-    gap: 6px !important;
+    gap: 5px !important;
   }
-  /* 박스 내부 헤더(수신/공급 타이틀) */
+  .q-party-grid > div > div:first-child {
+    padding: 4px 8px !important;
+  }
   .q-party-grid > div > div:first-child span {
     font-size: 10px !important;
-    padding: 4px 8px !important;
     letter-spacing: 0.06em !important;
   }
-  /* 박스 내부 테이블 폰트 */
   .q-party-grid table {
     font-size: 10px !important;
   }
@@ -516,10 +515,8 @@ textarea.field-input{resize:vertical;min-height:52px;}
   .h-logo img {
     height:26px !important;
   }
-  /* 모바일: 인쇄 버튼 숨기고 공유 버튼 표시 */
-  #modal-preview .modal-footer .btn-primary:not(.btn-mobile-share),
-  #r-modal-preview .modal-footer .btn-r-primary:not(.btn-mobile-share) { display:none !important; }
-  .btn-mobile-share { display:inline-flex !important; }
+  /* 모바일: 인쇄(PDF) 버튼 숨김 */
+  .btn-desktop-only { display:none !important; }
 }
 
 /* ===== 관리자 서브패널 ===== */
@@ -1060,10 +1057,8 @@ textarea.field-input{resize:vertical;min-height:52px;}
     width: 100% !important;
     min-width: unset !important;
   }
-  /* 모바일: 인쇄 버튼 숨기고 공유 버튼 표시 */
-  #modal-preview .modal-footer .btn-primary:not(.btn-mobile-share),
-  #r-modal-preview .modal-footer .btn-r-primary:not(.btn-mobile-share) { display: none !important; }
-  .btn-mobile-share { display: inline-flex !important; }
+  /* 모바일: 인쇄(PDF) 버튼 숨김 (btn-desktop-only) */
+  .btn-desktop-only { display: none !important; }
 
   /* ── 견적서 본문 (qdoc) ── */
   .qdoc {

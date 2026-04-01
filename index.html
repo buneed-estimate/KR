@@ -556,15 +556,14 @@
 <!-- ===== 모달: 구매 미리보기 ===== -->
 <div class="modal-overlay" id="modal-preview">
   <div class="modal-box wide">
-    <div class="modal-header" style="justify-content:flex-end;">
+    <div class="modal-header preview-modal-header">
       <button class="modal-close" onclick="closeModal('modal-preview')">✕</button>
     </div>
     <div class="modal-body" id="preview-content" style="overflow-x:auto;"></div>
-    <div class="modal-footer">
+    <div class="modal-footer preview-modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('modal-preview')">닫기</button>
       <button class="btn btn-success" id="btn-copy-link" onclick="copyShareLink()">링크복사</button>
-      <button class="btn btn-primary" onclick="printQuote()">🖨️ 인쇄 / PDF 저장</button>
-      <button class="btn btn-success btn-mobile-share" onclick="mobileShareQuote()">📤 공유하기</button>
+      <button class="btn btn-primary btn-desktop-only" onclick="printQuote()">🖨️ 인쇄 / PDF 저장</button>
     </div>
   </div>
 </div>
@@ -664,15 +663,14 @@
 <!-- ===== 모달: 렌탈 미리보기 ===== -->
 <div class="modal-overlay" id="r-modal-preview">
   <div class="modal-box wide">
-    <div class="modal-header" style="justify-content:flex-end;">
+    <div class="modal-header preview-modal-header">
       <button class="modal-close" onclick="closeModal('r-modal-preview')">✕</button>
     </div>
     <div class="modal-body" id="r-preview-content" style="overflow-x:auto;"></div>
-    <div class="modal-footer">
+    <div class="modal-footer preview-modal-footer">
       <button class="btn btn-r-secondary" onclick="closeModal('r-modal-preview')">닫기</button>
       <button class="btn btn-success" onclick="rCopyShareLink()">링크복사</button>
-      <button class="btn btn-r-primary" onclick="rPrintQuote()">🖨️ 인쇄 / PDF 저장</button>
-      <button class="btn btn-r-primary btn-mobile-share" onclick="rMobileShareQuote()">📤 공유하기</button>
+      <button class="btn btn-r-primary btn-desktop-only" onclick="rPrintQuote()">🖨️ 인쇄 / PDF 저장</button>
     </div>
   </div>
 </div>
