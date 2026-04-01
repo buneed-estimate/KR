@@ -416,6 +416,9 @@ async function showApp(email) {
   if (adminTab)   adminTab.style.display   = '';
   if (adminBadge) adminBadge.style.display = 'inline-flex';
 
+  // ── 프로필 로드 & 공급사 자동 세팅 (D4, D5) ──
+  await loadAndApplyUserProfile(email);
+
   // ── [비동기] 데이터 로드: 화면 전환 후 백그라운드에서 실행 ──────
   const spinnerHtml = '<div style="display:flex;align-items:center;justify-content:center;padding:24px 0;color:#94a3b8;font-size:12px;gap:8px;"><span style="display:inline-block;width:16px;height:16px;border:2px solid #e2e8f0;border-top-color:#1B3A6B;border-radius:50%;animation:spin .7s linear infinite;"></span>로딩 중...</div>';
   const productList  = document.getElementById('product-list');
@@ -428,7 +431,7 @@ async function showApp(email) {
 
   // 구매 제품 로드 (await → 카탈로그 스피너 → 완료 시 자동 렌더)
   await loadAllData();
-  // 렌탈 제품은 완전 백그라운드 (렌탈 탭 진입 시 화면 갱신)
+  // 렌탈 제품는 완전 백그라운드 (렌탈 탭 진입 시 화면 갱신)
   rLoadRentalProducts().then(() => {
     try { rRenderProductList(); } catch(e) {}
   }).catch(() => {});
@@ -436,6 +439,132 @@ async function showApp(email) {
 
   // ── 2단계: 이력은 sub-tab 전환 시 lazy-load (초기 로딩 제거) ──
   // switchSubTab('history')에서 loadHistory/rLoadHistory 호출됨
+}
+
+// ===== 프로필 로드 & 자동 적용 (D4, D5) =====
+async function loadAndApplyUserProfile(email) {
+  try {
+    const { data: { user } } = await db.auth.getUser();
+    if (!user) return;
+    let { data: profile } = await db.from('user_profiles').select('*').eq('user_id', user.id).single();
+    if (!profile) {
+      // 최초 로그인: 프로필 자동 생성 (D4)
+      await db.from('user_profiles').insert({ user_id: user.id, email });
+      profile = { user_id: user.id, email };
+    }
+    // 공급사 필드 자동 세팅 (D5)
+    const setV = (id, v) => { const el = document.getElementById(id); if (el && v) el.value = v; };
+    setV('f-sales-name',  profile.name || '');
+    setV('f-sales-phone', profile.phone || '');
+    setV('f-sales-email', profile.email || email);
+    setV('f-sales-dept',  profile.dept || '');
+    setV('r-sales-name',  profile.name || '');
+    setV('r-sales-phone', profile.phone || '');
+    setV('r-sales-email', profile.email || email);
+    setV('r-sales-dept',  profile.dept || '');
+    // 헤더 이름 표시
+    const nameEl = document.getElementById('user-name-display');
+    if (nameEl && profile.name) nameEl.textContent = profile.name;
+  } catch(e) { /* 프로필 로드 실패 무시 */ }
+}
+
+// ===== 프로필 드롭다운 =====
+function toggleProfileDropdown(e) {
+  e.stopPropagation();
+  const dd = document.getElementById('profile-dropdown');
+  if (!dd) return;
+  const isOpen = dd.classList.toggle('open');
+  if (isOpen) {
+    // 외부 클릭 시 닫기
+    const handler = (ev) => {
+      if (!dd.contains(ev.target)) {
+        dd.classList.remove('open');
+        document.removeEventListener('click', handler);
+      }
+    };
+    document.addEventListener('click', handler);
+  }
+}
+
+// ===== 내 정보 수정 모달 (D2) =====
+async function openProfileModal() {
+  document.getElementById('profile-dropdown')?.classList.remove('open');
+  try {
+    const { data: { user } } = await db.auth.getUser();
+    if (!user) return;
+    const { data: profile } = await db.from('user_profiles').select('*').eq('user_id', user.id).single();
+    const setV = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
+    setV('prof-email', user.email);
+    setV('prof-name', profile?.name || '');
+    setV('prof-phone', profile?.phone || '');
+    setV('prof-dept', profile?.dept || '');
+  } catch(e) {}
+  openModal('modal-profile');
+}
+
+async function saveProfile() {
+  const btn = document.querySelector('#modal-profile .btn-primary');
+  if (btn) { btn.disabled = true; btn.textContent = '저장 중...'; }
+  try {
+    const { data: { user } } = await db.auth.getUser();
+    if (!user) throw new Error('로그인이 필요합니다');
+    const name  = document.getElementById('prof-name')?.value.trim() || '';
+    const phone = document.getElementById('prof-phone')?.value.trim() || '';
+    const dept  = document.getElementById('prof-dept')?.value.trim() || '';
+    // upsert
+    const { error } = await db.from('user_profiles').upsert({
+      user_id: user.id, email: user.email, name, phone, dept
+    }, { onConflict: 'user_id' });
+    if (error) throw new Error(error.message);
+    // 공급사 필드 즉시 반영
+    const setV = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
+    setV('f-sales-name', name); setV('f-sales-phone', phone); setV('f-sales-email', user.email); setV('f-sales-dept', dept);
+    setV('r-sales-name', name); setV('r-sales-phone', phone); setV('r-sales-email', user.email); setV('r-sales-dept', dept);
+    closeModal('modal-profile');
+    showToast('프로필이 저장되었습니다', 'success');
+  } catch(e) {
+    showToast('저장 실패: ' + e.message, 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '저장'; }
+  }
+}
+
+// ===== 비밀번호 변경 모달 (D3) =====
+function openPasswordModal() {
+  document.getElementById('profile-dropdown')?.classList.remove('open');
+  const inputs = ['pw-current', 'pw-new', 'pw-confirm'];
+  inputs.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  const errEl = document.getElementById('pw-err');
+  if (errEl) errEl.style.display = 'none';
+  openModal('modal-password');
+}
+
+async function savePassword() {
+  const newPw  = document.getElementById('pw-new')?.value || '';
+  const confirm = document.getElementById('pw-confirm')?.value || '';
+  const errEl  = document.getElementById('pw-err');
+  const btn    = document.querySelector('#modal-password .btn-primary');
+
+  if (newPw.length < 6) {
+    if (errEl) { errEl.textContent = '비밀번호는 6자 이상이어야 합니다'; errEl.style.display = 'block'; }
+    return;
+  }
+  if (newPw !== confirm) {
+    if (errEl) { errEl.textContent = '새 비밀번호와 확인이 일치하지 않습니다'; errEl.style.display = 'block'; }
+    return;
+  }
+  if (btn) { btn.disabled = true; btn.textContent = '변경 중...'; }
+  if (errEl) errEl.style.display = 'none';
+  try {
+    const { error } = await db.auth.updateUser({ password: newPw });
+    if (error) throw new Error(error.message);
+    closeModal('modal-password');
+    showToast('비밀번호가 변경되었습니다', 'success');
+  } catch(e) {
+    if (errEl) { errEl.textContent = e.message; errEl.style.display = 'block'; }
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '변경'; }
+  }
 }
 
 
@@ -516,6 +645,10 @@ function switchAdminTab(tab, el) {
   // 탭 버튼 활성화
   document.querySelectorAll('.admin-sub-tab').forEach(t => t.classList.remove('active'));
   if (el) el.classList.add('active');
+  // 스펙 관리 탭 진입 시 데이터 로드
+  if (tab === 'spec') {
+    try { if (typeof renderSpecAdmin === 'function') renderSpecAdmin(); } catch(e){}
+  }
 }
 function showToast(msg, type='info') {
   const t = document.getElementById('toast');
@@ -525,8 +658,34 @@ function showToast(msg, type='info') {
   t.appendChild(el);
   setTimeout(()=>el.remove(), 5000);
 }
-function openModal(id) { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function openModal(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.add('open');
+  // 모바일: 모달 뒤 본문 스크롤 잠금
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.remove('open');
+  // 다른 열린 모달이 없으면 스크롤 복원
+  if (!document.querySelector('.modal-overlay.open')) {
+    document.body.style.overflow = '';
+  }
+}
+
+// ── 모달 오버레이 클릭 시 닫기 (모바일 UX) ──
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', (e) => {
+      // modal-box 내부 클릭은 무시
+      if (e.target === overlay) {
+        closeModal(overlay.id);
+      }
+    });
+  });
+});
 
 
 
