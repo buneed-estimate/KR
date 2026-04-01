@@ -617,10 +617,10 @@
       <button class="modal-close" onclick="closeModal('modal-preview')">✕</button>
     </div>
     <div class="modal-body" id="preview-content" style="overflow-x:auto;"></div>
-    <div id="preview-footer" class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModal('modal-preview')">닫기</button>
-      <button class="btn btn-success" id="btn-copy-link" onclick="copyShareLink()">링크복사</button>
-      <button class="btn btn-primary btn-desktop-only" onclick="printQuote()">🖨️ 인쇄 / PDF 저장</button>
+    <div id="preview-footer" style="display:flex;flex-direction:row;justify-content:flex-end;align-items:center;gap:8px;padding:10px 14px;border-top:1px solid #dde3ee;background:#f8fafc;flex-shrink:0;">
+      <button class="btn btn-secondary" style="flex-shrink:0;" onclick="closeModal('modal-preview')">닫기</button>
+      <button class="btn btn-success" style="flex-shrink:0;" id="btn-copy-link" onclick="copyShareLink()">링크복사</button>
+      <button class="btn btn-primary btn-desktop-only" style="flex-shrink:0;" onclick="printQuote()">🖨️ 인쇄 / PDF 저장</button>
     </div>
   </div>
 </div>
@@ -724,10 +724,10 @@
       <button class="modal-close" onclick="closeModal('r-modal-preview')">✕</button>
     </div>
     <div class="modal-body" id="r-preview-content" style="overflow-x:auto;"></div>
-    <div id="r-preview-footer" class="modal-footer">
-      <button class="btn btn-r-secondary" onclick="closeModal('r-modal-preview')">닫기</button>
-      <button class="btn btn-success" onclick="rCopyShareLink()">링크복사</button>
-      <button class="btn btn-r-primary btn-desktop-only" onclick="rPrintQuote()">🖨️ 인쇄 / PDF 저장</button>
+    <div id="r-preview-footer" style="display:flex;flex-direction:row;justify-content:flex-end;align-items:center;gap:8px;padding:10px 14px;border-top:1px solid #dde3ee;background:#f8fafc;flex-shrink:0;">
+      <button class="btn btn-r-secondary" style="flex-shrink:0;" onclick="closeModal('r-modal-preview')">닫기</button>
+      <button class="btn btn-success" style="flex-shrink:0;" onclick="rCopyShareLink()">링크복사</button>
+      <button class="btn btn-r-primary btn-desktop-only" style="flex-shrink:0;" onclick="rPrintQuote()">🖨️ 인쇄 / PDF 저장</button>
     </div>
   </div>
 </div>
