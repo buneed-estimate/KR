@@ -624,18 +624,22 @@ function rPrintQuote() {
   const prevTitle = document.title;
   const printTitle = `비유니드 렌탈견적서_${qNum}${company ? '_'+company : ''}`;
 
+  const doPrint = () => {
+    document.title = printTitle;
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        window.print();
+        document.title = prevTitle;
+      }, 100);
+    });
+  };
+
   if (!modal || !modal.classList.contains('open')) {
     rPreviewQuote();
-    setTimeout(() => {
-      document.title = printTitle;
-      window.print();
-      document.title = prevTitle;
-    }, 500);
+    setTimeout(doPrint, 500);
     return;
   }
-  document.title = printTitle;
-  window.print();
-  document.title = prevTitle;
+  doPrint();
 }
 
 async function rCopyShareLink() {

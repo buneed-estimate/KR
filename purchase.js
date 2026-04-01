@@ -606,18 +606,23 @@ function printQuote() {
   const prevTitle = document.title;
   const printTitle = `비유니드 구매견적서_${qNum}${company ? '_'+company : ''}`;
 
+  const doPrint = () => {
+    document.title = printTitle;
+    // 타이틀 변경이 DOM에 반영된 후 인쇄 실행
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        window.print();
+        document.title = prevTitle;
+      }, 100);
+    });
+  };
+
   if (!modal || !modal.classList.contains('open')) {
     previewQuote();
-    setTimeout(() => {
-      document.title = printTitle;
-      window.print();
-      document.title = prevTitle;
-    }, 500);
+    setTimeout(doPrint, 500);
     return;
   }
-  document.title = printTitle;
-  window.print();
-  document.title = prevTitle;
+  doPrint();
 }
 
 /* copyQuoteLink v1 removed – using async v2 */

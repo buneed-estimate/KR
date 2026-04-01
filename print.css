@@ -57,9 +57,9 @@ body > * { display: none !important; }
 /* 3. 인쇄 색상 강제 적용 */
 body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
 
-/* 4. 견적서 레이아웃 – 푸터를 최하단으로 밀기 위해 flex column */
+/* 4. 견적서 레이아웃 – flex column으로 내용 순서 유지 */
 .qdoc {
-  padding: 0 0 28px 0 !important;
+  padding: 0 !important;
   max-width: 100% !important;
   margin: 0 !important;
   display: flex !important;
@@ -162,14 +162,22 @@ a[href] svg { display: none !important; }
   color: #1B3A6B !important; margin-bottom: 6px !important;
   -webkit-print-color-adjust: exact !important; }
 
-/* 13. 푸터 – spacer가 남는 공간 차지해 footer를 최하단 고정 */
+/* 13. 푸터 – 인쇄 시 매 페이지 하단 고정 */
+/* q-spacer는 화면 미리보기용으로만 유지, 인쇄 시 숨김 */
 .q-spacer { display: none !important; }
+
+/* 푸터는 position:fixed → 인쇄 시 매 페이지 하단에 반복 출력됨 */
+/* 단, @page margin-bottom(18mm)이 푸터 높이보다 크므로 본문과 겹치지 않음 */
 .q-footer-bar {
   position: fixed !important;
   bottom: 0 !important;
   left: 0 !important;
   right: 0 !important;
-  padding: 5px 0 6px !important;
+  height: 14mm !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 14mm !important;
   border-top: 1px solid #e2e8f0 !important;
   text-align: center !important;
   font-size: 9.5px !important;
@@ -181,4 +189,5 @@ a[href] svg { display: none !important; }
 }
 
 /* 브라우저 기본 헤더/푸터(날짜·URL·페이지번호) 제거 */
-@page { margin: 15mm 14mm 18mm 14mm; }
+/* margin-bottom을 푸터 높이(14mm)보다 크게 설정해 본문과 겹침 방지 */
+@page { margin: 15mm 14mm 20mm 14mm; }

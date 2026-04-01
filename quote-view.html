@@ -99,7 +99,7 @@ async function loadRentalQuote(token) {
   const company = (q.company_name || '').replace(/[\/\\:*?"<>|]/g, '_').trim();
   const qnum = (q.quote_number || '').replace(/[\/\\:*?"<>|]/g, '_').trim();
   if (company || qnum) {
-    document.title = '렌탈견적서' + (company ? '_' + company : '') + (qnum ? '_' + qnum : '') + ' - 비유니드';
+    document.title = '비유니드 렌탈견적서_' + (qnum || '') + (company ? '_' + company : '');
   }
 
   const itemRows = quoteItems.map((it, i) => `
@@ -273,7 +273,7 @@ async function loadPurchaseQuote(token) {
   const company = (q.company_name || '').replace(/[/\\:*?"<>|]/g, '_').trim();
   const qnum = (q.quote_number || '').replace(/[/\\:*?"<>|]/g, '_').trim();
   if (company || qnum) {
-    document.title = '구매견적서' + (company ? '_' + company : '') + (qnum ? '_' + qnum : '') + ' - 비유니드';
+    document.title = '비유니드 구매견적서_' + (qnum || '') + (company ? '_' + company : '');
   }
 
   // 회사소개서 버튼
