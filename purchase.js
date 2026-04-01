@@ -7,11 +7,14 @@
 let products = [], specCategories = [], specOptions = [];
 let quoteItems = [];
 let currentSpecProductId = null;
-let selectedSpecOpts = {};
+let selectedSpecOpts = {};   // { catId: optId } - 드롭다운 선택값 저장
 let editingQuoteId = null;
 let currentQuoteNum = '';
 let currentShareToken = null;
 let _lastPreviewHtml = '';
+
+// PC 계열 카테고리 (스펙 드롭다운 표시 대상)
+const PC_CATEGORIES = ['노트북', '데스크탑', '워크스테이션', '모바일워크스테이션'];
 
 function initQuoteNum() {
   const now = new Date();
@@ -136,8 +139,6 @@ async function openSpecModal(productId) {
   currentSpecProductId = productId;
   selectedSpecOpts = {};
   document.getElementById('aq-title').textContent = '제품 상세';
-  const specSummaryHtml = p.spec_summary ? '<div style="color:#64748b;font-size:11px;margin-top:4px;line-height:1.5;">'+fmtSpec(p.spec_summary)+'</div>' : '';
-  const featureHtml = p.feature ? '<div style="color:#475569;font-size:11px;margin-top:4px;padding:6px 8px;background:#f8fafc;border-radius:4px;line-height:1.5;">'+p.feature+'</div>' : '';
   document.getElementById('aq-product-info').innerHTML = `
     <div class="atq-name">${p.name}${p.info_url?'<span style="display:inline-block;width:7px;height:7px;background:#22c55e;border-radius:50%;margin-left:5px;vertical-align:super;flex-shrink:0;" title="이미지/링크 있음"></span>':''}</div>
     <div class="atq-meta">
@@ -145,35 +146,65 @@ async function openSpecModal(productId) {
       ${p.brand?`<span style="color:#94a3b8;">|</span><span>${p.brand}</span>`:''}
       ${p.base_price?`<span style="color:#94a3b8;">|</span><span style="color:#1B3A6B;font-weight:700;">${fmt(p.base_price)} 원</span>`:''}
     </div>
-    ${p.spec_summary?`<div class="atq-spec">${fmtSpec(p.spec_summary)}</div>`:''}
+    ${p.spec_summary?`<div class="atq-spec" id="aq-spec-default-text">${fmtSpec(p.spec_summary)}</div>`:''}
     ${p.feature?`<div class="atq-feature">${p.feature}</div>`:''}
   `;
-  const cats = specCategories.filter(c=>c.product_categories?.includes(p.category)||!c.product_categories?.length);
+
+  // PC 카테고리일 때만 스펙 드롭다운 표시
+  const isPC = PC_CATEGORIES.includes(p.category);
+  const cats = isPC
+    ? specCategories.filter(c => !c.product_categories?.length || c.product_categories.includes(p.category))
+    : [];
+
   let optsHtml = '';
-  for (const cat of cats) {
-    const opts = specOptions.filter(o=>o.spec_category_id===cat.id);
-    if (!opts.length) continue;
-    optsHtml += `<div style="margin-bottom:10px;"><div class="field-label" style="margin-bottom:6px;">${cat.name}</div><div class="spec-opt-grid">`;
-    optsHtml += opts.map(o=>`<div class="spec-opt-card" id="soc-${o.id}" onclick="toggleSpecOpt('${cat.id}','${o.id}',${o.price_delta})"><div class="opt-name">${o.name}</div><div class="opt-price">${o.price_delta>0?'+':''}${o.price_delta?fmt(o.price_delta)+'원':'포함'}</div></div>`).join('');
-    optsHtml += '</div></div>';
+  if (isPC && cats.length > 0) {
+    optsHtml = '<div class="spec-dropdown-section">';
+    for (const cat of cats) {
+      const opts = specOptions.filter(o => o.spec_category_id === cat.id);
+      if (!opts.length) continue;
+      optsHtml += `
+        <div class="spec-dd-row">
+          <label class="spec-dd-label">${cat.name}</label>
+          <select class="spec-dd-select field-input" data-cat-id="${cat.id}" onchange="onSpecDropdownChange('${cat.id}',this.value)">
+            <option value="">— 선택 안 함 —</option>
+            ${opts.map(o=>`<option value="${o.id}" data-price="${o.price_delta||0}">${o.name}${o.price_delta?` (+${fmt(o.price_delta)}원)`:' (포함)'}</option>`).join('')}
+          </select>
+        </div>`;
+    }
+    optsHtml += '</div>';
   }
   document.getElementById('spec-opts').innerHTML = optsHtml;
-  document.getElementById('aq-unit').value = p.base_price;
+
+  // 기본가 (aq-base-price) 초기화
+  const basePriceEl = document.getElementById('aq-base-price');
+  if (basePriceEl) { basePriceEl.value = p.base_price || 0; }
+  document.getElementById('aq-unit').value = p.base_price || 0;
   document.getElementById('aq-qty').value = 1;
   updateAQCalc();
   openModal('modal-aq');
 }
 
-function toggleSpecOpt(catId, optId, delta) {
-  if (selectedSpecOpts[catId] === optId) {
-    delete selectedSpecOpts[catId];
-    document.getElementById('soc-'+optId)?.classList.remove('selected');
-  } else {
-    if (selectedSpecOpts[catId]) document.getElementById('soc-'+selectedSpecOpts[catId])?.classList.remove('selected');
+// 드롭다운 선택 시 호출
+function onSpecDropdownChange(catId, optId) {
+  if (optId) {
     selectedSpecOpts[catId] = optId;
-    document.getElementById('soc-'+optId)?.classList.add('selected');
+  } else {
+    delete selectedSpecOpts[catId];
   }
-  resetAQPrice();
+  recalcAQPrice();
+}
+
+// 기본가 + 선택된 스펙 합계로 단가 재계산
+function recalcAQPrice() {
+  const basePriceEl = document.getElementById('aq-base-price');
+  const base = parseInt(basePriceEl ? basePriceEl.value : document.getElementById('aq-unit').value) || 0;
+  let extra = 0;
+  for (const optId of Object.values(selectedSpecOpts)) {
+    const opt = specOptions.find(o => String(o.id) === String(optId));
+    if (opt) extra += (opt.price_delta || 0);
+  }
+  document.getElementById('aq-unit').value = base + extra;
+  updateAQCalc();
 }
 function updateAQCalc() {
   const unit = parseInt(document.getElementById('aq-unit').value)||0;
@@ -197,15 +228,24 @@ function addToQuote() {
   if (!p) return;
   const unit = parseInt(document.getElementById('aq-unit').value)||0;
   const qty = parseInt(document.getElementById('aq-qty').value)||1;
-  const specs = Object.values(selectedSpecOpts).map(id=>{
-    const cat = specCategories.find(c=>c.id===Object.keys(selectedSpecOpts).find(k=>selectedSpecOpts[k]===id));
-    const opt = specOptions.find(o=>o.id===id);
-    return opt?opt.name:'';
-  }).filter(Boolean);
-  const specSummary = specs.join(', ');
+
+  // 스펙 요약 자동 생성: 선택한 옵션 이름만 / 구분자로 연결
+  let specSummary;
+  const selectedOptNames = Object.values(selectedSpecOpts)
+    .map(id => specOptions.find(o => String(o.id) === String(id))?.name)
+    .filter(Boolean);
+
+  if (selectedOptNames.length > 0) {
+    // 선택한 스펙이 있으면 → 값만 조합 (라벨 없이)
+    specSummary = selectedOptNames.join(' / ');
+  } else {
+    // 선택 안 하면 → 기존 spec_summary 그대로
+    specSummary = p.spec_summary || '';
+  }
+
   quoteItems.push({
     product_id: p.id, product_name: p.name, brand: p.brand, category: p.category,
-    spec_summary: specSummary || p.spec_summary, unit_price: unit, qty, total_price: unit*qty,
+    spec_summary: specSummary, unit_price: unit, qty, total_price: unit*qty,
     _fromDB: !!p._fromDB, info_url: p.info_url || null
   });
   renderQuoteItems(); calcPrice(); closeModal('modal-aq');
@@ -552,29 +592,67 @@ async function mobileShareQuote() {
 
 async function loadHistory() {
   const body = document.getElementById('history-body');
+  const cardList = document.getElementById('history-card-list');
   if (!body) return;
+
+  const loadingRow = '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--muted)">로딩 중...</td></tr>';
+  body.innerHTML = loadingRow;
+  if (cardList) cardList.innerHTML = '<div class="history-card-loading">로딩 중...</div>';
+
   try {
-  const { data, error } = await db.from('quotes').select('*').order('created_at',{ascending:false});
-  if (error) { body.innerHTML='<tr><td colspan="6" style="text-align:center;padding:24px;color:#ef4444">데이터 로드 오류: '+error.message+'</td></tr>'; return; }
-  if (!data?.length) {
-    body.innerHTML='<tr><td colspan="6" style="text-align:center;padding:24px;color:#94a3b8">저장된 견적이 없습니다</td></tr>';
-    return;
-  }
-  body.innerHTML = data.map(q=>`
-    <tr>
-      <td style="font-weight:700;color:#1B3A6B;">${q.quote_number}</td>
-      <td>${new Date(q.created_at).toLocaleDateString('ko-KR')}</td>
-      <td>${q.company_name||''}</td>
-      <td>${q.contact_name||''}</td>
-      <td style="font-weight:700;">${fmt(q.total)}원</td>
-      <td style="display:flex;gap:5px;flex-wrap:wrap;">
-        <button class="btn btn-secondary btn-sm" onclick="loadQuote('${q.id}')">불러오기</button>
-        ${q.share_token?`<button class="btn btn-link-copy btn-sm" onclick="copyQuoteLink('${q.share_token}','${q.quote_number}')">링크복사</button>`:''}
-        <button class="btn btn-danger btn-sm" onclick="deleteQuote('${q.id}')">삭제</button>
-      </td>
-    </tr>`).join('');
+    const { data, error } = await db.from('quotes').select('*').order('created_at',{ascending:false});
+    if (error) {
+      body.innerHTML=`<tr><td colspan="6" style="text-align:center;padding:24px;color:#ef4444">데이터 로드 오류: ${error.message}</td></tr>`;
+      if (cardList) cardList.innerHTML = `<div class="history-card-empty">데이터 로드 오류: ${error.message}</div>`;
+      return;
+    }
+    if (!data?.length) {
+      body.innerHTML='<tr><td colspan="6" style="text-align:center;padding:24px;color:#94a3b8">저장된 견적이 없습니다</td></tr>';
+      if (cardList) cardList.innerHTML = '<div class="history-card-empty">📭 저장된 견적이 없습니다</div>';
+      return;
+    }
+
+    // ── 테이블 렌더링 (데스크탑) ──
+    body.innerHTML = data.map(q=>`
+      <tr data-search="${(q.company_name||'').toLowerCase()} ${(q.contact_name||'').toLowerCase()} ${(q.quote_number||'').toLowerCase()}">
+        <td style="font-weight:700;color:#1B3A6B;">${q.quote_number}</td>
+        <td>${new Date(q.created_at).toLocaleDateString('ko-KR')}</td>
+        <td>${q.company_name||''}</td>
+        <td>${q.contact_name||''}</td>
+        <td style="font-weight:700;">${fmt(q.total)}원</td>
+        <td style="display:flex;gap:5px;flex-wrap:wrap;">
+          <button class="btn btn-secondary btn-sm" onclick="loadQuote('${q.id}')">불러오기</button>
+          ${q.share_token?`<button class="btn btn-link-copy btn-sm" onclick="copyQuoteLink('${q.share_token}','${q.quote_number}')">링크복사</button>`:''}
+          <button class="btn btn-danger btn-sm" onclick="deleteQuote('${q.id}')">삭제</button>
+        </td>
+      </tr>`).join('');
+
+    // ── 카드 렌더링 (모바일) ──
+    if (cardList) {
+      cardList.innerHTML = data.map(q=>`
+        <div class="hc-card" data-search="${(q.company_name||'').toLowerCase()} ${(q.contact_name||'').toLowerCase()} ${(q.quote_number||'').toLowerCase()}">
+          <div class="hc-card-top">
+            <span class="hc-card-num">${q.quote_number||'-'}</span>
+            <span class="hc-card-date">${new Date(q.created_at).toLocaleDateString('ko-KR')}</span>
+          </div>
+          <div class="hc-card-body">
+            <div class="hc-card-company">${q.company_name||'(고객사 미입력)'}</div>
+            <div class="hc-card-contact">${q.contact_name||''}${q.contact_tel?' · '+q.contact_tel:''}</div>
+          </div>
+          <div class="hc-card-footer">
+            <span class="hc-card-total">₩ ${fmt(q.total)}원</span>
+            <div class="hc-card-actions">
+              ${q.share_token?`<button class="btn btn-link-copy btn-sm" onclick="copyQuoteLink('${q.share_token}','${q.quote_number}')">🔗</button>`:''}
+              <button class="btn btn-secondary btn-sm" onclick="loadQuote('${q.id}')">불러오기</button>
+              <button class="btn btn-danger btn-sm" onclick="deleteQuote('${q.id}')">🗑</button>
+            </div>
+          </div>
+        </div>`).join('');
+    }
+
   } catch(e) {
-    if (body) body.innerHTML='<tr><td colspan="6" style="text-align:center;padding:24px;color:#ef4444">오류: '+e.message+'</td></tr>';
+    if (body) body.innerHTML=`<tr><td colspan="6" style="text-align:center;padding:24px;color:#ef4444">오류: ${e.message}</td></tr>`;
+    if (cardList) cardList.innerHTML = `<div class="history-card-empty">오류: ${e.message}</div>`;
   }
 }
 
@@ -679,11 +757,18 @@ async function renderAdminProducts(forceRefresh = false) {
 
 // ===== 견적 이력 검색 =====
 function filterHistory() {
-  const q = (document.getElementById('p-history-search')?.value||'').toLowerCase();
+  const q = (document.getElementById('p-history-search')?.value||'').toLowerCase().trim();
+  // 테이블 행 필터
   const rows = document.querySelectorAll('#history-body tr');
   rows.forEach(row => {
-    const text = row.textContent.toLowerCase();
+    const text = (row.dataset.search || row.textContent).toLowerCase();
     row.style.display = (!q || text.includes(q)) ? '' : 'none';
+  });
+  // 카드 필터
+  const cards = document.querySelectorAll('#history-card-list .hc-card');
+  cards.forEach(card => {
+    const text = (card.dataset.search || card.textContent).toLowerCase();
+    card.style.display = (!q || text.includes(q)) ? '' : 'none';
   });
 }
 
@@ -784,4 +869,171 @@ async function pBulkDelete() {
   document.getElementById('p-check-all').checked = false;
   const btn = document.getElementById('p-bulk-del-btn');
   if (btn) btn.style.display = 'none';
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  ■ 스펙 관리 (C. 관리자 스펙 관리 탭)
+// ══════════════════════════════════════════════════════════════════
+let editingSpecCatId = null;
+let editingSpecOptId = null;
+let adminSpecCatFilter = null; // 현재 선택된 스펙 카테고리 ID
+
+async function renderSpecAdmin() {
+  await loadSpecCategories();
+  await loadSpecOptions();
+  renderSpecCategoryList();
+  renderSpecOptionList(null);
+}
+
+function renderSpecCategoryList() {
+  const el = document.getElementById('spec-cat-list');
+  if (!el) return;
+  if (!specCategories.length) {
+    el.innerHTML = '<div style="text-align:center;padding:20px;color:#94a3b8;font-size:12px;">등록된 스펙 항목이 없습니다</div>';
+    return;
+  }
+  el.innerHTML = specCategories.map(c => `
+    <div class="spec-cat-item ${adminSpecCatFilter===c.id?'active':''}" onclick="selectSpecCat('${c.id}')">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <span style="font-weight:600;font-size:13px;">${c.name}</span>
+          <span style="font-size:10px;color:#94a3b8;margin-left:6px;">순서:${c.sort_order||0}</span>
+        </div>
+        <div style="display:flex;gap:4px;">
+          <button class="btn btn-sm btn-secondary" style="padding:2px 8px;font-size:11px;" onclick="event.stopPropagation();openSpecCatModal('${c.id}')">수정</button>
+          <button class="btn btn-sm btn-danger" style="padding:2px 8px;font-size:11px;" onclick="event.stopPropagation();deleteSpecCat('${c.id}')">삭제</button>
+        </div>
+      </div>
+      <div style="font-size:10px;color:#64748b;margin-top:3px;">
+        적용: ${c.product_categories?.length ? c.product_categories.join(', ') : '전체'}
+      </div>
+    </div>`).join('');
+}
+
+function selectSpecCat(catId) {
+  adminSpecCatFilter = catId;
+  renderSpecCategoryList();
+  renderSpecOptionList(catId);
+}
+
+function renderSpecOptionList(catId) {
+  const el = document.getElementById('spec-opt-list');
+  const headerEl = document.getElementById('spec-opt-header');
+  if (!el) return;
+  const cat = specCategories.find(c => String(c.id) === String(catId));
+  if (headerEl) headerEl.textContent = cat ? `옵션 목록 — ${cat.name}` : '스펙 옵션 목록';
+  const opts = catId ? specOptions.filter(o => String(o.spec_category_id) === String(catId)) : specOptions;
+  if (!opts.length) {
+    el.innerHTML = '<div style="text-align:center;padding:20px;color:#94a3b8;font-size:12px;">'+(catId?'해당 항목에 옵션이 없습니다':'좌측에서 스펙 항목을 선택하세요')+'</div>';
+    return;
+  }
+  el.innerHTML = `<table class="data-table" style="font-size:12px;"><thead><tr><th>옵션명</th><th style="text-align:right;">추가 금액</th><th style="text-align:center;">순서</th><th>관리</th></tr></thead><tbody>
+    ${opts.map(o=>`<tr>
+      <td style="font-weight:600;">${o.name}</td>
+      <td style="text-align:right;">${o.price_delta?'+'+fmt(o.price_delta)+' 원':'포함'}</td>
+      <td style="text-align:center;">${o.sort_order||0}</td>
+      <td style="display:flex;gap:4px;">
+        <button class="btn btn-sm btn-secondary" style="font-size:11px;" onclick="openSpecOptModal('${o.id}')">수정</button>
+        <button class="btn btn-sm btn-danger" style="font-size:11px;" onclick="deleteSpecOpt('${o.id}')">삭제</button>
+      </td>
+    </tr>`).join('')}
+  </tbody></table>`;
+}
+
+// ── 스펙 카테고리 모달 ──
+function openSpecCatModal(id) {
+  editingSpecCatId = id || null;
+  const cat = id ? specCategories.find(c => String(c.id) === String(id)) : null;
+  document.getElementById('sc-modal-title').textContent = id ? '스펙 항목 수정' : '스펙 항목 추가';
+  document.getElementById('sc-name').value = cat?.name || '';
+  document.getElementById('sc-sort').value = cat?.sort_order ?? (specCategories.length);
+  // 적용 카테고리 체크박스 초기화
+  const applied = cat?.product_categories || [];
+  document.querySelectorAll('.sc-cat-check').forEach(cb => {
+    cb.checked = applied.includes(cb.value);
+  });
+  openModal('modal-spec-cat');
+}
+
+async function saveSpecCat() {
+  const name = document.getElementById('sc-name').value.trim();
+  if (!name) { showToast('항목 이름을 입력하세요', 'error'); return; }
+  const product_categories = [...document.querySelectorAll('.sc-cat-check:checked')].map(cb => cb.value);
+  const sort_order = parseInt(document.getElementById('sc-sort').value) || 0;
+  const payload = { name, sort_order, product_categories };
+  try {
+    let error;
+    if (editingSpecCatId) {
+      ({ error } = await db.from('spec_categories').update(payload).eq('id', editingSpecCatId));
+    } else {
+      ({ error } = await db.from('spec_categories').insert(payload));
+    }
+    if (error) throw new Error(error.message);
+    closeModal('modal-spec-cat');
+    await loadSpecCategories(); await loadSpecOptions();
+    renderSpecCategoryList();
+    renderSpecOptionList(adminSpecCatFilter);
+    showToast('저장되었습니다', 'success');
+  } catch(e) { showToast('저장 실패: ' + e.message, 'error'); }
+}
+
+async function deleteSpecCat(id) {
+  if (!confirm('스펙 항목과 해당 옵션이 모두 삭제됩니다. 계속하시겠습니까?')) return;
+  await db.from('spec_options').delete().eq('spec_category_id', id);
+  const { error } = await db.from('spec_categories').delete().eq('id', id);
+  if (error) { showToast('삭제 실패: ' + error.message, 'error'); return; }
+  if (adminSpecCatFilter === id) adminSpecCatFilter = null;
+  await loadSpecCategories(); await loadSpecOptions();
+  renderSpecCategoryList();
+  renderSpecOptionList(adminSpecCatFilter);
+  showToast('삭제되었습니다', 'success');
+}
+
+// ── 스펙 옵션 모달 ──
+function openSpecOptModal(id) {
+  editingSpecOptId = id || null;
+  const opt = id ? specOptions.find(o => String(o.id) === String(id)) : null;
+  document.getElementById('so-modal-title').textContent = id ? '스펙 옵션 수정' : '스펙 옵션 추가';
+  document.getElementById('so-name').value = opt?.name || '';
+  document.getElementById('so-price').value = opt?.price_delta ?? 0;
+  document.getElementById('so-sort').value = opt?.sort_order ?? 0;
+  // 카테고리 셀렉트 채우기
+  const sel = document.getElementById('so-cat-select');
+  if (sel) {
+    sel.innerHTML = specCategories.map(c => `<option value="${c.id}" ${(opt?.spec_category_id===c.id||(!opt&&adminSpecCatFilter===c.id))?'selected':''}>${c.name}</option>`).join('');
+  }
+  openModal('modal-spec-opt');
+}
+
+async function saveSpecOpt() {
+  const name = document.getElementById('so-name').value.trim();
+  if (!name) { showToast('옵션 이름을 입력하세요', 'error'); return; }
+  const spec_category_id = document.getElementById('so-cat-select').value;
+  if (!spec_category_id) { showToast('스펙 항목을 선택하세요', 'error'); return; }
+  const price_delta = parseInt(document.getElementById('so-price').value) || 0;
+  const sort_order = parseInt(document.getElementById('so-sort').value) || 0;
+  const payload = { name, spec_category_id, price_delta, sort_order };
+  try {
+    let error;
+    if (editingSpecOptId) {
+      ({ error } = await db.from('spec_options').update(payload).eq('id', editingSpecOptId));
+    } else {
+      ({ error } = await db.from('spec_options').insert(payload));
+    }
+    if (error) throw new Error(error.message);
+    closeModal('modal-spec-opt');
+    await loadSpecCategories(); await loadSpecOptions();
+    renderSpecCategoryList();
+    renderSpecOptionList(adminSpecCatFilter);
+    showToast('저장되었습니다', 'success');
+  } catch(e) { showToast('저장 실패: ' + e.message, 'error'); }
+}
+
+async function deleteSpecOpt(id) {
+  if (!confirm('옵션을 삭제하시겠습니까?')) return;
+  const { error } = await db.from('spec_options').delete().eq('id', id);
+  if (error) { showToast('삭제 실패: ' + error.message, 'error'); return; }
+  await loadSpecCategories(); await loadSpecOptions();
+  renderSpecOptionList(adminSpecCatFilter);
+  showToast('삭제되었습니다', 'success');
 }

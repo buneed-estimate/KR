@@ -560,6 +560,8 @@ textarea.field-input{resize:vertical;min-height:52px;}
 .modal-close:hover { background: #f1f5f9; color: #334155; }
 .modal-body {
   padding: 20px; overflow-y: auto; flex: 1;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 .modal-footer {
   padding: 14px 20px;
@@ -620,7 +622,8 @@ textarea.field-input{resize:vertical;min-height:52px;}
 .btn-link-copy:hover{ background:#dcfce7;border-color:#86efac; }
 
 /* 히스토리 헤더 */
-.history-header { padding:12px 4px;border-bottom:1px solid #f1f5f9;margin-bottom:12px; }
+.history-header { padding:12px 4px;border-bottom:1px solid #f1f5f9;margin-bottom:12px;
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px; }
 .history-title, .r-history-title { font-size:14px;font-weight:700;color:#1e293b; }
 
 /* 데이터 테이블 개선 */
@@ -736,4 +739,620 @@ textarea.field-input{resize:vertical;min-height:52px;}
   [style*="grid-template-columns: 1fr 1fr"] {
     grid-template-columns: 1fr 1fr !important;
   }
+}
+
+/* ══════════════════════════════════════════════════════════
+   추가 스타일: 스펙 드롭다운 / 스펙 관리 / 프로필 드롭다운
+   ══════════════════════════════════════════════════════════ */
+
+/* ── 스펙 드롭다운 섹션 (구매/렌탈 모달) ── */
+.spec-dropdown-section {
+  margin-bottom: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.spec-dd-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  background: #fff;
+}
+.spec-dd-row:last-child { border-bottom: none; }
+.spec-dd-label {
+  min-width: 60px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #475569;
+  white-space: nowrap;
+}
+.spec-dd-select {
+  flex: 1;
+  font-size: 12px;
+  padding: 5px 8px;
+  height: 32px;
+}
+.r-spec-dd .spec-dd-label { color: var(--r-primary); }
+
+/* ── 스펙 관리 패널 항목 ── */
+.spec-cat-item {
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  margin-bottom: 6px;
+  cursor: pointer;
+  background: #fff;
+  transition: border-color .15s, background .15s;
+}
+.spec-cat-item:hover { border-color: #93c5fd; background: #eff6ff; }
+.spec-cat-item.active { border-color: #1B3A6B; background: #e8f0f8; }
+
+/* ── 프로필 드롭다운 ── */
+.profile-btn-wrap { position: relative; }
+.profile-trigger {
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-size: 12px;
+  color: #475569;
+  padding: 4px 10px;
+  border-radius: 6px;
+  transition: background .15s;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.profile-trigger:hover { background: rgba(27,58,107,0.07); }
+.profile-dropdown {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  width: 200px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(27,58,107,.14);
+  z-index: 9999;
+  overflow: hidden;
+}
+.profile-dropdown.open { display: block; }
+.pd-header {
+  padding: 12px 14px 8px;
+  border-bottom: 1px solid #f1f5f9;
+}
+.pd-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #374151;
+  cursor: pointer;
+  transition: background .12s;
+}
+.pd-item:hover { background: #f8fafc; }
+.pd-divider { height: 1px; background: #f1f5f9; margin: 4px 0; }
+.pd-logout { color: #ef4444; }
+.pd-logout:hover { background: #fef2f2; }
+
+/* 모바일에서 btn-logout 숨기기 */
+@media screen and (max-width: 600px) {
+  .btn-logout { display: none; }
+  .profile-trigger { font-size: 11px; max-width: 120px; }
+}
+
+/* ══════════════════════════════════════════════════════════
+   모바일 전면 최적화 (600px 이하)
+   ══════════════════════════════════════════════════════════ */
+@media screen and (max-width: 600px) {
+
+  /* ── 헤더 ── */
+  .app-header {
+    padding: 0 10px !important;
+    height: auto !important;
+    min-height: 44px !important;
+    flex-wrap: wrap !important;
+    row-gap: 0 !important;
+  }
+  .h-logo { order: 1; flex-shrink: 0; }
+  .h-right { order: 2; margin-left: auto; flex-shrink: 0; gap: 6px !important; }
+  .h-nav-tabs {
+    order: 3;
+    width: 100% !important;
+    flex: none !important;
+    height: 36px !important;
+    padding: 0 !important;
+    border-top: 1px solid #e8edf2;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .h-nav-tabs::-webkit-scrollbar { display: none; }
+  .h-nav-tab { padding: 0 14px !important; font-size: 11.5px !important; }
+  .h-logo-label { display: none; }
+  .h-logo img { height: 24px !important; }
+  .profile-trigger {
+    font-size: 11px !important;
+    max-width: 110px !important;
+    padding: 3px 8px !important;
+  }
+
+  /* ── 서브탭 ── */
+  .sub-tabs { padding: 0 10px !important; height: 38px !important; }
+  .sub-tab { padding: 0 16px !important; min-width: auto !important; font-size: 12px !important; }
+  .admin-sub-tabs { padding: 0 8px !important; overflow-x: auto; scrollbar-width: none; }
+  .admin-sub-tabs::-webkit-scrollbar { display: none; }
+  .admin-sub-tab { padding: 0 14px !important; font-size: 11.5px !important; white-space: nowrap; }
+
+  /* ── 레이아웃: 카탈로그+폼 수직 분할 ── */
+  .split-layout {
+    flex-direction: column !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+  }
+  .catalog-panel {
+    width: 100% !important;
+    min-width: unset !important;
+    height: auto !important;
+    flex: none !important;
+    border-right: none !important;
+    border-bottom: 1.5px solid var(--border) !important;
+  }
+  /* 카탈로그 제품 목록: 수평 스크롤 그리드 */
+  .product-list {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    padding: 8px 6px !important;
+    gap: 6px !important;
+    max-height: 140px !important;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+  }
+  .product-card {
+    flex: 0 0 150px !important;
+    min-width: 150px !important;
+    margin-bottom: 0 !important;
+    scroll-snap-align: start;
+  }
+  .product-card .pc-name { font-size: 11px !important; }
+  .product-card .pc-brand { font-size: 9.5px !important; }
+  .product-card .pc-price { font-size: 11px !important; }
+
+  /* ── 폼 패널 ── */
+  .form-panel { flex: 1; min-height: 0; }
+  .form-scroll { padding: 8px 6px !important; }
+  .form-section { padding: 10px 10px !important; margin-bottom: 8px !important; }
+  .section-title, .r-section-title {
+    margin: -10px -10px 10px -10px !important;
+    font-size: 11px !important;
+    padding: 6px 10px !important;
+  }
+  .form-row {
+    grid-template-columns: 1fr !important;
+    gap: 6px !important;
+    margin-bottom: 6px !important;
+  }
+  .form-row.full { grid-template-columns: 1fr !important; }
+
+  /* ── 견적 품목 테이블: 가로 스크롤 ── */
+  .items-table { font-size: 11px !important; min-width: 520px; }
+  #quote-items-area,
+  #r-quote-items-area {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+  .qty-stepper { gap: 2px !important; }
+  .qty-btn { width: 22px !important; height: 22px !important; font-size: 13px !important; }
+  .qty-display { min-width: 22px !important; font-size: 11px !important; }
+
+  /* ── 금액 요약 ── */
+  .price-summary, .r-price-summary {
+    padding: 10px 10px !important;
+  }
+  .price-row, .ps-row { font-size: 11.5px !important; }
+  .price-row.total, .ps-row.total { font-size: 13px !important; }
+  .ps-editable { flex-wrap: wrap !important; gap: 4px !important; }
+
+  /* ── 액션 바 ── */
+  .action-bar {
+    padding: 8px 10px !important;
+    gap: 6px !important;
+    flex-wrap: wrap !important;
+  }
+  .action-bar .btn {
+    flex: 1;
+    min-width: 80px;
+    justify-content: center;
+    font-size: 12px !important;
+  }
+
+  /* ── 모달 ── */
+  .modal-overlay { padding: 0 !important; align-items: flex-end !important; }
+  .modal-box {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    max-height: 92dvh !important;
+    border-radius: 16px 16px 0 0 !important;
+  }
+  .modal-box.wide {
+    max-height: 100dvh !important;
+    border-radius: 0 !important;
+    align-items: flex-start !important;
+  }
+  .modal-header { padding: 14px 16px !important; }
+  .modal-body { padding: 14px 14px !important; }
+  .modal-footer { padding: 10px 14px !important; gap: 6px !important; }
+  .modal-footer .btn { font-size: 12px !important; padding: 8px 12px !important; }
+
+  /* 미리보기 모달: 전체화면 */
+  #modal-preview .modal-body,
+  #r-modal-preview .modal-body {
+    padding: 0 !important;
+    overflow-x: auto !important;
+  }
+  #preview-content, #r-preview-content {
+    padding: 0 !important;
+    min-width: 360px;
+  }
+  /* 모바일: 인쇄 버튼 숨기고 공유 버튼 표시 */
+  #modal-preview .modal-footer .btn-primary:not(.btn-mobile-share),
+  #r-modal-preview .modal-footer .btn-r-primary:not(.btn-mobile-share) { display: none !important; }
+  .btn-mobile-share { display: inline-flex !important; }
+
+  /* ── 견적서 본문 (qdoc) ── */
+  .qdoc {
+    padding: 12px 10px !important;
+    font-size: 11px !important;
+    min-width: unset !important;
+    width: 100% !important;
+  }
+  .qdoc .q-header {
+    flex-direction: row !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+    justify-content: space-between !important;
+  }
+  .qdoc .q-logo-area img { height: 44px !important; }
+  .q-party-grid { grid-template-columns: 1fr !important; gap: 8px !important; }
+  .q-table th, .q-table td { padding: 5px 5px !important; font-size: 10.5px !important; }
+  .q-summary-table { width: 100% !important; margin-left: 0 !important; }
+  .q-summary-table td:last-child { text-align: right !important; }
+  .q-info-grid { grid-template-columns: 1fr !important; }
+  .q-rental-info-grid { grid-template-columns: 1fr !important; }
+  [style*="grid-template-columns:1fr 1fr"],
+  [style*="grid-template-columns: 1fr 1fr"] { grid-template-columns: 1fr !important; }
+  .q-footer-bar { font-size: 9px !important; line-height: 1.6 !important; }
+
+  /* ── 관리자 패널 ── */
+  .admin-card { margin: 6px !important; }
+  .admin-card-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+    padding: 10px 12px !important;
+  }
+  .admin-card-header > div {
+    width: 100% !important;
+    flex-wrap: wrap !important;
+  }
+  /* 스펙 관리: 좌우 → 상하 */
+  #admin-panel-spec [style*="grid-template-columns:280px 1fr"],
+  #admin-panel-spec [style*="grid-template-columns: 280px 1fr"] {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  #admin-panel-spec [style*="border-right:1px solid var(--border)"],
+  #admin-panel-spec [style*="border-right: 1px solid var(--border)"] {
+    border-right: none !important;
+    border-bottom: 1px solid var(--border) !important;
+    max-height: 260px;
+  }
+
+  /* ── 이력: 테이블 숨기고 카드 표시 ── */
+  .history-table-view { display: none !important; }
+  .history-card-list  { display: flex !important; }
+
+  /* ── 이력 래퍼 & 헤더 ── */
+  .history-wrap { padding: 10px 8px !important; }
+  .history-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+    padding-bottom: 10px !important;
+    margin-bottom: 10px !important;
+  }
+  .history-search-row {
+    width: 100% !important;
+    gap: 6px !important;
+  }
+  .history-search-input {
+    flex: 1 !important;
+    width: auto !important;
+    min-width: 0 !important;
+  }
+  .history-refresh-btn {
+    padding: 0 12px !important;
+  }
+  .admin-card > div[style*="overflow:auto"],
+  .admin-card > div[style*="overflow: auto"] {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* ── 토스트 ── */
+  #toast {
+    bottom: 12px !important;
+    right: 12px !important;
+    left: 12px !important;
+  }
+  .toast-item { max-width: 100% !important; font-size: 12px !important; }
+
+  /* ── 스펙 드롭다운 모달 ── */
+  .spec-dd-row { padding: 6px 10px !important; }
+  .spec-dd-label { min-width: 50px !important; font-size: 10.5px !important; }
+  .spec-dd-select { font-size: 12px !important; height: 34px !important; }
+
+  /* ── atq 2열 → 1열 ── */
+  .atq-row-2col {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+
+  /* ── 이력: 테이블 숨기고 카드 표시 ── */
+  .history-table-view { display: none !important; }
+  .history-card-list  { display: flex !important; }
+}
+
+/* ── modal-footer-col: 견적 추가 모달 하단 세로 레이아웃 ── */
+.modal-footer-col {
+  flex-direction: column !important;
+  gap: 8px !important;
+  align-items: stretch !important;
+}
+
+/* ══════════════════════════════════════════════════════════
+   견적 이력 – 모바일 카드 리스트
+   ══════════════════════════════════════════════════════════ */
+
+/* 카드 리스트 컨테이너: 데스크탑에서는 숨김 */
+.history-card-list {
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* 로딩/빈상태 */
+.history-card-loading,
+.history-card-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+/* 개별 카드 */
+.hc-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 14px 16px;
+  box-shadow: 0 1px 4px rgba(27,58,107,.06);
+  transition: box-shadow .15s, border-color .15s;
+}
+.hc-card:active {
+  box-shadow: 0 2px 8px rgba(27,58,107,.12);
+  border-color: #93c5fd;
+}
+
+/* 카드 상단: 견적번호 + 날짜 + 배지 */
+.hc-card-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.hc-card-num {
+  font-size: 12px;
+  font-weight: 700;
+  color: #1B3A6B;
+  flex-shrink: 0;
+}
+.hc-card-num.rental { color: #2563eb; }
+.hc-card-date {
+  font-size: 11px;
+  color: #94a3b8;
+  flex: 1;
+}
+.hc-card-badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: #eff6ff;
+  color: #2563eb;
+  flex-shrink: 0;
+}
+
+/* 카드 중간: 고객사/담당자 */
+.hc-card-body {
+  margin-bottom: 12px;
+}
+.hc-card-company {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a2e5a;
+  margin-bottom: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.hc-card-contact {
+  font-size: 12px;
+  color: #64748b;
+}
+
+/* 카드 하단: 금액 + 버튼 */
+.hc-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 10px;
+}
+.hc-card-total {
+  font-size: 16px;
+  font-weight: 800;
+  color: #1B3A6B;
+}
+.hc-card-total.rental { color: #1a56a0; }
+.hc-card-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.hc-card-actions .btn {
+  padding: 6px 12px !important;
+  font-size: 12px !important;
+  border-radius: 8px !important;
+}
+
+/* 빈 카드 구분선 */
+.hc-card + .hc-card {
+  /* gap으로 처리 – 별도 border 불필요 */
+}
+
+/* ══════════════════════════════════════════════════════════
+   공통 유틸 클래스 (모바일 관련 구조 보완)
+   ══════════════════════════════════════════════════════════ */
+
+/* ── 테이블 가로 스크롤 래퍼 ── */
+.table-scroll-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
+.table-scroll-wrap .data-table {
+  min-width: 540px;
+}
+
+/* ── 이력 검색 행 (구매/렌탈) ── */
+.history-search-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.history-search-input {
+  width: 180px;
+}
+@media screen and (max-width: 600px) {
+  .history-search-row {
+    width: 100%;
+  }
+  .history-search-input {
+    flex: 1 !important;
+    width: auto !important;
+    min-width: 0 !important;
+  }
+}
+
+/* ── 관리자 카드 액션 행 ── */
+.admin-card-action-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.admin-search-input {
+  width: 200px;
+}
+@media screen and (max-width: 600px) {
+  .admin-card-action-row {
+    width: 100%;
+    justify-content: flex-end;
+  }
+  .admin-search-input {
+    flex: 1 !important;
+    width: auto !important;
+    min-width: 0 !important;
+    order: -1;
+  }
+  .admin-card-action-row .btn-sm {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+}
+
+/* ── modal-footer-col: 모달 footer 세로 쌓기 ── */
+.modal-footer-col {
+  flex-direction: column !important;
+  gap: 8px !important;
+  align-items: stretch !important;
+}
+
+/* ── 할인율/금액 입력 줄바꿈 개선 ── */
+.ps-editable {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 4px;
+}
+@media screen and (max-width: 480px) {
+  .discount-row,
+  .ps-editable {
+    justify-content: flex-start;
+  }
+  .discount-input {
+    width: 60px !important;
+  }
+}
+
+/* ── 모바일에서 catalog-panel 필터 ── */
+@media screen and (max-width: 600px) {
+  .filter-area {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 4px !important;
+    padding: 6px 8px !important;
+  }
+  .filter-select {
+    flex: 1 !important;
+    min-width: 100px !important;
+    font-size: 12px !important;
+    padding: 5px 6px !important;
+  }
+  /* 모바일 action-bar: 미리보기/저장만 오른쪽, 초기화는 왼쪽 */
+  .action-bar {
+    justify-content: space-between !important;
+  }
+  .action-bar .btn:first-child {
+    flex: 0 0 auto !important;
+    min-width: auto !important;
+  }
+  .action-bar .btn:not(:first-child) {
+    flex: 1;
+  }
+  /* 테이블 래퍼 가로 스크롤 */
+  .table-scroll-wrap {
+    margin: 0 -6px;
+    padding: 0 6px;
+  }
+  .table-scroll-wrap .data-table {
+    min-width: 480px;
+  }
+  /* 구매 이력 테이블 최소 너비 */
+  #history-table { min-width: 480px; }
+  #r-history-table { min-width: 540px; }
+  /* 관리자 제품 테이블 최소 너비 */
+  #admin-product-body ~ *, .admin-card .data-table { min-width: 560px; }
 }

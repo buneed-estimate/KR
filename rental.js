@@ -1,5 +1,11 @@
 // ===== 렌탈 견적 함수 =====
 
+// PC 카테고리 (스펙 드롭다운 표시 대상) - purchase.js의 PC_CATEGORIES와 동일
+const RENTAL_PC_CATEGORIES = ['노트북', '데스크탑', '워크스테이션', '모바일워크스테이션'];
+
+// 렌탈 모달에서 선택된 스펙 옵션 저장
+let rSelectedSpecOpts = {}; // { catId: optId }
+
 
 async function rCopyHistoryLink() {
   if (!rCurrentShareToken) { showToast('먼저 견적을 불러오세요', 'error'); return; }
@@ -29,11 +35,18 @@ async function rMobileShareQuote() {
 }
 
 function rFilterHistory() {
-  const q = (document.getElementById('r-history-search')?.value||'').toLowerCase();
+  const q = (document.getElementById('r-history-search')?.value||'').toLowerCase().trim();
+  // 테이블 행 필터
   const rows = document.querySelectorAll('#r-history-body tr');
   rows.forEach(row => {
-    const text = row.textContent.toLowerCase();
+    const text = (row.dataset.search || row.textContent).toLowerCase();
     row.style.display = (!q || text.includes(q)) ? '' : 'none';
+  });
+  // 카드 필터
+  const cards = document.querySelectorAll('#r-history-card-list .hc-card');
+  cards.forEach(card => {
+    const text = (card.dataset.search || card.textContent).toLowerCase();
+    card.style.display = (!q || text.includes(q)) ? '' : 'none';
   });
 }
 
@@ -133,22 +146,57 @@ function rOpenAtqModal(pid) {
   if (!p) return;
   rCurrentProductId = pid;
   rAtqType = rCurrentType;
+  rSelectedSpecOpts = {};
+
   document.getElementById('r-atq-title').textContent = '제품 상세';
   document.getElementById('r-atq-info').innerHTML = `
-    <div class="atq-name" style="color:var(--r-primary);">${p.name}</div>
+    <div class="atq-name" style="color:var(--r-primary);">${p.name}${p.info_url?'<span style="display:inline-block;width:7px;height:7px;background:#22c55e;border-radius:50%;margin-left:5px;vertical-align:super;flex-shrink:0;" title="이미지/링크 있음"></span>':''}</div>
     <div class="atq-meta" style="color:var(--r-blue);">
       ${p.category?`<span>${p.category}</span>`:''}
       ${p.brand?`<span style="color:#94a3b8;">|</span><span>${p.brand}</span>`:''}
-      ${p.info_url?`<span style="color:#22c55e;font-size:11px;margin-left:4px;" title="이미지/링크 있음">✅</span>`:''}
-      ${p.daily_price?`<span style="color:#94a3b8;">|</span><span style="color:var(--r-primary);font-weight:700;">일 ₩${fmt(p.daily_price)}</span>`:''}
-      ${p.monthly_price?`<span style="color:#94a3b8;">/</span><span style="color:var(--r-primary);font-weight:700;">월 ₩${fmt(p.monthly_price)}</span>`:''}
+      ${p.daily_price?`<span style="color:#94a3b8;">|</span><span style="color:var(--r-primary);font-weight:700;">일 ${fmt(p.daily_price)}원</span>`:''}
+      ${p.monthly_price?`<span style="color:#94a3b8;">/</span><span style="color:var(--r-primary);font-weight:700;">월 ${fmt(p.monthly_price)}원</span>`:''}
     </div>
-    ${p.spec?`<div class="atq-spec" style="background:rgba(255,255,255,0.7);">${p.spec}</div>`:''}
-    ${p.feature?`<div style="margin-top:6px;padding:6px 10px;background:#fff3cd;border:1px solid #ffc107;border-radius:6px;font-size:11px;color:#856404;line-height:1.5;">${p.feature}</div>`:''}
+    ${p.spec||p.spec_summary?`<div class="atq-spec" style="background:rgba(255,255,255,0.7);">${p.spec||p.spec_summary}</div>`:''}
+    ${p.feature?`<div class="atq-feature">${p.feature}</div>`:''}
   `;
+
+  // 스펙 드롭다운: PC 카테고리만 표시
+  const isPC = RENTAL_PC_CATEGORIES.includes(p.category);
+  const _specCats = (typeof specCategories !== 'undefined') ? specCategories : [];
+  const _specOpts = (typeof specOptions !== 'undefined') ? specOptions : [];
+  const cats = isPC
+    ? _specCats.filter(c => !c.product_categories?.length || c.product_categories.includes(p.category))
+    : [];
+
+  let specDdHtml = '';
+  if (isPC && cats.length > 0) {
+    specDdHtml = '<div class="spec-dropdown-section r-spec-dd">';
+    for (const cat of cats) {
+      const opts = _specOpts.filter(o => o.spec_category_id === cat.id);
+      if (!opts.length) continue;
+      specDdHtml += `
+        <div class="spec-dd-row">
+          <label class="spec-dd-label">${cat.name}</label>
+          <select class="spec-dd-select field-input r-field-input" data-cat-id="${cat.id}" onchange="rOnSpecDropdownChange('${cat.id}',this.value)">
+            <option value="">— 선택 안 함 —</option>
+            ${opts.map(o=>`<option value="${o.id}" data-price="${o.price_delta||0}">${o.name}${o.price_delta?` (+${fmt(o.price_delta)}원)`:' (포함)'}</option>`).join('')}
+          </select>
+        </div>`;
+    }
+    specDdHtml += '</div>';
+  }
+  const specDdEl = document.getElementById('r-atq-spec-opts');
+  if (specDdEl) specDdEl.innerHTML = specDdHtml;
+
   document.getElementById('r-atq-daily-btn').classList.toggle('active', rAtqType==='일');
   document.getElementById('r-atq-monthly-btn').classList.toggle('active', rAtqType==='월');
-  document.getElementById('r-atq-unit').value = rAtqType==='일' ? (p.daily_price||0) : (p.monthly_price||0);
+
+  // 기본 단가 저장 (hidden)
+  const rBasePriceEl = document.getElementById('r-atq-base-price');
+  const baseUnit = rAtqType==='일' ? (p.daily_price||0) : (p.monthly_price||0);
+  if (rBasePriceEl) rBasePriceEl.value = baseUnit;
+  document.getElementById('r-atq-unit').value = baseUnit;
   document.getElementById('r-atq-qty').value = 1;
   document.getElementById('r-atq-duration').value = 1;
   // 기간 레이블 초기화
@@ -156,6 +204,30 @@ function rOpenAtqModal(pid) {
   if (durLbl2) durLbl2.innerHTML = rAtqType==='일' ? '기간 <span style="font-size:10px;color:#94a3b8;font-weight:400;">(일)</span>' : '기간 <span style="font-size:10px;color:#94a3b8;font-weight:400;">(개월)</span>';
   rUpdateAtqCalc();
   openModal('r-modal-atq');
+}
+
+// 렌탈 스펙 드롭다운 변경
+function rOnSpecDropdownChange(catId, optId) {
+  if (optId) {
+    rSelectedSpecOpts[catId] = optId;
+  } else {
+    delete rSelectedSpecOpts[catId];
+  }
+  rRecalcAtqPrice();
+}
+
+// 기본 단가 + 선택 스펙 합계로 렌탈 단가 재계산
+function rRecalcAtqPrice() {
+  const rBasePriceEl = document.getElementById('r-atq-base-price');
+  const base = parseInt(rBasePriceEl ? rBasePriceEl.value : document.getElementById('r-atq-unit').value) || 0;
+  const _specOpts = (typeof specOptions !== 'undefined') ? specOptions : [];
+  let extra = 0;
+  for (const optId of Object.values(rSelectedSpecOpts)) {
+    const opt = _specOpts.find(o => String(o.id) === String(optId));
+    if (opt) extra += (opt.price_delta || 0);
+  }
+  document.getElementById('r-atq-unit').value = base + extra;
+  rUpdateAtqCalc();
 }
 
 function rSetAtqType(type) {
@@ -166,7 +238,19 @@ function rSetAtqType(type) {
   const durLbl = document.getElementById('r-atq-duration-label');
   if (durLbl) durLbl.innerHTML = type==='일' ? '기간 <span style="font-size:10px;color:#94a3b8;font-weight:400;">(일)</span>' : '기간 <span style="font-size:10px;color:#94a3b8;font-weight:400;">(개월)</span>';
   const p = rProducts.find(x=>String(x.id)===String(rCurrentProductId));
-  if (p) document.getElementById('r-atq-unit').value = type==='일'?(p.daily_price||0):(p.monthly_price||0);
+  if (p) {
+    const baseUnit = type==='일'?(p.daily_price||0):(p.monthly_price||0);
+    const rBasePriceEl = document.getElementById('r-atq-base-price');
+    if (rBasePriceEl) rBasePriceEl.value = baseUnit;
+    // 스펙 추가금 재적용
+    const _specOpts = (typeof specOptions !== 'undefined') ? specOptions : [];
+    let extra = 0;
+    for (const optId of Object.values(rSelectedSpecOpts)) {
+      const opt = _specOpts.find(o => String(o.id) === String(optId));
+      if (opt) extra += (opt.price_delta || 0);
+    }
+    document.getElementById('r-atq-unit').value = baseUnit + extra;
+  }
   rUpdateAtqCalc();
 }
 function rUpdateAtqCalc() {
@@ -187,8 +271,18 @@ function rAddToQuote() {
   const unit = parseInt(document.getElementById('r-atq-unit').value)||0;
   const qty = parseInt(document.getElementById('r-atq-qty').value)||1;
   const dur = parseInt(document.getElementById('r-atq-duration').value)||1;
+
+  // 스펙 요약: 선택한 옵션 이름만 / 구분자로 연결, 없으면 기존 spec 그대로
+  const _specOpts = (typeof specOptions !== 'undefined') ? specOptions : [];
+  const selectedOptNames = Object.values(rSelectedSpecOpts)
+    .map(id => _specOpts.find(o => String(o.id) === String(id))?.name)
+    .filter(Boolean);
+  const productSpec = selectedOptNames.length > 0
+    ? selectedOptNames.join(' / ')
+    : (p.spec || p.spec_summary || '');
+
   rQuoteItems.push({
-    product_id: p.id, product_name: p.name, product_spec: p.spec||p.spec_summary||'', brand: p.brand||'', category: p.category||'',
+    product_id: p.id, product_name: p.name, product_spec: productSpec, brand: p.brand||'', category: p.category||'',
     rental_type: rAtqType, unit_price: unit, quantity: qty, item_duration: dur,
     total_price: unit * qty * dur,
     info_url: p.info_url || null
@@ -498,31 +592,70 @@ async function rCopyShareLink() {
 
 async function rLoadHistory() {
   const body = document.getElementById('r-history-body');
+  const cardList = document.getElementById('r-history-card-list');
   if (!body) return;
+
+  body.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--muted)">로딩 중...</td></tr>';
+  if (cardList) cardList.innerHTML = '<div class="history-card-loading">로딩 중...</div>';
+
   try {
-  const { data, error } = await db.from('rental_quotes').select('*').order('created_at',{ascending:false});
-  if (error) { body.innerHTML='<tr><td colspan="7" style="text-align:center;padding:24px;color:#ef4444">데이터 로드 오류: '+error.message+'</td></tr>'; return; }
-  if (!data?.length) {
-    body.innerHTML='<tr><td colspan="7" style="text-align:center;padding:24px;color:#94a3b8">저장된 렌탈 견적이 없습니다</td></tr>';
-    return;
-  }
-  const typeLabel = t => t==='일'?'일 단위':'월 단위';
-  body.innerHTML = data.map(q=>`
-    <tr>
-      <td style="font-weight:700;color:#2563eb;">${q.quote_number}</td>
-      <td>${new Date(q.created_at).toLocaleDateString('ko-KR')}</td>
-      <td>${q.company_name||''}</td>
-      <td>${q.contact_name||''}</td>
-      <td><span style="font-size:11px;background:#eff6ff;color:#2563eb;padding:2px 7px;border-radius:10px;font-weight:600;">${typeLabel(q.rental_type)}</span></td>
-      <td style="font-weight:700;">${fmt(q.total)}원</td>
-      <td style="display:flex;gap:5px;flex-wrap:wrap;">
-        <button class="btn btn-r-secondary btn-sm" onclick="rLoadQuote('${q.id}')">불러오기</button>
-        ${q.share_token?`<button class="btn btn-link-copy btn-sm" onclick="copyRentalQuoteLink('${q.share_token}')">링크복사</button>`:''}
-        <button class="btn btn-danger btn-sm" onclick="rDeleteQuote('${q.id}')">삭제</button>
-      </td>
-    </tr>`).join('');
+    const { data, error } = await db.from('rental_quotes').select('*').order('created_at',{ascending:false});
+    if (error) {
+      body.innerHTML=`<tr><td colspan="7" style="text-align:center;padding:24px;color:#ef4444">데이터 로드 오류: ${error.message}</td></tr>`;
+      if (cardList) cardList.innerHTML = `<div class="history-card-empty">데이터 로드 오류: ${error.message}</div>`;
+      return;
+    }
+    if (!data?.length) {
+      body.innerHTML='<tr><td colspan="7" style="text-align:center;padding:24px;color:#94a3b8">저장된 렌탈 견적이 없습니다</td></tr>';
+      if (cardList) cardList.innerHTML = '<div class="history-card-empty">📭 저장된 렌탈 견적이 없습니다</div>';
+      return;
+    }
+
+    const typeLabel = t => t==='일' ? '일 단위' : '월 단위';
+
+    // ── 테이블 렌더링 (데스크탑) ──
+    body.innerHTML = data.map(q=>`
+      <tr data-search="${(q.company_name||'').toLowerCase()} ${(q.contact_name||'').toLowerCase()} ${(q.quote_number||'').toLowerCase()}">
+        <td style="font-weight:700;color:#2563eb;">${q.quote_number}</td>
+        <td>${new Date(q.created_at).toLocaleDateString('ko-KR')}</td>
+        <td>${q.company_name||''}</td>
+        <td>${q.contact_name||''}</td>
+        <td><span style="font-size:11px;background:#eff6ff;color:#2563eb;padding:2px 7px;border-radius:10px;font-weight:600;">${typeLabel(q.rental_type)}</span></td>
+        <td style="font-weight:700;">${fmt(q.total)}원</td>
+        <td style="display:flex;gap:5px;flex-wrap:wrap;">
+          <button class="btn btn-r-secondary btn-sm" onclick="rLoadQuote('${q.id}')">불러오기</button>
+          ${q.share_token?`<button class="btn btn-link-copy btn-sm" onclick="copyRentalQuoteLink('${q.share_token}')">링크복사</button>`:''}
+          <button class="btn btn-danger btn-sm" onclick="rDeleteQuote('${q.id}')">삭제</button>
+        </td>
+      </tr>`).join('');
+
+    // ── 카드 렌더링 (모바일) ──
+    if (cardList) {
+      cardList.innerHTML = data.map(q=>`
+        <div class="hc-card" data-search="${(q.company_name||'').toLowerCase()} ${(q.contact_name||'').toLowerCase()} ${(q.quote_number||'').toLowerCase()}">
+          <div class="hc-card-top">
+            <span class="hc-card-num rental">${q.quote_number||'-'}</span>
+            <span class="hc-card-date">${new Date(q.created_at).toLocaleDateString('ko-KR')}</span>
+            <span class="hc-card-badge">${typeLabel(q.rental_type)}</span>
+          </div>
+          <div class="hc-card-body">
+            <div class="hc-card-company">${q.company_name||'(고객사 미입력)'}</div>
+            <div class="hc-card-contact">${q.contact_name||''}${q.contact_tel?' · '+q.contact_tel:''}</div>
+          </div>
+          <div class="hc-card-footer">
+            <span class="hc-card-total rental">₩ ${fmt(q.total)}원</span>
+            <div class="hc-card-actions">
+              ${q.share_token?`<button class="btn btn-link-copy btn-sm" onclick="copyRentalQuoteLink('${q.share_token}')">🔗</button>`:''}
+              <button class="btn btn-r-secondary btn-sm" onclick="rLoadQuote('${q.id}')">불러오기</button>
+              <button class="btn btn-danger btn-sm" onclick="rDeleteQuote('${q.id}')">🗑</button>
+            </div>
+          </div>
+        </div>`).join('');
+    }
+
   } catch(e) {
-    if (body) body.innerHTML='<tr><td colspan="7" style="text-align:center;padding:24px;color:#ef4444">오류: '+e.message+'</td></tr>';
+    if (body) body.innerHTML=`<tr><td colspan="7" style="text-align:center;padding:24px;color:#ef4444">오류: ${e.message}</td></tr>`;
+    if (cardList) cardList.innerHTML = `<div class="history-card-empty">오류: ${e.message}</div>`;
   }
 }
 
