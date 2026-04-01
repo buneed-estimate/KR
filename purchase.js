@@ -601,12 +601,23 @@ function previewQuote() {
 
 function printQuote() {
   const modal = document.getElementById('modal-preview');
+  const company = (document.getElementById('f-company')||{}).value?.trim() || '';
+  const qNum = currentQuoteNum || '';
+  const prevTitle = document.title;
+  const printTitle = `비유니드 구매견적서_${qNum}${company ? '_'+company : ''}`;
+
   if (!modal || !modal.classList.contains('open')) {
     previewQuote();
-    setTimeout(() => window.print(), 500);
+    setTimeout(() => {
+      document.title = printTitle;
+      window.print();
+      document.title = prevTitle;
+    }, 500);
     return;
   }
+  document.title = printTitle;
   window.print();
+  document.title = prevTitle;
 }
 
 /* copyQuoteLink v1 removed – using async v2 */

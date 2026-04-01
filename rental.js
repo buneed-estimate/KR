@@ -619,12 +619,23 @@ function rPreviewQuote() {
 
 function rPrintQuote() {
   const modal = document.getElementById('r-modal-preview');
+  const company = (document.getElementById('r-company')||{}).value?.trim() || '';
+  const qNum = (document.getElementById('r-quote-num')||{}).value?.trim() || '';
+  const prevTitle = document.title;
+  const printTitle = `비유니드 렌탈견적서_${qNum}${company ? '_'+company : ''}`;
+
   if (!modal || !modal.classList.contains('open')) {
     rPreviewQuote();
-    setTimeout(() => window.print(), 500);
+    setTimeout(() => {
+      document.title = printTitle;
+      window.print();
+      document.title = prevTitle;
+    }, 500);
     return;
   }
+  document.title = printTitle;
   window.print();
+  document.title = prevTitle;
 }
 
 async function rCopyShareLink() {
