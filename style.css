@@ -2074,10 +2074,19 @@ textarea.field-input{resize:vertical;min-height:52px;}
     border-right: none !important;
     border-bottom: 1px solid var(--border);
     max-height: 220px;
+    overflow-y: auto;
   }
-  /* 스펙 옵션 테이블 관리 열 */
-  .data-table th:last-child,
-  .data-table td:last-child {
-    white-space: nowrap;
+  /* 스펙 옵션 테이블: 가로 스크롤 허용 */
+  #spec-opt-list {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+  #spec-opt-list table {
+    min-width: 300px;
+  }
+  /* 관리 열 버튼 항상 표시 */
+  #spec-opt-list td:last-child,
+  #spec-opt-list th:last-child {
+    white-space: nowrap !important;
   }
 }
