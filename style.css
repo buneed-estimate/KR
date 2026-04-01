@@ -216,10 +216,6 @@ textarea.field-input{resize:vertical;min-height:52px;}
 .backup-btn:hover { background: #1B3A6B; color: #fff; border-color: #1B3A6B; }
 .r-backup-btn { border-color: #93c5fd; color: var(--r-primary); }
 .r-backup-btn:hover { background: var(--r-primary); color: #fff; border-color: var(--r-primary); }
-.admin-card{
-  background:#fff;border-radius:10px;border:1px solid var(--border);
-  padding:0;overflow:hidden;display:flex;flex-direction:column;flex:1;
-}
 .data-table{width:100%;border-collapse:collapse;font-size:var(--fs-base);}
 .data-table th{background:#f8fafc;padding:9px 12px;font-weight:700;color:#374151;border-bottom:1.5px solid var(--border);text-align:left;font-size:var(--fs-sm);}
 .data-table td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:middle;}
@@ -564,7 +560,7 @@ textarea.field-input{resize:vertical;min-height:52px;}
 .admin-sub-tab { padding:0 18px; height:40px; font-size:12px; font-weight:600; color:#94a3b8; cursor:pointer; border:none; background:transparent; border-bottom:2.5px solid transparent; }
 .admin-sub-tab:hover { color:#1B3A6B; }
 .admin-sub-tab.active { color:#1B3A6B; border-bottom-color:#1B3A6B; }
-.admin-card { background:#fff; border-radius:8px; border:1px solid var(--border); overflow:hidden; display:flex; flex-direction:column; flex:1; margin:12px; }
+.admin-card { background:#fff; border-radius:8px; border:1px solid var(--border); padding:0; overflow:hidden; display:flex; flex-direction:column; flex:1; margin:12px; }
 .admin-card-header { display:flex; justify-content:space-between; align-items:center; padding:12px 16px; border-bottom:1px solid var(--border); flex-shrink:0; }
 
 /* ── 렌탈 단위 토글 버튼 ─────────────────────── */
@@ -775,10 +771,8 @@ textarea.field-input{resize:vertical;min-height:52px;}
   display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px; }
 .history-title, .r-history-title { font-size:14px;font-weight:700;color:#1e293b; }
 
-/* 데이터 테이블 개선 */
-.data-table td { padding:9px 12px;border-bottom:1px solid #f8fafc;vertical-align:middle; }
+/* 데이터 테이블 호버/마지막행 */
 .data-table tr:hover td { background:#fafbff; }
-.data-table tr:last-child td { border-bottom:none; }
 
 /* 빈 상태 */
 .empty-state { text-align:center;padding:40px 20px;color:#94a3b8; }
@@ -2125,4 +2119,69 @@ textarea.field-input{resize:vertical;min-height:52px;}
 .spec-opt-body td:last-child {
   white-space: nowrap;
   text-align: right;
+}
+
+/* ══ 고객사 picker 모달 ══ */
+/* 검색 input이 항상 클릭/터치 가능하도록 */
+.cpi-search-wrap {
+  position: relative;
+  z-index: 10;
+  pointer-events: auto;
+}
+.cpi-search-input {
+  pointer-events: auto;
+  touch-action: manipulation;
+  -webkit-user-select: text;
+  user-select: text;
+  position: relative;
+  z-index: 10;
+}
+/* 모바일: picker 모달 — 상단 고정 (키보드 올라와도 input 안 가려짐) */
+@media (max-width: 600px) {
+  #modal-client-picker.modal-overlay,
+  #modal-r-client-picker.modal-overlay {
+    align-items: flex-start !important;
+    padding: 0 !important;
+    overflow-y: hidden !important;
+  }
+  #modal-client-picker .modal-box,
+  #modal-r-client-picker .modal-box {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    border-radius: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+  }
+  #modal-client-picker .modal-header,
+  #modal-r-client-picker .modal-header {
+    flex-shrink: 0;
+  }
+  #modal-client-picker .cpi-search-wrap,
+  #modal-r-client-picker .cpi-search-wrap {
+    flex-shrink: 0;
+    padding: 10px 14px 8px;
+  }
+  #modal-client-picker .cpi-body,
+  #modal-r-client-picker .cpi-body {
+    flex: 1 !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    min-height: 0;
+  }
+  #modal-client-picker .modal-footer,
+  #modal-r-client-picker .modal-footer {
+    flex-shrink: 0;
+  }
+  /* input: iOS 자동줌 방지 + 터치 영역 확보 */
+  #cpi-search,
+  #r-cpi-search {
+    font-size: 16px !important;
+    padding: 10px 12px !important;
+    touch-action: manipulation;
+    -webkit-user-select: text;
+    user-select: text;
+  }
 }
