@@ -435,7 +435,6 @@ textarea.field-input{resize:vertical;min-height:52px;}
   .q-summary-table td:last-child {
     text-align:right !important;
   }
-  .q-info-grid,
   .q-rental-info-grid,
   [style*="grid-template-columns:1fr 1fr"],
   [style*="grid-template-columns: 1fr 1fr"] {
@@ -909,11 +908,11 @@ textarea.field-input{resize:vertical;min-height:52px;}
     grid-template-columns: 1fr 1fr !important;
     gap: 10px !important;
   }
-  /* 납품/특이사항, 렌탈 정보 등 동일 처리 */
+  /* 납품/특이사항: flex 열 방향 유지 (grid 덮어쓰기 방지) */
   .q-info-grid {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-    gap: 10px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    grid-template-columns: unset !important;
   }
   .q-rental-info-grid {
     display: grid !important;
@@ -1250,7 +1249,7 @@ textarea.field-input{resize:vertical;min-height:52px;}
 
   /* 수신/공급 박스: 모바일에서 세로로 */
   .q-party-grid { grid-template-columns: 1fr !important; gap: 8px !important; }
-  .q-info-grid { grid-template-columns: 1fr !important; }
+  .q-info-grid { display: flex !important; flex-direction: column !important; }
   .q-rental-info-grid { grid-template-columns: 1fr !important; }
   [style*="grid-template-columns:1fr 1fr"],
   [style*="grid-template-columns: 1fr 1fr"] { grid-template-columns: 1fr !important; }
