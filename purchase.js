@@ -16,6 +16,9 @@ let _lastPreviewHtml = '';
 // PC 계열 카테고리 (스펙 드롭다운 표시 대상)
 const PC_CATEGORIES = ['노트북', '데스크탑', '워크스테이션', '모바일워크스테이션'];
 
+// 현재 정렬 기준 (구매)
+let currentSortP = 'newest'; // 'newest' | 'name' | 'price_asc' | 'price_desc' | 'category'
+
 function initQuoteNum() {
   const now = new Date();
   const pad = n => String(n).padStart(2,'0');
@@ -103,20 +106,43 @@ function fmtSpec(spec) {
   return s;
 }
 
+function sortProductList(list, sort) {
+  const arr = [...list];
+  switch(sort) {
+    case 'name':       return arr.sort((a,b)=>(a.name||'').localeCompare(b.name||'','ko'));
+    case 'price_asc':  return arr.sort((a,b)=>(a.base_price||0)-(b.base_price||0));
+    case 'price_desc': return arr.sort((a,b)=>(b.base_price||0)-(a.base_price||0));
+    case 'category':   return arr.sort((a,b)=>(a.category||'').localeCompare(b.category||'','ko'));
+    case 'newest': default:
+      // DB 제품: created_at 내림차순 / 샘플: 원래 순서(인덱스 역순)
+      return arr.sort((a,b)=>{
+        if (a.created_at && b.created_at) return new Date(b.created_at)-new Date(a.created_at);
+        return (b.id||0)-(a.id||0);
+      });
+  }
+}
+
 function renderProducts() {
-  const cat = document.getElementById('f-cat').value;
+  const cat   = document.getElementById('f-cat').value;
   const brand = document.getElementById('f-brand').value;
   let list = products;
-  if (cat) list = list.filter(p=>p.category===cat);
+  if (cat)   list = list.filter(p=>p.category===cat);
   if (brand) list = list.filter(p=>p.brand===brand);
+  list = sortProductList(list, currentSortP);
   const el = document.getElementById('product-list');
   if (!list.length) { el.innerHTML='<div class="no-products">제품 없음</div>'; return; }
   el.innerHTML = list.map(p=>`
     <div class="product-card" onclick="openSpecModal('${p.id}')">
-      <div class="pc-name">${p.name}</div>
+      <div class="pc-name">${p.name}${p.info_url?'<span class="dot-green" title="이미지/링크 있음"></span>':''}</div>
       <div class="pc-brand">${p.category} · ${p.brand}</div>
-      <div class="pc-price">${p.base_price > 0 ? fmt(p.base_price)+'원' : '가격 문의'}</div>
+      <div class="pc-price">${p.base_price > 0 ? fmt(p.base_price)+' 원' : '가격 문의'}</div>
     </div>`).join('');
+}
+
+function setSortP(val) {
+  currentSortP = val;
+  document.querySelectorAll('#p-sort-btns .sort-btn').forEach(b=>b.classList.toggle('active', b.dataset.sort===val));
+  renderProducts();
 }
 
 // ── 스펙 옵션 데이터 보장 (첫 모달 오픈 시 1회 로드) ──
@@ -138,19 +164,21 @@ async function openSpecModal(productId) {
 
   currentSpecProductId = productId;
   selectedSpecOpts = {};
+  selectedSpecPrices = {};
+
+  // ── 제품 정보 영역 ──
   document.getElementById('aq-title').textContent = '제품 상세';
   document.getElementById('aq-product-info').innerHTML = `
-    <div class="atq-name">${p.name}${p.info_url?'<span style="display:inline-block;width:7px;height:7px;background:#22c55e;border-radius:50%;margin-left:5px;vertical-align:super;flex-shrink:0;" title="이미지/링크 있음"></span>':''}</div>
+    <div class="atq-name">${p.name}${p.info_url ? '<span class="dot-green" title="이미지/링크 있음"></span>' : ''}</div>
     <div class="atq-meta">
-      ${p.category?`<span>${p.category}</span>`:''}
-      ${p.brand?`<span style="color:#94a3b8;">|</span><span>${p.brand}</span>`:''}
-      ${p.base_price?`<span style="color:#94a3b8;">|</span><span style="color:#1B3A6B;font-weight:700;">${fmt(p.base_price)} 원</span>`:''}
+      ${p.category ? `<span>${p.category}</span>` : ''}
+      ${p.brand ? `<span class="atq-sep">|</span><span>${p.brand}</span>` : ''}
     </div>
-    ${p.spec_summary?`<div class="atq-spec" id="aq-spec-default-text">${fmtSpec(p.spec_summary)}</div>`:''}
-    ${p.feature?`<div class="atq-feature">${p.feature}</div>`:''}
+    ${p.spec_summary ? `<div class="atq-spec">${fmtSpec(p.spec_summary)}</div>` : ''}
+    ${p.feature ? `<div class="atq-feature">${p.feature}</div>` : ''}
   `;
 
-  // PC 카테고리일 때만 스펙 드롭다운 표시
+  // ── PC 카테고리일 때만 스펙 드롭다운 표시 ──
   const isPC = PC_CATEGORIES.includes(p.category);
   const cats = isPC
     ? specCategories.filter(c => !c.product_categories?.length || c.product_categories.includes(p.category))
@@ -159,49 +187,72 @@ async function openSpecModal(productId) {
   let optsHtml = '';
   if (isPC && cats.length > 0) {
     optsHtml = '<div class="spec-dropdown-section">';
+    optsHtml += '<div class="spec-dd-header"><span class="spec-dd-col-label">스펙 항목</span><span class="spec-dd-col-sel">선택</span><span class="spec-dd-col-price">금액 (원)</span></div>';
     for (const cat of cats) {
       const opts = specOptions.filter(o => o.spec_category_id === cat.id);
       if (!opts.length) continue;
       optsHtml += `
         <div class="spec-dd-row">
-          <label class="spec-dd-label">${cat.name}</label>
-          <select class="spec-dd-select field-input" data-cat-id="${cat.id}" onchange="onSpecDropdownChange('${cat.id}',this.value)">
+          <span class="spec-dd-label">${cat.name}</span>
+          <select class="spec-dd-select" data-cat-id="${cat.id}"
+            onchange="onSpecDropdownChange('${cat.id}',this.value,this)">
             <option value="">— 선택 안 함 —</option>
-            ${opts.map(o=>`<option value="${o.id}" data-price="${o.price_delta||0}">${o.name}${o.price_delta?` (+${fmt(o.price_delta)}원)`:' (포함)'}</option>`).join('')}
+            ${opts.map(o => `<option value="${o.id}" data-price="${o.price_delta || 0}">${o.name}</option>`).join('')}
           </select>
+          <input class="spec-dd-price" type="number" id="sop-${cat.id}" value="0"
+            placeholder="0" oninput="onSpecPriceInput('${cat.id}',this.value)"
+            title="선택한 옵션의 기본가가 자동입력됩니다. 수기 수정 가능합니다.">
         </div>`;
     }
     optsHtml += '</div>';
   }
   document.getElementById('spec-opts').innerHTML = optsHtml;
 
-  // 기본가 (aq-base-price) 초기화
+  // ── 기본가 초기화 ──
   const basePriceEl = document.getElementById('aq-base-price');
-  if (basePriceEl) { basePriceEl.value = p.base_price || 0; }
+  if (basePriceEl) basePriceEl.value = p.base_price || 0;
   document.getElementById('aq-unit').value = p.base_price || 0;
   document.getElementById('aq-qty').value = 1;
   updateAQCalc();
   openModal('modal-aq');
 }
 
+// selectedSpecPrices: { catId: customPrice } — 드롭다운 선택 or 수기 입력 금액
+let selectedSpecPrices = {};
+
 // 드롭다운 선택 시 호출
-function onSpecDropdownChange(catId, optId) {
+function onSpecDropdownChange(catId, optId, selectEl) {
   if (optId) {
     selectedSpecOpts[catId] = optId;
+    // 선택한 옵션의 기본 price_delta를 금액 input에 자동 세팅
+    const opt = specOptions.find(o => String(o.id) === String(optId));
+    const delta = opt ? (opt.price_delta || 0) : 0;
+    selectedSpecPrices[catId] = delta;
+    const priceEl = document.getElementById('sop-'+catId);
+    if (priceEl) priceEl.value = delta;
   } else {
     delete selectedSpecOpts[catId];
+    selectedSpecPrices[catId] = 0;
+    const priceEl = document.getElementById('sop-'+catId);
+    if (priceEl) priceEl.value = 0;
   }
   recalcAQPrice();
 }
 
-// 기본가 + 선택된 스펙 합계로 단가 재계산
+// 금액 input 수기 수정 시 호출
+function onSpecPriceInput(catId, val) {
+  selectedSpecPrices[catId] = parseInt(val) || 0;
+  recalcAQPrice();
+}
+
+// 기본가 + 개별 스펙 금액 합계로 단가 재계산
 function recalcAQPrice() {
   const basePriceEl = document.getElementById('aq-base-price');
-  const base = parseInt(basePriceEl ? basePriceEl.value : document.getElementById('aq-unit').value) || 0;
+  const base = parseInt(basePriceEl ? basePriceEl.value : 0) || 0;
   let extra = 0;
-  for (const optId of Object.values(selectedSpecOpts)) {
-    const opt = specOptions.find(o => String(o.id) === String(optId));
-    if (opt) extra += (opt.price_delta || 0);
+  // selectedSpecPrices에 저장된 값 합산 (수기 수정 반영)
+  for (const [catId, price] of Object.entries(selectedSpecPrices)) {
+    extra += (price || 0);
   }
   document.getElementById('aq-unit').value = base + extra;
   updateAQCalc();
@@ -227,21 +278,17 @@ function addToQuote() {
   const p = products.find(x=>String(x.id)===String(currentSpecProductId));
   if (!p) return;
   const unit = parseInt(document.getElementById('aq-unit').value)||0;
-  const qty = parseInt(document.getElementById('aq-qty').value)||1;
+  const qty  = parseInt(document.getElementById('aq-qty').value)||1;
 
-  // 스펙 요약 자동 생성: 선택한 옵션 이름만 / 구분자로 연결
-  let specSummary;
+  // 스펙 요약: 선택된 optId → 옵션 이름만 / 구분자
+  // selectedSpecOpts에 값이 있는 항목만 포함 (선택 안 한 항목 제외)
   const selectedOptNames = Object.values(selectedSpecOpts)
     .map(id => specOptions.find(o => String(o.id) === String(id))?.name)
     .filter(Boolean);
 
-  if (selectedOptNames.length > 0) {
-    // 선택한 스펙이 있으면 → 값만 조합 (라벨 없이)
-    specSummary = selectedOptNames.join(' / ');
-  } else {
-    // 선택 안 하면 → 기존 spec_summary 그대로
-    specSummary = p.spec_summary || '';
-  }
+  const specSummary = selectedOptNames.length > 0
+    ? selectedOptNames.join(' / ')
+    : (p.spec_summary || '');
 
   quoteItems.push({
     product_id: p.id, product_name: p.name, brand: p.brand, category: p.category,
@@ -258,24 +305,45 @@ function renderQuoteItems() {
     el.innerHTML='<div class="no-products" style="padding:16px 0">좌측 카탈로그에서 제품을 클릭하여 추가하세요</div>';
     return;
   }
-  el.innerHTML = `<table class="items-table"><thead><tr><th style="width:70px;">브랜드</th><th>제품명 / 사양</th><th style="text-align:right;min-width:90px;">단가</th><th style="text-align:center;min-width:100px;">수량</th><th></th></tr></thead><tbody>
-    ${quoteItems.map((it,i)=>`<tr>
-      <td style="text-align:center;vertical-align:middle;padding:6px 4px;">
-        <div style="font-size:10.5px;font-weight:700;color:#1B3A6B;white-space:nowrap;">${it.brand||''}</div>
-        <div style="font-size:10px;color:#94a3b8;margin-top:2px;">${it.category||''}</div>
+  el.innerHTML = `<table class="items-table"><thead><tr>
+    <th class="col-order">순서</th>
+    <th class="col-brand">브랜드</th>
+    <th class="col-product">제품명 / 사양</th>
+    <th class="col-unit">단가</th>
+    <th class="col-qty">수량</th>
+    <th class="col-rm"></th>
+  </tr></thead><tbody>
+    ${quoteItems.map((it,i)=>`<tr class="qi-row" data-idx="${i}">
+      <td class="col-order">
+        <div class="qi-order-btns">
+          <button class="qi-order-btn" onclick="moveQuoteItem(${i},-1)" ${i===0?'disabled':''} title="위로">▲</button>
+          <span class="qi-num">${i+1}</span>
+          <button class="qi-order-btn" onclick="moveQuoteItem(${i},1)" ${i===quoteItems.length-1?'disabled':''} title="아래로">▼</button>
+        </div>
       </td>
-      <td><strong>${it.product_name}</strong>${it.spec_summary ? `<div style="font-size:10.5px;color:#64748b;margin-top:3px;line-height:1.4;">${fmtSpec(it.spec_summary)}</div>` : ''}</td>
-      <td style="text-align:right;font-size:12px;">${fmt(it.unit_price)}원</td>
-      <td style="text-align:center;">
+      <td class="col-brand">
+        <div class="qi-brand">${it.brand||''}</div>
+        <div class="qi-cat">${it.category||''}</div>
+      </td>
+      <td class="col-product"><strong>${it.product_name}</strong>${it.spec_summary ? `<div class="qi-spec">${fmtSpec(it.spec_summary)}</div>` : ''}</td>
+      <td class="col-unit">${fmt(it.unit_price)}<span style="font-size:10px;">원</span></td>
+      <td class="col-qty">
         <div class="qty-stepper">
           <button class="qty-btn" onclick="changeQty(${i},${it.qty}-1)">−</button>
           <span class="qty-display">${it.qty}</span>
           <button class="qty-btn" onclick="changeQty(${i},${it.qty}+1)">+</button>
         </div>
       </td>
-      <td><button class="btn-rm" onclick="removeItem(${i})">✕</button></td>
+      <td class="col-rm"><button class="btn-rm" onclick="removeItem(${i})">✕</button></td>
     </tr>`).join('')}
     </tbody></table>`;
+}
+
+function moveQuoteItem(idx, dir) {
+  const newIdx = idx + dir;
+  if (newIdx < 0 || newIdx >= quoteItems.length) return;
+  [quoteItems[idx], quoteItems[newIdx]] = [quoteItems[newIdx], quoteItems[idx]];
+  renderQuoteItems(); calcPrice();
 }
 
 function changeQty(i, v) {

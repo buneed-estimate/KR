@@ -103,6 +103,14 @@
               <option>Lenovo</option><option>Dell</option><option>Apple</option>
             </select>
           </div>
+          <!-- 정렬 버튼 -->
+          <div class="sort-bar" id="p-sort-btns">
+            <button class="sort-btn active" data-sort="newest" onclick="setSortP('newest')">최신순</button>
+            <button class="sort-btn" data-sort="name" onclick="setSortP('name')">가나다</button>
+            <button class="sort-btn" data-sort="price_asc" onclick="setSortP('price_asc')">가격↑</button>
+            <button class="sort-btn" data-sort="price_desc" onclick="setSortP('price_desc')">가격↓</button>
+            <button class="sort-btn" data-sort="category" onclick="setSortP('category')">분류</button>
+          </div>
           <div class="product-list" id="product-list"><div class="no-products">로딩 중...</div></div>
         </div>
 
@@ -463,34 +471,56 @@
 
 <!-- ===== 모달: 구매 스펙 ===== -->
 <div class="modal-overlay" id="modal-aq">
-  <div class="modal-box">
+  <div class="modal-box aq-modal-box">
     <div class="modal-header">
       <h2 id="aq-title">견적 추가</h2>
       <button class="modal-close" onclick="closeModal('modal-aq')">✕</button>
     </div>
-    <div class="modal-body">
+    <div class="modal-body aq-modal-body">
+      <!-- 제품 정보 -->
       <div id="aq-product-info" class="atq-product-info"></div>
-      <!-- 스펙 드롭다운 영역 (PC 카테고리만 표시) -->
-      <div id="spec-opts" style="margin-bottom:12px;"></div>
-      <div class="atq-row-2col">
-        <div class="form-group">
-          <label>수량</label>
-          <input class="field-input" type="number" id="aq-qty" value="1" min="1" oninput="updateAQCalc()">
-        </div>
-        <div class="form-group">
-          <label>기본가 <span style="font-size:10px;color:#94a3b8;font-weight:400;">(수정 가능)</span></label>
-          <input class="field-input" type="number" id="aq-base-price" oninput="recalcAQPrice()" placeholder="기본가">
-        </div>
+
+      <!-- 기본가 행 -->
+      <div class="aq-base-row">
+        <span class="aq-base-label">기본가</span>
+        <input class="field-input aq-base-input" type="number" id="aq-base-price"
+          oninput="recalcAQPrice()" placeholder="0">
+        <span class="aq-base-won">원</span>
+        <span class="aq-base-hint">(수정 가능)</span>
       </div>
-      <div class="form-group" style="margin-top:6px;">
-        <label>단가 <span style="font-size:10px;color:#94a3b8;font-weight:400;">(기본가 + 스펙 합계 자동계산 · 직접 수정 가능)</span></label>
-        <input class="field-input" type="number" id="aq-unit" oninput="updateAQCalc()">
+
+      <!-- 스펙 드롭다운 영역 (PC 카테고리만 표시) -->
+      <div id="spec-opts"></div>
+
+      <!-- 구분선 -->
+      <div class="aq-divider"></div>
+
+      <!-- 단가 (자동계산) -->
+      <div class="aq-unit-row">
+        <span class="aq-unit-label">단가</span>
+        <input class="field-input aq-unit-input" type="number" id="aq-unit"
+          oninput="updateAQCalc()" placeholder="0">
+        <span class="aq-unit-won">원</span>
+        <span class="aq-unit-hint">기본가 + 스펙 합계 자동계산</span>
+      </div>
+
+      <!-- 수량 행 -->
+      <div class="aq-qty-row">
+        <span class="aq-qty-label">수량</span>
+        <div class="aq-qty-stepper">
+          <button class="aq-qty-btn" onclick="document.getElementById('aq-qty').value=Math.max(1,(parseInt(document.getElementById('aq-qty').value)||1)-1);updateAQCalc()">−</button>
+          <input class="field-input aq-qty-input" type="number" id="aq-qty" value="1" min="1" oninput="updateAQCalc()">
+          <button class="aq-qty-btn" onclick="document.getElementById('aq-qty').value=(parseInt(document.getElementById('aq-qty').value)||1)+1;updateAQCalc()">+</button>
+        </div>
+        <span class="aq-qty-won">개</span>
       </div>
     </div>
+
     <div class="modal-footer modal-footer-col">
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#f0f7ff;border-radius:8px;border:1px solid #bfdbfe;">
-        <span style="font-size:13px;color:#475569;font-weight:500;">합계 금액</span>
-        <span id="aq-total-val" style="font-size:16px;font-weight:700;color:#1B3A6B;">0 원</span>
+      <!-- 합계 금액 표시 -->
+      <div class="aq-total-bar">
+        <span class="aq-total-label">합계 금액</span>
+        <span id="aq-total-val" class="aq-total-val">0 원</span>
       </div>
       <div style="display:flex;gap:8px;justify-content:flex-end;">
         <button class="btn btn-secondary" onclick="closeModal('modal-aq')">취소</button>

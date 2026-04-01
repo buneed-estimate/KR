@@ -5,6 +5,7 @@ const RENTAL_PC_CATEGORIES = ['노트북', '데스크탑', '워크스테이션',
 
 // 렌탈 모달에서 선택된 스펙 옵션 저장
 let rSelectedSpecOpts = {}; // { catId: optId }
+let rSelectedSpecPrices = {}; // { catId: customPrice } — 수기 입력 또는 자동세팅 금액
 
 
 async function rCopyHistoryLink() {
@@ -147,8 +148,7 @@ function rOpenAtqModal(pid) {
   rCurrentProductId = pid;
   rAtqType = rCurrentType;
   rSelectedSpecOpts = {};
-
-  document.getElementById('r-atq-title').textContent = '제품 상세';
+  rSelectedSpecPrices = {};
   document.getElementById('r-atq-info').innerHTML = `
     <div class="atq-name" style="color:var(--r-primary);">${p.name}${p.info_url?'<span style="display:inline-block;width:7px;height:7px;background:#22c55e;border-radius:50%;margin-left:5px;vertical-align:super;flex-shrink:0;" title="이미지/링크 있음"></span>':''}</div>
     <div class="atq-meta" style="color:var(--r-blue);">
@@ -172,16 +172,21 @@ function rOpenAtqModal(pid) {
   let specDdHtml = '';
   if (isPC && cats.length > 0) {
     specDdHtml = '<div class="spec-dropdown-section r-spec-dd">';
+    specDdHtml += '<div class="spec-dd-header"><span class="spec-dd-col-label">스펙 항목</span><span class="spec-dd-col-sel">선택</span><span class="spec-dd-col-price">금액 (원)</span></div>';
     for (const cat of cats) {
       const opts = _specOpts.filter(o => o.spec_category_id === cat.id);
       if (!opts.length) continue;
       specDdHtml += `
         <div class="spec-dd-row">
-          <label class="spec-dd-label">${cat.name}</label>
-          <select class="spec-dd-select field-input r-field-input" data-cat-id="${cat.id}" onchange="rOnSpecDropdownChange('${cat.id}',this.value)">
+          <span class="spec-dd-label">${cat.name}</span>
+          <select class="spec-dd-select r-spec-dd-select" data-cat-id="${cat.id}"
+            onchange="rOnSpecDropdownChange('${cat.id}',this.value,this)">
             <option value="">— 선택 안 함 —</option>
-            ${opts.map(o=>`<option value="${o.id}" data-price="${o.price_delta||0}">${o.name}${o.price_delta?` (+${fmt(o.price_delta)}원)`:' (포함)'}</option>`).join('')}
+            ${opts.map(o => `<option value="${o.id}" data-price="${o.price_delta || 0}">${o.name}</option>`).join('')}
           </select>
+          <input class="spec-dd-price r-spec-dd-price" type="number" id="r-sop-${cat.id}" value="0"
+            placeholder="0" oninput="rOnSpecPriceInput('${cat.id}',this.value)"
+            title="선택한 옵션의 기본 가격이 자동입력됩니다. 수기 수정 가능">
         </div>`;
     }
     specDdHtml += '</div>';
@@ -206,13 +211,28 @@ function rOpenAtqModal(pid) {
   openModal('r-modal-atq');
 }
 
-// 렌탈 스펙 드롭다운 변경
-function rOnSpecDropdownChange(catId, optId) {
+// 렌탈 스펙 드롭다운 변경 - 선택한 옵션의 기본 가격을 금액 input에 자동 세팅
+function rOnSpecDropdownChange(catId, optId, selectEl) {
+  const _specOpts = (typeof specOptions !== 'undefined') ? specOptions : [];
   if (optId) {
     rSelectedSpecOpts[catId] = optId;
+    const opt = _specOpts.find(o => String(o.id) === String(optId));
+    const delta = opt ? (opt.price_delta || 0) : 0;
+    rSelectedSpecPrices[catId] = delta;
+    const priceEl = document.getElementById('r-sop-' + catId);
+    if (priceEl) priceEl.value = delta;
   } else {
     delete rSelectedSpecOpts[catId];
+    rSelectedSpecPrices[catId] = 0;
+    const priceEl = document.getElementById('r-sop-' + catId);
+    if (priceEl) priceEl.value = 0;
   }
+  rRecalcAtqPrice();
+}
+
+// 렌탈 스펙 금액 수기 수정
+function rOnSpecPriceInput(catId, val) {
+  rSelectedSpecPrices[catId] = parseInt(val) || 0;
   rRecalcAtqPrice();
 }
 
@@ -220,11 +240,10 @@ function rOnSpecDropdownChange(catId, optId) {
 function rRecalcAtqPrice() {
   const rBasePriceEl = document.getElementById('r-atq-base-price');
   const base = parseInt(rBasePriceEl ? rBasePriceEl.value : document.getElementById('r-atq-unit').value) || 0;
-  const _specOpts = (typeof specOptions !== 'undefined') ? specOptions : [];
   let extra = 0;
-  for (const optId of Object.values(rSelectedSpecOpts)) {
-    const opt = _specOpts.find(o => String(o.id) === String(optId));
-    if (opt) extra += (opt.price_delta || 0);
+  // selectedSpecPrices에 저장된 값 합산 (수기 수정 반영)
+  for (const [catId, price] of Object.entries(rSelectedSpecPrices)) {
+    extra += (price || 0);
   }
   document.getElementById('r-atq-unit').value = base + extra;
   rUpdateAtqCalc();
@@ -242,12 +261,10 @@ function rSetAtqType(type) {
     const baseUnit = type==='일'?(p.daily_price||0):(p.monthly_price||0);
     const rBasePriceEl = document.getElementById('r-atq-base-price');
     if (rBasePriceEl) rBasePriceEl.value = baseUnit;
-    // 스펙 추가금 재적용
-    const _specOpts = (typeof specOptions !== 'undefined') ? specOptions : [];
+    // 스펙 추가금 재적용 (수기 수정 금액 유지)
     let extra = 0;
-    for (const optId of Object.values(rSelectedSpecOpts)) {
-      const opt = _specOpts.find(o => String(o.id) === String(optId));
-      if (opt) extra += (opt.price_delta || 0);
+    for (const [catId, price] of Object.entries(rSelectedSpecPrices)) {
+      extra += (price || 0);
     }
     document.getElementById('r-atq-unit').value = baseUnit + extra;
   }
