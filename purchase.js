@@ -541,25 +541,25 @@ function previewQuote() {
       <div class="q-info-grid" style="margin-top:12px;">
         <div style="border:1px solid #bcd0ee;border-radius:6px;overflow:hidden;">
           <div style="background:#f1f5f9;padding:5px 10px;">
-            <span style="font-size:13px;font-weight:700;color:#1B3A6B;">납품 / 유효 기간</span>
+            <span class="q-info-hd-text">납품 / 유효 기간</span>
           </div>
           <div style="padding:8px 12px;background:#ffffff;">
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
-              <span style="font-size:12px;color:#64748b;min-width:64px;">납품희망일</span>
-              <span style="font-size:12px;font-weight:600;color:#1e293b;">${delivery||'미정'}</span>
+              <span class="q-info-label">납품희망일</span>
+              <span class="q-info-val">${delivery||'미정'}</span>
             </div>
             <div style="display:flex;align-items:center;gap:8px;">
-              <span style="font-size:12px;color:#64748b;min-width:64px;">견적유효기간</span>
-              <span style="font-size:12px;font-weight:600;color:#1e293b;">${validity||'견적일로부터 30일'}</span>
+              <span class="q-info-label">견적유효기간</span>
+              <span class="q-info-val">${validity||'견적일로부터 30일'}</span>
             </div>
           </div>
         </div>
         <div style="border:1px solid #bcd0ee;border-radius:6px;overflow:hidden;">
           <div style="background:#f1f5f9;padding:5px 10px;">
-            <span style="font-size:13px;font-weight:700;color:#1B3A6B;">특이사항</span>
+            <span class="q-info-hd-text">특이사항</span>
           </div>
           <div style="padding:8px 12px;background:#ffffff;min-height:60px;">
-            <div style="font-size:12px;color:#374151;line-height:1.6;">${memo||''}</div>
+            <div class="q-info-memo">${memo||''}</div>
           </div>
         </div>
       </div>

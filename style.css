@@ -249,6 +249,11 @@ textarea.field-input{resize:vertical;min-height:52px;}
 .r-q-section-title{font-size:12px;font-weight:800;color:#1B3A6B;text-transform:uppercase;letter-spacing:.08em;padding-bottom:6px;border-bottom:1.5px solid #dde3ee;margin-bottom:10px;}
 .q-party-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px;}
 .q-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+/* ── 납품/유효기간 · 특이사항 박스 내부 텍스트 ── */
+.q-info-hd-text{font-size:11.5px;font-weight:700;color:#1B3A6B;}
+.q-info-label{font-size:11px;color:#64748b;min-width:60px;}
+.q-info-val{font-size:11px;font-weight:600;color:#1e293b;}
+.q-info-memo{font-size:11px;color:#374151;line-height:1.6;}
 .q-party-box{border:1px solid var(--border);border-radius:8px;padding:10px;}
 .q-party-box h4{font-size:11px;font-weight:700;margin-bottom:6px;}
 .q-party-box.supplier h4{color:var(--p-navy);}
@@ -399,6 +404,11 @@ textarea.field-input{resize:vertical;min-height:52px;}
   [style*="grid-template-columns: 1fr 1fr"] {
     grid-template-columns:1fr !important;
   }
+  /* 납품/유효기간 · 특이사항 모바일 폰트 축소 */
+  .q-info-hd-text { font-size:10px !important; }
+  .q-info-label   { font-size:10px !important; min-width:50px !important; }
+  .q-info-val     { font-size:10px !important; }
+  .q-info-memo    { font-size:10px !important; }
   #preview-content.modal-body,
   #r-preview-content.modal-body {
     padding:0 !important;
@@ -588,7 +598,6 @@ textarea.field-input{resize:vertical;min-height:52px;}
   display: flex; flex-direction: column;
   box-shadow: 0 20px 60px rgba(0,0,0,.22);
   overflow: hidden;
-  overflow-x: clip;
 }
 .modal-box.wide {
   width: 860px;
@@ -617,9 +626,10 @@ textarea.field-input{resize:vertical;min-height:52px;}
 .modal-footer {
   padding: 14px 20px;
   border-top: 1px solid var(--border);
-  display: flex; justify-content: flex-end; gap: 8px;
+  display: flex; flex-direction: row; justify-content: flex-end; align-items: center; gap: 8px;
   flex-shrink: 0; background: #f8fafc;
 }
+.modal-footer .btn { flex: 0 0 auto; width: auto; }
 
 /* ===== 토스트 알림 ===== */
 #toast {
@@ -1050,8 +1060,8 @@ textarea.field-input{resize:vertical;min-height:52px;}
   }
   .modal-header { padding: 14px 16px !important; }
   .modal-body { padding: 14px 14px !important; }
-  .modal-footer { padding: 10px 14px !important; gap: 6px !important; }
-  .modal-footer .btn { font-size: 12px !important; padding: 8px 12px !important; }
+  .modal-footer { padding: 10px 14px !important; gap: 6px !important; display:flex !important; flex-direction:row !important; align-items:center !important; justify-content:flex-end !important; }
+  .modal-footer .btn { font-size: 12px !important; padding: 8px 12px !important; flex:0 0 auto !important; width:auto !important; }
 
   /* 미리보기 모달: 전체화면 */
   #modal-preview .modal-body,

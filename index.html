@@ -556,11 +556,11 @@
 <!-- ===== 모달: 구매 미리보기 ===== -->
 <div class="modal-overlay" id="modal-preview">
   <div class="modal-box wide">
-    <div class="modal-header preview-modal-header">
+    <div class="modal-header" style="justify-content:flex-end !important;">
       <button class="modal-close" onclick="closeModal('modal-preview')">✕</button>
     </div>
     <div class="modal-body" id="preview-content" style="overflow-x:auto;"></div>
-    <div class="modal-footer preview-modal-footer">
+    <div class="modal-footer" style="justify-content:flex-end !important;flex-direction:row !important;align-items:center !important;">
       <button class="btn btn-secondary" onclick="closeModal('modal-preview')">닫기</button>
       <button class="btn btn-success" id="btn-copy-link" onclick="copyShareLink()">링크복사</button>
       <button class="btn btn-primary btn-desktop-only" onclick="printQuote()">🖨️ 인쇄 / PDF 저장</button>
@@ -663,11 +663,11 @@
 <!-- ===== 모달: 렌탈 미리보기 ===== -->
 <div class="modal-overlay" id="r-modal-preview">
   <div class="modal-box wide">
-    <div class="modal-header preview-modal-header">
+    <div class="modal-header" style="justify-content:flex-end !important;">
       <button class="modal-close" onclick="closeModal('r-modal-preview')">✕</button>
     </div>
     <div class="modal-body" id="r-preview-content" style="overflow-x:auto;"></div>
-    <div class="modal-footer preview-modal-footer">
+    <div class="modal-footer" style="justify-content:flex-end !important;flex-direction:row !important;align-items:center !important;">
       <button class="btn btn-r-secondary" onclick="closeModal('r-modal-preview')">닫기</button>
       <button class="btn btn-success" onclick="rCopyShareLink()">링크복사</button>
       <button class="btn btn-r-primary btn-desktop-only" onclick="rPrintQuote()">🖨️ 인쇄 / PDF 저장</button>
