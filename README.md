@@ -43,9 +43,10 @@ Supabase DB 연동, 로그인 기반 접근, 인쇄/PDF 출력 지원.
 
 ### D. 사용자 프로필 (config.js + index.html)
 - 헤더 이메일 클릭 → 드롭다운 (내 정보 수정 / 비밀번호 변경 / 로그아웃)
-- `user_profiles` 테이블 저장 (name, phone, dept, email)
+- `user_profiles` 테이블 저장 (name, phone, email)
 - 최초 로그인 시 자동 생성
 - 로그인 시 공급사 정보 자동 세팅 (f-sales-name, f-sales-phone 등)
+- **부서(dept) 필드 제거됨**
 
 ### E. 견적서 출력 (purchase.js + rental.js)
 - 스펙 요약: `i7-14세대 / 32GB / 512GB NVMe / 내장 / Win11 Pro` (라벨 없이 값만)
@@ -63,9 +64,15 @@ Supabase DB 연동, 로그인 기반 접근, 인쇄/PDF 출력 지원.
 - F9 모바일 로그아웃 버튼 수정
 - F10 DB 쿼리 8초 타임아웃
 
----
+### G. 모바일 미리보기 개선 (2026-04-01)
+- 미리보기 모달 전체화면 처리 (`modal-box.wide` 100vw/100dvh)
+- `.qdoc h1` 모바일 폰트 `clamp(16px,4vw,28px)` 적용 (인라인 포함)
+- 로고 36px, q-party-grid 1열, q-info-grid 1열
+- `.modal-body` overflow-x:auto 추가 (가로 스크롤 허용)
+- `q-table min-width:480px → 0` 제거로 테이블 가로 넘침 해소
+- 모바일 600px 이하에서 preview-content 오버플로 스크롤 처리
 
-## 모달 UI 구조 (구매 스펙 선택)
+---
 
 ```
 기본가  [1,850,000] 원  (수정 가능)
@@ -111,7 +118,7 @@ OS         [Win11 Pro  ▾]     [150,000]
 | `spec_options` | id, spec_category_id, name, price_delta, sort_order |
 | `quotes` | id, quote_number, share_token, company_name, ... |
 | `quote_items` | id, quote_id, product_name, spec_summary, unit_price, qty, sort_order |
-| `user_profiles` | id, user_id, email, name, phone, dept |
+| `user_profiles` | id, user_id, email, name, phone |
 
 ### 필요 SQL (초기 설정)
 ```sql

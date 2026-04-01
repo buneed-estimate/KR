@@ -410,7 +410,16 @@
         </div>
         <div style="flex:1;overflow:auto;" class="table-scroll-wrap">
           <table class="data-table">
-            <thead><tr><th style="width:36px;"><input type="checkbox" id="p-check-all" onchange="pToggleAll(this)" style="width:15px;height:15px;cursor:pointer;"></th><th>카테고리</th><th>브랜드</th><th>제품명</th><th>사양</th><th style="text-align:center;">링크</th><th style="text-align:right;">기본가격</th><th>관리</th></tr></thead>
+            <thead><tr>
+              <th style="width:36px;"><input type="checkbox" id="p-check-all" onchange="pToggleAll(this)" style="width:15px;height:15px;cursor:pointer;"></th>
+              <th data-label="카테고리"><button class="th-sort-btn" onclick="sortAdminProductsBy('category')">카테고리 <span class="sort-icon">⇅</span></button></th>
+              <th data-label="브랜드"><button class="th-sort-btn" onclick="sortAdminProductsBy('brand')">브랜드 <span class="sort-icon">⇅</span></button></th>
+              <th data-label="제품명"><button class="th-sort-btn" onclick="sortAdminProductsBy('name')">제품명 <span class="sort-icon">⇅</span></button></th>
+              <th>사양</th>
+              <th style="text-align:center;">링크</th>
+              <th style="text-align:right;" data-label="기본가격"><button class="th-sort-btn" onclick="sortAdminProductsBy('price')">기본가격 <span class="sort-icon">⇅</span></button></th>
+              <th>관리</th>
+            </tr></thead>
             <tbody id="admin-product-body"><tr><td colspan="7" style="text-align:center;padding:20px;color:var(--muted)">로딩 중...</td></tr></tbody>
           </table>
         </div>
@@ -429,7 +438,16 @@
         </div>
         <div style="flex:1;overflow:auto;" class="table-scroll-wrap">
           <table class="data-table">
-            <thead><tr><th style="width:36px;"><input type="checkbox" id="r-check-all" onchange="rToggleAll(this)" style="width:15px;height:15px;cursor:pointer;"></th><th>카테고리</th><th>브랜드</th><th>제품명</th><th>사양</th><th style="text-align:right;">일 렌탈료</th><th style="text-align:right;">월 렌탈료</th><th>관리</th></tr></thead>
+            <thead><tr>
+              <th style="width:36px;"><input type="checkbox" id="r-check-all" onchange="rToggleAll(this)" style="width:15px;height:15px;cursor:pointer;"></th>
+              <th data-label="카테고리"><button class="th-sort-btn r-th-sort-btn" onclick="sortAdminProductsRBy('category')">카테고리 <span class="sort-icon">⇅</span></button></th>
+              <th data-label="브랜드"><button class="th-sort-btn r-th-sort-btn" onclick="sortAdminProductsRBy('brand')">브랜드 <span class="sort-icon">⇅</span></button></th>
+              <th data-label="제품명"><button class="th-sort-btn r-th-sort-btn" onclick="sortAdminProductsRBy('name')">제품명 <span class="sort-icon">⇅</span></button></th>
+              <th>사양</th>
+              <th style="text-align:right;" data-label="일 렌탈료"><button class="th-sort-btn r-th-sort-btn" onclick="sortAdminProductsRBy('daily')">일 렌탈료 <span class="sort-icon">⇅</span></button></th>
+              <th style="text-align:right;" data-label="월 렌탈료"><button class="th-sort-btn r-th-sort-btn" onclick="sortAdminProductsRBy('monthly')">월 렌탈료 <span class="sort-icon">⇅</span></button></th>
+              <th>관리</th>
+            </tr></thead>
             <tbody id="r-admin-product-body"><tr><td colspan="7" style="text-align:center;padding:20px;color:var(--muted)">로딩 중...</td></tr></tbody>
           </table>
         </div>
@@ -756,7 +774,6 @@
       <div class="form-group"><label>이메일 (변경 불가)</label><input class="field-input" id="prof-email" readonly style="background:#f1f5f9;color:#94a3b8;"></div>
       <div class="form-group"><label>이름 / 직책</label><input class="field-input" id="prof-name" placeholder="예: 홍길동 영업팀장"></div>
       <div class="form-group"><label>연락처</label><input class="field-input" id="prof-phone" placeholder="010-0000-0000"></div>
-      <div class="form-group"><label>부서</label><input class="field-input" id="prof-dept" placeholder="영업팀"></div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('modal-profile')">취소</button>

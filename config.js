@@ -497,7 +497,7 @@ async function openProfileModal() {
     setV('prof-email', user.email);
     setV('prof-name', profile?.name || '');
     setV('prof-phone', profile?.phone || '');
-    setV('prof-dept', profile?.dept || '');
+    // prof-dept 제거됨
   } catch(e) {}
   openModal('modal-profile');
 }
@@ -510,16 +510,15 @@ async function saveProfile() {
     if (!user) throw new Error('로그인이 필요합니다');
     const name  = document.getElementById('prof-name')?.value.trim() || '';
     const phone = document.getElementById('prof-phone')?.value.trim() || '';
-    const dept  = document.getElementById('prof-dept')?.value.trim() || '';
-    // upsert
+    // upsert (dept 필드 제거)
     const { error } = await db.from('user_profiles').upsert({
-      user_id: user.id, email: user.email, name, phone, dept
+      user_id: user.id, email: user.email, name, phone
     }, { onConflict: 'user_id' });
     if (error) throw new Error(error.message);
     // 공급사 필드 즉시 반영
     const setV = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
-    setV('f-sales-name', name); setV('f-sales-phone', phone); setV('f-sales-email', user.email); setV('f-sales-dept', dept);
-    setV('r-sales-name', name); setV('r-sales-phone', phone); setV('r-sales-email', user.email); setV('r-sales-dept', dept);
+    setV('f-sales-name', name); setV('f-sales-phone', phone); setV('f-sales-email', user.email);
+    setV('r-sales-name', name); setV('r-sales-phone', phone); setV('r-sales-email', user.email);
     closeModal('modal-profile');
     showToast('프로필이 저장되었습니다', 'success');
   } catch(e) {

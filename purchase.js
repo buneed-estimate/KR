@@ -494,13 +494,13 @@ function previewQuote() {
   <div class="qdoc">
     <div class="q-header">
       <div style="text-align:left;">
-        <h1 style="color:#1B3A6B;font-size:28px;font-weight:800;letter-spacing:0.05em;margin:0 0 8px 0;text-align:left;">구매 견적서</h1>
+        <h1 style="color:#1B3A6B;font-size:clamp(16px,4vw,28px);font-weight:800;letter-spacing:0.05em;margin:0 0 8px 0;text-align:left;">구매 견적서</h1>
         <div class="q-header-meta" style="display:flex;flex-direction:column;align-items:flex-start;gap:3px;">
           <div class="q-date">견적번호: ${currentQuoteNum}</div>
           <div class="q-date">작성일: ${today}</div>
         </div>
       </div>
-      <div class="q-logo-area" style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+      <div class="q-logo-area" style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;">
         <img src="${LOGO_SRC}" alt="비유니드"><br>
         
         ${introHtml}
@@ -784,28 +784,83 @@ async function bulkInsertSampleProducts() {
   if (typeof rLoadProducts === 'function') rLoadProducts(); else if (typeof rRenderProducts === 'function') { rProducts = SAMPLE_PRODUCTS.map((p,i)=>({...p,id:i+1})); rRenderProducts(); }
 }
 
+// ── 관리자 구매 제품 정렬 상태
+let currentAdminSortP = { col: 'category', dir: 'asc' };
+
+function sortAdminProductsBy(col) {
+  if (currentAdminSortP.col === col) {
+    currentAdminSortP.dir = currentAdminSortP.dir === 'asc' ? 'desc' : 'asc';
+  } else {
+    currentAdminSortP.col = col;
+    currentAdminSortP.dir = 'asc';
+  }
+  renderAdminProducts();
+}
+
+function applyAdminSortP(list) {
+  const { col, dir } = currentAdminSortP;
+  const m = dir === 'asc' ? 1 : -1;
+  return [...list].sort((a, b) => {
+    switch (col) {
+      case 'category': return m * (a.category||'').localeCompare(b.category||'','ko');
+      case 'brand':    return m * (a.brand||'').localeCompare(b.brand||'','ko');
+      case 'name':     return m * (a.name||'').localeCompare(b.name||'','ko');
+      case 'price':    return m * ((a.base_price||0) - (b.base_price||0));
+      case 'newest': default:
+        if (a.created_at && b.created_at) return m * (new Date(b.created_at) - new Date(a.created_at));
+        return m * ((b.id||0) - (a.id||0));
+    }
+  });
+}
+
+function adminSortIcon(col) {
+  if (currentAdminSortP.col !== col) return '<span class="sort-icon">⇅</span>';
+  return currentAdminSortP.dir === 'asc'
+    ? '<span class="sort-icon active">↑</span>'
+    : '<span class="sort-icon active">↓</span>';
+}
+
 async function renderAdminProducts(forceRefresh = false) {
   const body = document.getElementById('admin-product-body');
   if (!body) return;
-  // 로딩 표시
   body.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:20px;color:#94a3b8">로딩 중...</td></tr>';
   try {
     let data;
     if (!forceRefresh && products && products.length > 0) {
-      // 이미 loadProducts()가 가져온 전역 데이터 재사용 → DB 중복 쿼리 없음
-      data = [...products].sort((a,b) => (a.category||'').localeCompare(b.category||'', 'ko'));
+      data = [...products];
     } else {
-      const res = await db.from('products').select('*').order('category');
+      const res = await db.from('products').select('*').order('created_at', { ascending: false });
       if (res.error) { body.innerHTML='<tr><td colspan="9" style="text-align:center;padding:20px;color:#ef4444">⚠️ 목록 로드 실패: '+res.error.message+'</td></tr>'; return; }
       data = res.data;
-      if (data) products = data; // 전역 갱신
+      if (data) products = data;
     }
     if (!data?.length) { body.innerHTML='<tr><td colspan="9" style="text-align:center;padding:20px;color:#94a3b8">등록된 제품이 없습니다</td></tr>'; return; }
+    data = applyAdminSortP(data);
+
+    // 헤더 정렬 아이콘만 갱신 (버튼 구조는 HTML 고정)
+    const thead = body.closest('table')?.querySelector('thead tr');
+    if (thead) {
+      const colMap = { 1:'category', 2:'brand', 3:'name', 6:'price' };
+      thead.querySelectorAll('th').forEach((th, i) => {
+        const col = colMap[i];
+        if (!col) return;
+        const icon = th.querySelector('.sort-icon');
+        if (!icon) return;
+        if (currentAdminSortP.col === col) {
+          icon.textContent = currentAdminSortP.dir === 'asc' ? '↑' : '↓';
+          icon.classList.add('active');
+        } else {
+          icon.textContent = '⇅';
+          icon.classList.remove('active');
+        }
+      });
+    }
+
     body.innerHTML = data.map(p=>`
       <tr>
         <td style="text-align:center;"><input type="checkbox" class="p-row-check" data-id="${p.id}" onchange="pCheckChange()" style="width:15px;height:15px;cursor:pointer;"></td>
-        <td>${p.category}</td>
-        <td>${p.brand}</td>
+        <td>${p.category||''}</td>
+        <td>${p.brand||''}</td>
         <td style="font-weight:600;">${p.name}</td>
         <td style="font-size:11px;color:#64748b;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.spec_summary||''}</td>
         <td style="text-align:center;font-size:13px;">${p.info_url ? '✅' : ''}</td>

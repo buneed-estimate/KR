@@ -510,13 +510,13 @@ function rPreviewQuote() {
   <div class="qdoc">
     <div class="q-header">
       <div style="text-align:left;">
-        <h1 style="color:#1B3A6B;font-size:28px;font-weight:800;letter-spacing:0.05em;margin:0 0 8px 0;text-align:left;">렌탈 견적서</h1>
+        <h1 style="color:#1B3A6B;font-size:clamp(16px,4vw,28px);font-weight:800;letter-spacing:0.05em;margin:0 0 8px 0;text-align:left;">렌탈 견적서</h1>
         <div class="q-header-meta" style="display:flex;flex-direction:column;align-items:flex-start;gap:3px;">
           <div class="q-date">견적번호: ${qNum}</div>
           <div class="q-date">작성일: ${today}</div>
         </div>
       </div>
-      <div class="q-logo-area" style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+      <div class="q-logo-area" style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;">
         <img src="${LOGO_SRC}" alt="비유니드"><br>
         
         ${rIntroHtml}
@@ -726,6 +726,43 @@ function rResetQuote() {
   showToast('초기화되었습니다','success');
 }
 
+// ── 관리자 렌탈 제품 정렬 상태
+let currentAdminSortR = { col: 'category', dir: 'asc' };
+
+function sortAdminProductsRBy(col) {
+  if (currentAdminSortR.col === col) {
+    currentAdminSortR.dir = currentAdminSortR.dir === 'asc' ? 'desc' : 'asc';
+  } else {
+    currentAdminSortR.col = col;
+    currentAdminSortR.dir = 'asc';
+  }
+  rRenderAdminProducts();
+}
+
+function applyAdminSortR(list) {
+  const { col, dir } = currentAdminSortR;
+  const m = dir === 'asc' ? 1 : -1;
+  return [...list].sort((a, b) => {
+    switch (col) {
+      case 'category':    return m * (a.category||'').localeCompare(b.category||'','ko');
+      case 'brand':       return m * (a.brand||'').localeCompare(b.brand||'','ko');
+      case 'name':        return m * (a.name||'').localeCompare(b.name||'','ko');
+      case 'daily':       return m * ((a.daily_price||0) - (b.daily_price||0));
+      case 'monthly':     return m * ((a.monthly_price||0) - (b.monthly_price||0));
+      case 'newest': default:
+        if (a.created_at && b.created_at) return m * (new Date(b.created_at) - new Date(a.created_at));
+        return m * ((b.id||0) - (a.id||0));
+    }
+  });
+}
+
+function rAdminSortIcon(col) {
+  if (currentAdminSortR.col !== col) return '<span class="sort-icon">⇅</span>';
+  return currentAdminSortR.dir === 'asc'
+    ? '<span class="sort-icon active">↑</span>'
+    : '<span class="sort-icon active">↓</span>';
+}
+
 // 렌탈 제품 관리
 async function rRenderAdminProducts(forceRefresh = false) {
   const body = document.getElementById('r-admin-product-body');
@@ -733,15 +770,35 @@ async function rRenderAdminProducts(forceRefresh = false) {
   try {
     let data;
     if (!forceRefresh && rProducts && rProducts.length > 0) {
-      // 이미 rLoadRentalProducts()가 가져온 전역 데이터 재사용 → DB 중복 쿼리 없음
-      data = [...rProducts].sort((a,b) => (a.category||'').localeCompare(b.category||'', 'ko'));
+      data = [...rProducts];
     } else {
-      const res = await db.from('rental_products').select('*').order('category');
+      const res = await db.from('rental_products').select('*').order('created_at', { ascending: false });
       if (res.error) { body.innerHTML='<tr><td colspan="8" style="text-align:center;padding:20px;color:#ef4444">⚠️ 목록 로드 실패: '+res.error.message+'</td></tr>'; return; }
       data = res.data;
-      if (data) rProducts = data; // 전역 갱신
+      if (data) rProducts = data;
     }
     if (!data?.length) { body.innerHTML='<tr><td colspan="8" style="text-align:center;padding:20px;color:#94a3b8">제품 없음</td></tr>'; return; }
+    data = applyAdminSortR(data);
+
+    // 헤더 정렬 아이콘만 갱신 (버튼 구조는 HTML 고정)
+    const thead = body.closest('table')?.querySelector('thead tr');
+    if (thead) {
+      const colMap = { 1:'category', 2:'brand', 3:'name', 5:'daily', 6:'monthly' };
+      thead.querySelectorAll('th').forEach((th, i) => {
+        const col = colMap[i];
+        if (!col) return;
+        const icon = th.querySelector('.sort-icon');
+        if (!icon) return;
+        if (currentAdminSortR.col === col) {
+          icon.textContent = currentAdminSortR.dir === 'asc' ? '↑' : '↓';
+          icon.classList.add('active');
+        } else {
+          icon.textContent = '⇅';
+          icon.classList.remove('active');
+        }
+      });
+    }
+
     body.innerHTML = data.map(p=>`
       <tr>
         <td style="text-align:center;"><input type="checkbox" class="r-row-check" data-id="${p.id}" onchange="rCheckChange()" style="width:15px;height:15px;cursor:pointer;"></td>
