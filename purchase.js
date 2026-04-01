@@ -540,30 +540,10 @@ function previewQuote() {
           </div>
         </div>
       </div>
-      <div class="q-info-grid" style="margin-top:12px;">
-        <div style="border:1px solid #bcd0ee;border-radius:6px;overflow:hidden;">
-          <div style="background:#f1f5f9;padding:5px 10px;">
-            <span class="q-info-hd-text">납품 / 유효 기간</span>
-          </div>
-          <div style="padding:8px 12px;background:#ffffff;">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
-              <span class="q-info-label">납품희망일</span>
-              <span class="q-info-val">${delivery||'미정'}</span>
-            </div>
-            <div style="display:flex;align-items:center;gap:8px;">
-              <span class="q-info-label">견적유효기간</span>
-              <span class="q-info-val">${validity||'견적일로부터 30일'}</span>
-            </div>
-          </div>
-        </div>
-        <div style="border:1px solid #bcd0ee;border-radius:6px;overflow:hidden;">
-          <div style="background:#f1f5f9;padding:5px 10px;">
-            <span class="q-info-hd-text">특이사항</span>
-          </div>
-          <div style="padding:8px 12px;background:#ffffff;min-height:60px;">
-            <div class="q-info-memo">${memo||''}</div>
-          </div>
-        </div>
+      <div class="q-info-grid" style="margin-top:12px;margin-bottom:14px;">
+        ${delivery ? `<div class="q-info-item"><div class="label">납품희망일</div><div class="value">${delivery}</div></div>` : ''}
+        <div class="q-info-item"><div class="label">견적 유효기간</div><div class="value">${validity||'견적일로부터 30일'}</div></div>
+        ${memo ? `<div class="q-info-item"><div class="label">특이사항</div><div class="value">${memo}</div></div>` : ''}
       </div>
     </div>
     <div class="q-section">
