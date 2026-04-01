@@ -131,7 +131,10 @@
             </div>
             <!-- 고객사 정보 -->
             <div class="form-section">
-              <div class="section-title">👤 고객사 정보</div>
+              <div class="section-title-row">
+                <div class="section-title">👤 고객사 정보</div>
+                <button class="btn btn-sm client-pick-btn" onclick="pOpenClientPicker()" title="이전 고객사 정보 불러오기">💼 고객사 선택</button>
+              </div>
               <div class="form-row">
                 <div><div class="field-label">회사명 *</div><input class="field-input" id="f-company" placeholder="고객사 회사명"></div>
                 <div><div class="field-label">담당자 (직책 포함)</div><input class="field-input" id="f-contact" placeholder="예: 홍길동 구매팀장"></div>
@@ -197,6 +200,12 @@
             <input class="field-input history-search-input" id="p-history-search" placeholder="🔍 고객사/담당자 검색..." oninput="filterHistory()">
             <button class="btn btn-sm btn-secondary history-refresh-btn" onclick="loadHistory()">🔄 새로고침</button>
           </div>
+        </div>
+        <!-- 백업 버튼 -->
+        <div class="backup-bar">
+          <span class="backup-bar-label">📦 백업</span>
+          <button class="btn btn-sm backup-btn" onclick="pExportJSON()" title="전체 견적을 JSON 파일로 저장">⬇ JSON</button>
+          <button class="btn btn-sm backup-btn" onclick="pExportCSV()" title="전체 견적을 엑셀(CSV) 파일로 저장">⬇ CSV (엑셀)</button>
         </div>
         <!-- 데스크탑: 테이블 뷰 -->
         <div class="admin-card history-table-view">
@@ -267,7 +276,10 @@
             </div>
             <!-- 고객사 정보 -->
             <div class="form-section">
-              <div class="r-section-title">👤 고객사 정보</div>
+              <div class="section-title-row">
+                <div class="r-section-title">👤 고객사 정보</div>
+                <button class="btn btn-sm r-client-pick-btn" onclick="rOpenClientPicker()" title="이전 고객사 정보 불러오기">💼 고객사 선택</button>
+              </div>
               <div class="form-row">
                 <div><div class="field-label">회사명 *</div><input class="field-input r-field-input" id="r-company" placeholder="고객사 회사명"></div>
                 <div><div class="field-label">담당자 (직책 포함)</div><input class="field-input r-field-input" id="r-contact" placeholder="예: 홍길동 구매팀장"></div>
@@ -377,6 +389,12 @@
             <input class="field-input history-search-input" id="r-history-search" placeholder="🔍 고객사/담당자 검색..." oninput="rFilterHistory()">
             <button class="btn btn-sm btn-r-secondary history-refresh-btn" onclick="rLoadHistory()">🔄 새로고침</button>
           </div>
+        </div>
+        <!-- 백업 버튼 -->
+        <div class="backup-bar r-backup-bar">
+          <span class="backup-bar-label">📦 백업</span>
+          <button class="btn btn-sm backup-btn r-backup-btn" onclick="rExportJSON()" title="전체 렌탈 견적을 JSON 파일로 저장">⬇ JSON</button>
+          <button class="btn btn-sm backup-btn r-backup-btn" onclick="rExportCSV()" title="전체 렌탈 견적을 엑셀(CSV) 파일로 저장">⬇ CSV (엑셀)</button>
         </div>
         <!-- 데스크탑: 테이블 뷰 -->
         <div class="admin-card history-table-view">
@@ -549,6 +567,44 @@
         <button class="btn btn-secondary" onclick="closeModal('modal-aq')">취소</button>
         <button class="btn btn-primary" onclick="addToQuote()">견적 추가</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 모달: 구매 고객사 선택 ===== -->
+<div class="modal-overlay" id="modal-client-picker">
+  <div class="modal-box client-picker-box">
+    <div class="modal-header">
+      <h2>📋 고객사 선택</h2>
+      <button class="modal-close" onclick="closeModal('modal-client-picker')">✕</button>
+    </div>
+    <div class="cpi-search-wrap">
+      <input class="field-input cpi-search-input" id="cpi-search" placeholder="🔍 회사명 / 담당자 검색..." oninput="pFilterClientList()">
+    </div>
+    <div class="modal-body cpi-body" id="cpi-list">
+      <div class="cpi-loading">불러오는 중...</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-client-picker')">닫기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 모달: 렌탈 고객사 선택 ===== -->
+<div class="modal-overlay" id="modal-r-client-picker">
+  <div class="modal-box client-picker-box">
+    <div class="modal-header">
+      <h2 style="color:var(--r-primary);">📋 고객사 선택</h2>
+      <button class="modal-close" onclick="closeModal('modal-r-client-picker')">✕</button>
+    </div>
+    <div class="cpi-search-wrap">
+      <input class="field-input cpi-search-input r-cpi-search-input" id="r-cpi-search" placeholder="🔍 회사명 / 담당자 검색..." oninput="rFilterClientList()">
+    </div>
+    <div class="modal-body cpi-body" id="r-cpi-list">
+      <div class="cpi-loading">불러오는 중...</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-r-secondary" onclick="closeModal('modal-r-client-picker')">닫기</button>
     </div>
   </div>
 </div>

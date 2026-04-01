@@ -443,6 +443,8 @@ async function saveQuote() {
     }));
     const {error:itemErr} = await db.from('quote_items').insert(itemsPayload);
     if (itemErr) throw new Error('품목 저장 실패: '+itemErr.message);
+    // 로컬 자동 백업
+    pAutoLocalBackup({ ...payload, id: qId }, itemsPayload);
     showToast('견적이 저장되었습니다! ('+currentQuoteNum+')', 'success'); loadHistory();
   } catch(e) {
     console.error('saveQuote 오류:', e);
@@ -1121,6 +1123,191 @@ async function deleteSpecCat(id) {
   renderSpecCategoryList();
   renderSpecOptionList(adminSpecCatFilter);
   showToast('삭제되었습니다', 'success');
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  ■ 백업 기능 (구매 견적)
+// ══════════════════════════════════════════════════════════════════
+
+/* ── 1. Supabase 저장 성공 시 localStorage 자동 스냅샷 ── */
+function pAutoLocalBackup(quoteData, items) {
+  try {
+    const key = 'p_backup_' + (quoteData.quote_number || quoteData.id);
+    const snap = { quote: quoteData, items, saved_at: new Date().toISOString() };
+    localStorage.setItem(key, JSON.stringify(snap));
+    // 최근 50개만 유지
+    const keys = Object.keys(localStorage).filter(k => k.startsWith('p_backup_'));
+    if (keys.length > 50) {
+      keys.sort().slice(0, keys.length - 50).forEach(k => localStorage.removeItem(k));
+    }
+  } catch(e) { console.warn('로컬 백업 실패(무시):', e); }
+}
+
+/* ── 2. 전체 견적 JSON 내보내기 ── */
+async function pExportJSON() {
+  if (!db) { showToast('DB 연결 필요', 'error'); return; }
+  showToast('JSON 백업 파일 생성 중...', 'info');
+  try {
+    const { data: quotes, error: qErr } = await db.from('quotes').select('*').order('created_at', { ascending: false });
+    if (qErr) throw qErr;
+    const { data: items, error: iErr } = await db.from('quote_items').select('*');
+    if (iErr) throw iErr;
+    const itemMap = {};
+    (items || []).forEach(it => {
+      if (!itemMap[it.quote_id]) itemMap[it.quote_id] = [];
+      itemMap[it.quote_id].push(it);
+    });
+    const full = (quotes || []).map(q => ({ ...q, items: itemMap[q.id] || [] }));
+    const blob = new Blob([JSON.stringify({ type: 'buneed_purchase_backup', exported_at: new Date().toISOString(), count: full.length, data: full }, null, 2)], { type: 'application/json' });
+    pDownloadBlob(blob, `buneed_purchase_backup_${pDateStr()}.json`);
+    showToast(`JSON 백업 완료 (견적 ${full.length}건)`, 'success');
+  } catch(e) {
+    showToast('JSON 내보내기 실패: ' + e.message, 'error');
+  }
+}
+
+/* ── 3. 전체 견적 CSV 내보내기 ── */
+async function pExportCSV() {
+  if (!db) { showToast('DB 연결 필요', 'error'); return; }
+  showToast('CSV 백업 파일 생성 중...', 'info');
+  try {
+    const { data: quotes, error: qErr } = await db.from('quotes').select('*').order('created_at', { ascending: false });
+    if (qErr) throw qErr;
+    const { data: items, error: iErr } = await db.from('quote_items').select('*');
+    if (iErr) throw iErr;
+    const itemMap = {};
+    (items || []).forEach(it => {
+      if (!itemMap[it.quote_id]) itemMap[it.quote_id] = [];
+      itemMap[it.quote_id].push(it);
+    });
+    const headers = ['견적번호','작성일','고객사','담당자','연락처','이메일','납품희망일','유효기간','메모','소계','할인액','공급가액','부가세','합계','품목수','제품명목록'];
+    const rows = (quotes || []).map(q => {
+      const its = itemMap[q.id] || [];
+      const productList = its.map(it => `${it.product_name}(${it.qty||it.quantity||1}개)`).join(' / ');
+      return [
+        q.quote_number || '',
+        q.created_at ? new Date(q.created_at).toLocaleDateString('ko-KR') : '',
+        q.company_name || '',
+        q.contact_name || '',
+        q.contact_tel || '',
+        q.contact_email || '',
+        q.delivery_date || '',
+        q.valid_until || '',
+        (q.memo || '').replace(/[\n\r,]/g, ' '),
+        q.subtotal || 0,
+        q.discount_amount || 0,
+        q.supply_price || 0,
+        q.vat || 0,
+        q.total || 0,
+        its.length,
+        productList
+      ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
+    });
+    const csv = '\uFEFF' + [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    pDownloadBlob(blob, `buneed_purchase_backup_${pDateStr()}.csv`);
+    showToast(`CSV 백업 완료 (견적 ${rows.length}건)`, 'success');
+  } catch(e) {
+    showToast('CSV 내보내기 실패: ' + e.message, 'error');
+  }
+}
+
+/* ── 유틸: 날짜 문자열, Blob 다운로드 ── */
+function pDateStr() {
+  const d = new Date();
+  return `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+}
+function pDownloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 300);
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  ■ 고객사 정보 불러오기 (구매 견적)
+// ══════════════════════════════════════════════════════════════════
+
+let _pClientList = []; // 캐시
+
+async function pOpenClientPicker() {
+  const modal = document.getElementById('modal-client-picker');
+  if (!modal) return;
+  openModal('modal-client-picker');
+  const listEl = document.getElementById('cpi-list');
+  const searchEl = document.getElementById('cpi-search');
+  if (searchEl) searchEl.value = '';
+  listEl.innerHTML = '<div class="cpi-loading">불러오는 중...</div>';
+
+  try {
+    // quotes에서 고객사 정보만 가져와서 중복 제거 (최신 견적 기준)
+    const { data, error } = await db
+      .from('quotes')
+      .select('company_name, contact_name, contact_tel, contact_email')
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+
+    // 회사명 기준 중복 제거 (가장 최신 항목 유지)
+    const seen = new Set();
+    _pClientList = (data || []).filter(q => {
+      if (!q.company_name || seen.has(q.company_name)) return false;
+      seen.add(q.company_name);
+      return true;
+    });
+
+    pRenderClientList(_pClientList);
+  } catch(e) {
+    listEl.innerHTML = `<div class="cpi-empty">불러오기 실패: ${e.message}</div>`;
+  }
+}
+
+function pRenderClientList(list) {
+  const listEl = document.getElementById('cpi-list');
+  if (!list.length) {
+    listEl.innerHTML = '<div class="cpi-empty">저장된 고객사가 없습니다</div>';
+    return;
+  }
+  listEl.innerHTML = list.map((c, i) => `
+    <div class="cpi-item" onclick="pSelectClient(${i})">
+      <div class="cpi-company">${c.company_name || ''}</div>
+      <div class="cpi-detail">
+        ${c.contact_name ? `<span>${c.contact_name}</span>` : ''}
+        ${c.contact_tel  ? `<span>${c.contact_tel}</span>`  : ''}
+        ${c.contact_email? `<span>${c.contact_email}</span>`: ''}
+      </div>
+    </div>`).join('');
+}
+
+function pFilterClientList() {
+  const q = (document.getElementById('cpi-search').value || '').toLowerCase().trim();
+  if (!q) { pRenderClientList(_pClientList); return; }
+  pRenderClientList(_pClientList.filter(c =>
+    (c.company_name  || '').toLowerCase().includes(q) ||
+    (c.contact_name  || '').toLowerCase().includes(q) ||
+    (c.contact_tel   || '').toLowerCase().includes(q) ||
+    (c.contact_email || '').toLowerCase().includes(q)
+  ));
+}
+
+function pSelectClient(idx) {
+  // 검색 결과 기준 인덱스 재계산
+  const q = (document.getElementById('cpi-search').value || '').toLowerCase().trim();
+  const list = q ? _pClientList.filter(c =>
+    (c.company_name  || '').toLowerCase().includes(q) ||
+    (c.contact_name  || '').toLowerCase().includes(q) ||
+    (c.contact_tel   || '').toLowerCase().includes(q) ||
+    (c.contact_email || '').toLowerCase().includes(q)
+  ) : _pClientList;
+  const c = list[idx];
+  if (!c) return;
+  const setV = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
+  setV('f-company', c.company_name);
+  setV('f-contact', c.contact_name);
+  setV('f-phone',   c.contact_tel);
+  setV('f-email',   c.contact_email);
+  closeModal('modal-client-picker');
+  showToast(`${c.company_name} 정보를 불러왔습니다`, 'success');
 }
 
 // ── 스펙 옵션 모달 ──

@@ -196,6 +196,26 @@ textarea.field-input{resize:vertical;min-height:52px;}
 .history-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
 .history-title{font-size:15px;font-weight:700;color:var(--p-navy);}
 .r-history-title{font-size:15px;font-weight:700;color:var(--r-primary);}
+/* ── 백업 바 ── */
+.backup-bar {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 10px; margin-bottom: 10px;
+  background: #f0f4ff; border: 1px solid #c7d7f5;
+  border-radius: 8px;
+}
+.r-backup-bar { background: #eff6ff; border-color: #bfdbfe; }
+.backup-bar-label { font-size: 11.5px; font-weight: 700; color: #1B3A6B; margin-right: 4px; }
+.r-backup-bar .backup-bar-label { color: var(--r-primary); }
+.backup-btn {
+  background: #fff; border: 1.5px solid #93c5fd;
+  color: #1B3A6B; font-size: 11.5px; font-weight: 600;
+  padding: 4px 10px; border-radius: 6px;
+  cursor: pointer; transition: all .15s;
+  display: inline-flex; align-items: center; gap: 3px;
+}
+.backup-btn:hover { background: #1B3A6B; color: #fff; border-color: #1B3A6B; }
+.r-backup-btn { border-color: #93c5fd; color: var(--r-primary); }
+.r-backup-btn:hover { background: var(--r-primary); color: #fff; border-color: var(--r-primary); }
 .admin-card{
   background:#fff;border-radius:10px;border:1px solid var(--border);
   padding:0;overflow:hidden;display:flex;flex-direction:column;flex:1;
@@ -630,6 +650,74 @@ textarea.field-input{resize:vertical;min-height:52px;}
   flex-shrink: 0; background: #f8fafc;
 }
 .modal-footer .btn { flex: 0 0 auto; width: auto; }
+
+/* ===== 고객사 선택 팝업 ===== */
+.client-picker-box {
+  width: 460px; max-width: 96vw;
+  max-height: 80vh;
+  display: flex; flex-direction: column;
+}
+.cpi-search-wrap {
+  padding: 10px 16px 6px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.cpi-search-input {
+  width: 100%; font-size: 13px; padding: 8px 12px;
+  border-radius: 8px;
+}
+.r-cpi-search-input:focus { border-color: var(--r-blue) !important; }
+.cpi-body {
+  flex: 1; overflow-y: auto; padding: 8px 0 !important;
+  min-height: 120px;
+}
+.cpi-loading, .cpi-empty {
+  text-align: center; padding: 32px 16px;
+  font-size: 12px; color: var(--muted);
+}
+.cpi-item {
+  padding: 10px 16px; cursor: pointer;
+  border-bottom: 1px solid #f1f5f9;
+  transition: background .12s;
+}
+.cpi-item:last-child { border-bottom: none; }
+.cpi-item:hover { background: #eef3fb; }
+.r-cpi-item:hover { background: #eff6ff; }
+.cpi-company {
+  font-size: 13px; font-weight: 700; color: #1e293b;
+  margin-bottom: 3px;
+}
+.cpi-detail {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  font-size: 11.5px; color: #64748b;
+}
+.cpi-detail span::before { content: ''; }
+.cpi-detail span + span::before { content: '·'; margin-right: 6px; }
+
+/* section-title-row: 제목 + 버튼 한 줄 */
+.section-title-row {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.section-title-row .section-title,
+.section-title-row .r-section-title { margin-bottom: 0 !important; }
+.client-pick-btn {
+  font-size: 11.5px; padding: 4px 10px;
+  background: #eef3fb; border: 1.5px solid #c7d7f5;
+  color: #1B3A6B; border-radius: 6px;
+  cursor: pointer; font-weight: 600;
+  transition: all .15s; white-space: nowrap;
+}
+.client-pick-btn:hover { background: #1B3A6B; color: #fff; border-color: #1B3A6B; }
+.r-client-pick-btn {
+  font-size: 11.5px; padding: 4px 10px;
+  background: #eff6ff; border: 1.5px solid #bfdbfe;
+  color: var(--r-primary); border-radius: 6px;
+  cursor: pointer; font-weight: 600;
+  transition: all .15s; white-space: nowrap;
+}
+.r-client-pick-btn:hover { background: var(--r-primary); color: #fff; border-color: var(--r-primary); }
 
 /* ===== 토스트 알림 ===== */
 #toast {
@@ -1177,6 +1265,13 @@ textarea.field-input{resize:vertical;min-height:52px;}
   .history-refresh-btn {
     padding: 0 12px !important;
   }
+  /* 모바일 백업 바 */
+  .backup-bar {
+    flex-wrap: wrap !important;
+    gap: 5px !important;
+    padding: 6px 8px !important;
+  }
+  .backup-btn { font-size: 11px !important; padding: 4px 8px !important; }
   .admin-card > div[style*="overflow:auto"],
   .admin-card > div[style*="overflow: auto"] {
     overflow-x: auto !important;

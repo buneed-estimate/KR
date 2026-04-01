@@ -470,6 +470,8 @@ async function rSaveQuote() {
       info_url: it.info_url || null
     })));
     if (itemErr) throw new Error('렌탈 품목 저장 실패: '+itemErr.message);
+    // 로컬 자동 백업
+    rAutoLocalBackup({ ...payload, id: qId }, rQuoteItems);
     showToast('렌탈 견적이 저장되었습니다 ✅','success'); rLoadHistory();
   } catch(e) {
     console.error('rSaveQuote 오류:', e);
@@ -921,4 +923,191 @@ async function rBulkDelete() {
   document.getElementById('r-check-all').checked = false;
   const btn = document.getElementById('r-bulk-del-btn');
   if (btn) btn.style.display = 'none';
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  ■ 백업 기능 (렌탈 견적)
+// ══════════════════════════════════════════════════════════════════
+
+/* ── 1. 로컬 자동 스냅샷 ── */
+function rAutoLocalBackup(quoteData, items) {
+  try {
+    const key = 'r_backup_' + (quoteData.quote_number || quoteData.id);
+    const snap = { quote: quoteData, items, saved_at: new Date().toISOString() };
+    localStorage.setItem(key, JSON.stringify(snap));
+    const keys = Object.keys(localStorage).filter(k => k.startsWith('r_backup_'));
+    if (keys.length > 50) {
+      keys.sort().slice(0, keys.length - 50).forEach(k => localStorage.removeItem(k));
+    }
+  } catch(e) { console.warn('렌탈 로컬 백업 실패(무시):', e); }
+}
+
+/* ── 2. JSON 내보내기 ── */
+async function rExportJSON() {
+  if (!db) { showToast('DB 연결 필요', 'error'); return; }
+  showToast('JSON 백업 파일 생성 중...', 'info');
+  try {
+    const { data: quotes, error: qErr } = await db.from('rental_quotes').select('*').order('created_at', { ascending: false });
+    if (qErr) throw qErr;
+    const { data: items, error: iErr } = await db.from('rental_quote_items').select('*');
+    if (iErr) throw iErr;
+    const itemMap = {};
+    (items || []).forEach(it => {
+      if (!itemMap[it.quote_id]) itemMap[it.quote_id] = [];
+      itemMap[it.quote_id].push(it);
+    });
+    const full = (quotes || []).map(q => ({ ...q, items: itemMap[q.id] || [] }));
+    const blob = new Blob([JSON.stringify({ type: 'buneed_rental_backup', exported_at: new Date().toISOString(), count: full.length, data: full }, null, 2)], { type: 'application/json' });
+    rDownloadBlob(blob, `buneed_rental_backup_${rDateStr()}.json`);
+    showToast(`JSON 백업 완료 (견적 ${full.length}건)`, 'success');
+  } catch(e) {
+    showToast('JSON 내보내기 실패: ' + e.message, 'error');
+  }
+}
+
+/* ── 3. CSV 내보내기 ── */
+async function rExportCSV() {
+  if (!db) { showToast('DB 연결 필요', 'error'); return; }
+  showToast('CSV 백업 파일 생성 중...', 'info');
+  try {
+    const { data: quotes, error: qErr } = await db.from('rental_quotes').select('*').order('created_at', { ascending: false });
+    if (qErr) throw qErr;
+    const { data: items, error: iErr } = await db.from('rental_quote_items').select('*');
+    if (iErr) throw iErr;
+    const itemMap = {};
+    (items || []).forEach(it => {
+      if (!itemMap[it.quote_id]) itemMap[it.quote_id] = [];
+      itemMap[it.quote_id].push(it);
+    });
+    const headers = ['견적번호','작성일','고객사','담당자','연락처','이메일','렌탈유형','렌탈기간','시작일','종료일','반납방법','유효기간','메모','소계','할인액','설치비','보증금','공급가액','부가세','합계','품목수','제품명목록'];
+    const rows = (quotes || []).map(q => {
+      const its = itemMap[q.id] || [];
+      const productList = its.map(it => `${it.product_name}(${it.quantity||1}${it.rental_type==='daily'?'일':'개월'})`).join(' / ');
+      return [
+        q.quote_number || '',
+        q.created_at ? new Date(q.created_at).toLocaleDateString('ko-KR') : '',
+        q.company_name || '',
+        q.contact_name || '',
+        q.contact_tel || '',
+        q.contact_email || '',
+        q.rental_type === 'daily' ? '일 렌탈' : '월 렌탈',
+        q.rental_duration || '',
+        q.rental_start_date || '',
+        q.rental_end_date || '',
+        q.return_method || '',
+        q.valid_until || '',
+        (q.memo || '').replace(/[\n\r,]/g, ' '),
+        q.subtotal || 0,
+        q.discount_amount || 0,
+        q.installation_fee || 0,
+        q.deposit || 0,
+        q.supply_price || 0,
+        q.vat || 0,
+        q.total || 0,
+        its.length,
+        productList
+      ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
+    });
+    const csv = '\uFEFF' + [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    rDownloadBlob(blob, `buneed_rental_backup_${rDateStr()}.csv`);
+    showToast(`CSV 백업 완료 (견적 ${rows.length}건)`, 'success');
+  } catch(e) {
+    showToast('CSV 내보내기 실패: ' + e.message, 'error');
+  }
+}
+
+/* ── 유틸 ── */
+function rDateStr() {
+  const d = new Date();
+  return `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+}
+function rDownloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 300);
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  ■ 고객사 정보 불러오기 (렌탈 견적)
+// ══════════════════════════════════════════════════════════════════
+
+let _rClientList = [];
+
+async function rOpenClientPicker() {
+  const modal = document.getElementById('modal-r-client-picker');
+  if (!modal) return;
+  openModal('modal-r-client-picker');
+  const listEl = document.getElementById('r-cpi-list');
+  const searchEl = document.getElementById('r-cpi-search');
+  if (searchEl) searchEl.value = '';
+  listEl.innerHTML = '<div class="cpi-loading">불러오는 중...</div>';
+
+  try {
+    const { data, error } = await db
+      .from('rental_quotes')
+      .select('company_name, contact_name, contact_tel, contact_email')
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+
+    const seen = new Set();
+    _rClientList = (data || []).filter(q => {
+      if (!q.company_name || seen.has(q.company_name)) return false;
+      seen.add(q.company_name);
+      return true;
+    });
+
+    rRenderClientList(_rClientList);
+  } catch(e) {
+    listEl.innerHTML = `<div class="cpi-empty">불러오기 실패: ${e.message}</div>`;
+  }
+}
+
+function rRenderClientList(list) {
+  const listEl = document.getElementById('r-cpi-list');
+  if (!list.length) {
+    listEl.innerHTML = '<div class="cpi-empty">저장된 고객사가 없습니다</div>';
+    return;
+  }
+  listEl.innerHTML = list.map((c, i) => `
+    <div class="cpi-item r-cpi-item" onclick="rSelectClient(${i})">
+      <div class="cpi-company">${c.company_name || ''}</div>
+      <div class="cpi-detail">
+        ${c.contact_name ? `<span>${c.contact_name}</span>` : ''}
+        ${c.contact_tel  ? `<span>${c.contact_tel}</span>`  : ''}
+        ${c.contact_email? `<span>${c.contact_email}</span>`: ''}
+      </div>
+    </div>`).join('');
+}
+
+function rFilterClientList() {
+  const q = (document.getElementById('r-cpi-search').value || '').toLowerCase().trim();
+  if (!q) { rRenderClientList(_rClientList); return; }
+  rRenderClientList(_rClientList.filter(c =>
+    (c.company_name  || '').toLowerCase().includes(q) ||
+    (c.contact_name  || '').toLowerCase().includes(q) ||
+    (c.contact_tel   || '').toLowerCase().includes(q) ||
+    (c.contact_email || '').toLowerCase().includes(q)
+  ));
+}
+
+function rSelectClient(idx) {
+  const q = (document.getElementById('r-cpi-search').value || '').toLowerCase().trim();
+  const list = q ? _rClientList.filter(c =>
+    (c.company_name  || '').toLowerCase().includes(q) ||
+    (c.contact_name  || '').toLowerCase().includes(q) ||
+    (c.contact_tel   || '').toLowerCase().includes(q) ||
+    (c.contact_email || '').toLowerCase().includes(q)
+  ) : _rClientList;
+  const c = list[idx];
+  if (!c) return;
+  const setV = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
+  setV('r-company', c.company_name);
+  setV('r-contact', c.contact_name);
+  setV('r-phone',   c.contact_tel);
+  setV('r-email',   c.contact_email);
+  closeModal('modal-r-client-picker');
+  showToast(`${c.company_name} 정보를 불러왔습니다`, 'success');
 }
