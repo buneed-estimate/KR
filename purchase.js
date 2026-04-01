@@ -1063,14 +1063,19 @@ function renderSpecOptionList(catId) {
     el.innerHTML = '<div style="text-align:center;padding:20px;color:#94a3b8;font-size:12px;">'+(catId?'해당 항목에 옵션이 없습니다':'좌측에서 스펙 항목을 선택하세요')+'</div>';
     return;
   }
-  el.innerHTML = `<table class="data-table" style="font-size:12px;"><thead><tr><th>옵션명</th><th style="text-align:right;">추가 금액</th><th style="text-align:center;">순서</th><th>관리</th></tr></thead><tbody>
+  el.innerHTML = `<table class="data-table" style="font-size:12px;table-layout:fixed;width:100%;"><thead><tr>
+    <th style="width:auto;">옵션명</th>
+    <th style="width:80px;text-align:right;">추가 금액</th>
+    <th style="width:40px;text-align:center;">순서</th>
+    <th style="width:90px;">관리</th>
+  </tr></thead><tbody>
     ${opts.map(o=>`<tr>
-      <td style="font-weight:600;">${o.name}</td>
-      <td style="text-align:right;">${o.price_delta?'+'+fmt(o.price_delta)+' 원':'포함'}</td>
+      <td style="font-weight:600;word-break:break-all;">${o.name}</td>
+      <td style="text-align:right;white-space:nowrap;">${o.price_delta?'+'+fmt(o.price_delta)+' 원':'포함'}</td>
       <td style="text-align:center;">${o.sort_order||0}</td>
-      <td style="display:flex;gap:4px;">
-        <button class="btn btn-sm btn-secondary" style="font-size:11px;" onclick="openSpecOptModal('${o.id}')">수정</button>
-        <button class="btn btn-sm btn-danger" style="font-size:11px;" onclick="deleteSpecOpt('${o.id}')">삭제</button>
+      <td style="white-space:nowrap;">
+        <button class="btn btn-sm btn-secondary" style="font-size:11px;padding:3px 7px;" onclick="openSpecOptModal('${o.id}')">수정</button>
+        <button class="btn btn-sm btn-danger" style="font-size:11px;padding:3px 7px;" onclick="deleteSpecOpt('${o.id}')">삭제</button>
       </td>
     </tr>`).join('')}
   </tbody></table>`;

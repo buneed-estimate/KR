@@ -1149,7 +1149,8 @@ textarea.field-input{resize:vertical;min-height:52px;}
     height: 100dvh !important;
     max-height: 100dvh !important;
     border-radius: 0 !important;
-    align-items: flex-start !important;
+    align-items: stretch !important;
+    align-self: flex-start !important;
   }
   #modal-preview .modal-body,
   #r-modal-preview .modal-body {
@@ -2055,4 +2056,28 @@ textarea.field-input{resize:vertical;min-height:52px;}
 #r-preview-footer .btn {
   flex: 0 0 auto !important;
   width: auto !important;
+}
+
+/* ══ 스펙 관리 패널 반응형 ══ */
+.spec-admin-grid {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+}
+@media (max-width: 600px) {
+  .spec-admin-grid {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto auto;
+    height: auto !important;
+    min-height: unset !important;
+  }
+  .spec-admin-grid > div:first-child {
+    border-right: none !important;
+    border-bottom: 1px solid var(--border);
+    max-height: 220px;
+  }
+  /* 스펙 옵션 테이블 관리 열 */
+  .data-table th:last-child,
+  .data-table td:last-child {
+    white-space: nowrap;
+  }
 }
