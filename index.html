@@ -13,6 +13,7 @@
 <link rel="preconnect" href="https://yofftztuejltroiivhjm.supabase.co" crossorigin>
 <link rel="dns-prefetch" href="https://yofftztuejltroiivhjm.supabase.co">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="print.css" media="print">
@@ -394,7 +395,7 @@
         <div class="backup-bar r-backup-bar">
           <span class="backup-bar-label">📦 백업</span>
           <button class="btn btn-sm backup-btn r-backup-btn" onclick="rExportJSON()" title="전체 렌탈 견적을 JSON 파일로 저장">⬇ JSON</button>
-          <button class="btn btn-sm backup-btn r-backup-btn" onclick="rExportCSV()" title="전체 렌탈 견적을 엑셀(CSV) 파일로 저장">⬇ CSV (엑셀)</button>
+          <button class="btn btn-sm backup-btn r-backup-btn" onclick="rExportXLSX()" title="전체 렌탈 견적을 Excel 파일로 저장">⬇ Excel</button>
         </div>
         <!-- 데스크탑: 테이블 뷰 -->
         <div class="admin-card history-table-view">
@@ -616,7 +617,7 @@
       <button class="modal-close" onclick="closeModal('modal-preview')">✕</button>
     </div>
     <div class="modal-body" id="preview-content" style="overflow-x:auto;"></div>
-    <div class="modal-footer" style="justify-content:flex-end !important;flex-direction:row !important;align-items:center !important;">
+    <div id="preview-footer" class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('modal-preview')">닫기</button>
       <button class="btn btn-success" id="btn-copy-link" onclick="copyShareLink()">링크복사</button>
       <button class="btn btn-primary btn-desktop-only" onclick="printQuote()">🖨️ 인쇄 / PDF 저장</button>
@@ -723,7 +724,7 @@
       <button class="modal-close" onclick="closeModal('r-modal-preview')">✕</button>
     </div>
     <div class="modal-body" id="r-preview-content" style="overflow-x:auto;"></div>
-    <div class="modal-footer" style="justify-content:flex-end !important;flex-direction:row !important;align-items:center !important;">
+    <div id="r-preview-footer" class="modal-footer">
       <button class="btn btn-r-secondary" onclick="closeModal('r-modal-preview')">닫기</button>
       <button class="btn btn-success" onclick="rCopyShareLink()">링크복사</button>
       <button class="btn btn-r-primary btn-desktop-only" onclick="rPrintQuote()">🖨️ 인쇄 / PDF 저장</button>

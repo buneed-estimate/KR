@@ -1265,13 +1265,10 @@ textarea.field-input{resize:vertical;min-height:52px;}
   .history-refresh-btn {
     padding: 0 12px !important;
   }
-  /* 모바일 백업 바 */
-  .backup-bar {
-    flex-wrap: wrap !important;
-    gap: 5px !important;
-    padding: 6px 8px !important;
+  /* 모바일 백업 바: 숨김 */
+  .backup-bar, .r-backup-bar {
+    display: none !important;
   }
-  .backup-btn { font-size: 11px !important; padding: 4px 8px !important; }
   .admin-card > div[style*="overflow:auto"],
   .admin-card > div[style*="overflow: auto"] {
     overflow-x: auto !important;
@@ -2014,4 +2011,25 @@ textarea.field-input{resize:vertical;min-height:52px;}
   .items-table { min-width: 480px !important; }
   .items-table .col-order { width: 42px !important; }
   .qi-order-btn { width: 18px !important; height: 14px !important; }
+}
+
+/* ══ 미리보기 모달 footer: 항상 오른쪽 정렬 (최우선) ══ */
+#modal-preview .modal-footer,
+#r-modal-preview .modal-footer,
+#preview-footer,
+#r-preview-footer {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+  padding: 10px 14px !important;
+  gap: 8px !important;
+}
+#modal-preview .modal-footer .btn,
+#r-modal-preview .modal-footer .btn,
+#preview-footer .btn,
+#r-preview-footer .btn {
+  flex: 0 0 auto !important;
+  width: auto !important;
 }

@@ -1167,24 +1167,30 @@ async function pExportJSON() {
 }
 
 /* ── 3. 전체 견적 CSV 내보내기 ── */
-async function pExportCSV() {
+async function pExportXLSX() {
   if (!db) { showToast('DB 연결 필요', 'error'); return; }
-  showToast('CSV 백업 파일 생성 중...', 'info');
+  if (typeof XLSX === 'undefined') { showToast('Excel 라이브러리 로딩 중... 잠시 후 다시 시도해주세요.', 'error'); return; }
+  showToast('Excel 파일 생성 중...', 'info');
   try {
     const { data: quotes, error: qErr } = await db.from('quotes').select('*').order('created_at', { ascending: false });
     if (qErr) throw qErr;
     const { data: items, error: iErr } = await db.from('quote_items').select('*');
     if (iErr) throw iErr;
+
     const itemMap = {};
     (items || []).forEach(it => {
       if (!itemMap[it.quote_id]) itemMap[it.quote_id] = [];
       itemMap[it.quote_id].push(it);
     });
-    const headers = ['견적번호','작성일','고객사','담당자','연락처','이메일','납품희망일','유효기간','메모','소계','할인액','공급가액','부가세','합계','품목수','제품명목록'];
-    const rows = (quotes || []).map(q => {
+
+    /* ── 시트1: 견적 목록 ── */
+    const quoteRows = [
+      ['견적번호','작성일','고객사','담당자','연락처','이메일','납품희망일','유효기간','메모','소계','할인액','공급가액','부가세','합계','품목수','제품명목록']
+    ];
+    (quotes || []).forEach(q => {
       const its = itemMap[q.id] || [];
       const productList = its.map(it => `${it.product_name}(${it.qty||it.quantity||1}개)`).join(' / ');
-      return [
+      quoteRows.push([
         q.quote_number || '',
         q.created_at ? new Date(q.created_at).toLocaleDateString('ko-KR') : '',
         q.company_name || '',
@@ -1193,7 +1199,7 @@ async function pExportCSV() {
         q.contact_email || '',
         q.delivery_date || '',
         q.valid_until || '',
-        (q.memo || '').replace(/[\n\r,]/g, ' '),
+        (q.memo || '').replace(/[\n\r]/g, ' '),
         q.subtotal || 0,
         q.discount_amount || 0,
         q.supply_price || 0,
@@ -1201,14 +1207,45 @@ async function pExportCSV() {
         q.total || 0,
         its.length,
         productList
-      ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
+      ]);
     });
-    const csv = '\uFEFF' + [headers.join(','), ...rows].join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    pDownloadBlob(blob, `buneed_purchase_backup_${pDateStr()}.csv`);
-    showToast(`CSV 백업 완료 (견적 ${rows.length}건)`, 'success');
+
+    /* ── 시트2: 견적 품목 상세 ── */
+    const itemRows = [
+      ['견적번호','고객사','제품명','카테고리','브랜드','사양','단가','수량','금액']
+    ];
+    (quotes || []).forEach(q => {
+      const its = itemMap[q.id] || [];
+      its.forEach(it => {
+        itemRows.push([
+          q.quote_number || '',
+          q.company_name || '',
+          it.product_name || '',
+          it.category || '',
+          it.brand || '',
+          it.spec_summary || '',
+          it.unit_price || 0,
+          it.qty || it.quantity || 1,
+          it.total_price || 0
+        ]);
+      });
+    });
+
+    const wb = XLSX.utils.book_new();
+    const ws1 = XLSX.utils.aoa_to_sheet(quoteRows);
+    const ws2 = XLSX.utils.aoa_to_sheet(itemRows);
+
+    /* 열 너비 자동 조정 */
+    ws1['!cols'] = [10,12,18,10,14,22,12,16,20,12,10,12,10,12,8,30].map(w=>({wch:w}));
+    ws2['!cols'] = [10,18,24,12,12,20,12,8,12].map(w=>({wch:w}));
+
+    XLSX.utils.book_append_sheet(wb, ws1, '견적목록');
+    XLSX.utils.book_append_sheet(wb, ws2, '품목상세');
+
+    XLSX.writeFile(wb, `buneed_구매견적_${pDateStr()}.xlsx`);
+    showToast(`Excel 백업 완료 (견적 ${(quotes||[]).length}건)`, 'success');
   } catch(e) {
-    showToast('CSV 내보내기 실패: ' + e.message, 'error');
+    showToast('Excel 내보내기 실패: ' + e.message, 'error');
   }
 }
 

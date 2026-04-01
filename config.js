@@ -653,7 +653,7 @@ function showToast(msg, type='info') {
   el.className = 'toast-item '+type;
   el.textContent = msg;
   t.appendChild(el);
-  setTimeout(()=>el.remove(), 5000);
+  setTimeout(()=>el.remove(), 2500);
 }
 function openModal(id) {
   const el = document.getElementById(id);
