@@ -1074,9 +1074,11 @@ function renderSpecOptionList(catId) {
       <td style="font-weight:600;word-break:break-all;">${o.name}</td>
       <td style="text-align:right;white-space:nowrap;">${o.price_delta?'+'+fmt(o.price_delta)+' 원':'포함'}</td>
       <td style="text-align:center;">${o.sort_order||0}</td>
-      <td style="white-space:nowrap;">
-        <button class="btn btn-sm btn-secondary" style="font-size:11px;padding:3px 8px;" onclick="openSpecOptModal('${o.id}')">수정</button>
-        <button class="btn btn-sm btn-danger" style="font-size:11px;padding:3px 8px;margin-left:3px;" onclick="deleteSpecOpt('${o.id}')">삭제</button>
+      <td style="white-space:nowrap;padding-right:12px;">
+        <div style="display:flex;gap:4px;align-items:center;">
+          <button class="btn btn-sm btn-secondary" style="font-size:11px;padding:3px 8px;" onclick="openSpecOptModal('${o.id}')">수정</button>
+          <button class="btn btn-sm btn-danger" style="font-size:11px;padding:3px 8px;" onclick="deleteSpecOpt('${o.id}')">삭제</button>
+        </div>
       </td>
     </tr>`).join('')}
   </tbody></table></div>`;
