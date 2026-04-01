@@ -1134,7 +1134,11 @@ textarea.field-input{resize:vertical;min-height:52px;}
   }
 
   /* ── 모달 ── */
-  .modal-overlay { padding: 0 !important; align-items: flex-end !important; }
+  .modal-overlay { padding: 0 !important; align-items: flex-start !important; }
+  #modal-preview.modal-overlay,
+  #r-modal-preview.modal-overlay {
+    align-items: flex-start !important;
+  }
   .modal-box {
     width: 100vw !important;
     max-width: 100vw !important;
@@ -1142,9 +1146,26 @@ textarea.field-input{resize:vertical;min-height:52px;}
     border-radius: 16px 16px 0 0 !important;
   }
   .modal-box.wide {
+    height: 100dvh !important;
     max-height: 100dvh !important;
     border-radius: 0 !important;
     align-items: flex-start !important;
+  }
+  #modal-preview .modal-body,
+  #r-modal-preview .modal-body {
+    flex: 1 !important;
+    min-height: 0 !important;
+  }
+  #preview-footer,
+  #r-preview-footer {
+    justify-content: flex-end !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+  }
+  #preview-footer .btn,
+  #r-preview-footer .btn {
+    flex: 0 0 auto !important;
+    width: auto !important;
   }
   .modal-header { padding: 14px 16px !important; }
   .modal-body { padding: 14px 14px !important; }
@@ -1165,6 +1186,8 @@ textarea.field-input{resize:vertical;min-height:52px;}
   }
   /* 모바일: 인쇄(PDF) 버튼 숨김 (btn-desktop-only) */
   .btn-desktop-only { display: none !important; }
+  #btn-print-quote { display: none !important; }
+  #r-btn-print-quote { display: none !important; }
 
   /* ── 견적서 본문 (qdoc) ── */
   .qdoc {

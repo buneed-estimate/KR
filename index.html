@@ -610,17 +610,15 @@
   </div>
 </div>
 
-<!-- ===== 모달: 구매 미리보기 ===== -->
 <div class="modal-overlay" id="modal-preview">
-  <div class="modal-box wide">
-    <div class="modal-header" style="justify-content:flex-end !important;">
-      <button class="modal-close" onclick="closeModal('modal-preview')">✕</button>
+  <div class="modal-box wide" style="width:100vw;max-width:100vw;height:100dvh;max-height:100dvh;border-radius:0;display:flex;flex-direction:column;">
+    <div style="display:flex;justify-content:flex-end;padding:10px 14px;border-bottom:1px solid #dde3ee;flex-shrink:0;">
+      <button class="btn btn-secondary" onclick="closeModal('modal-preview')">✕ 닫기</button>
     </div>
-    <div class="modal-body" id="preview-content" style="overflow-x:auto;"></div>
-    <div id="preview-footer" style="display:flex;flex-direction:row;justify-content:flex-end;align-items:center;gap:8px;padding:10px 14px;border-top:1px solid #dde3ee;background:#f8fafc;flex-shrink:0;">
-      <button class="btn btn-secondary" style="flex-shrink:0;" onclick="closeModal('modal-preview')">닫기</button>
-      <button class="btn btn-success" style="flex-shrink:0;" id="btn-copy-link" onclick="copyShareLink()">링크복사</button>
-      <button class="btn btn-primary btn-desktop-only" style="flex-shrink:0;" onclick="printQuote()">🖨️ 인쇄 / PDF 저장</button>
+    <div id="preview-content" style="flex:1;min-height:0;overflow-y:auto;overflow-x:auto;padding:8px;-webkit-overflow-scrolling:touch;"></div>
+    <div style="display:flex;flex-direction:row;justify-content:flex-end;align-items:center;gap:8px;padding:10px 14px;border-top:1px solid #dde3ee;background:#f8fafc;flex-shrink:0;">
+      <button class="btn btn-success" id="btn-copy-link" onclick="copyShareLink()">링크복사</button>
+      <button class="btn btn-primary" id="btn-print-quote" onclick="printQuote()">🖨️ 인쇄 / PDF</button>
     </div>
   </div>
 </div>
@@ -719,15 +717,14 @@
 
 <!-- ===== 모달: 렌탈 미리보기 ===== -->
 <div class="modal-overlay" id="r-modal-preview">
-  <div class="modal-box wide">
-    <div class="modal-header" style="justify-content:flex-end !important;">
-      <button class="modal-close" onclick="closeModal('r-modal-preview')">✕</button>
+  <div class="modal-box wide" style="width:100vw;max-width:100vw;height:100dvh;max-height:100dvh;border-radius:0;display:flex;flex-direction:column;">
+    <div style="display:flex;justify-content:flex-end;padding:10px 14px;border-bottom:1px solid #dde3ee;flex-shrink:0;">
+      <button class="btn btn-r-secondary" onclick="closeModal('r-modal-preview')">✕ 닫기</button>
     </div>
-    <div class="modal-body" id="r-preview-content" style="overflow-x:auto;"></div>
-    <div id="r-preview-footer" style="display:flex;flex-direction:row;justify-content:flex-end;align-items:center;gap:8px;padding:10px 14px;border-top:1px solid #dde3ee;background:#f8fafc;flex-shrink:0;">
-      <button class="btn btn-r-secondary" style="flex-shrink:0;" onclick="closeModal('r-modal-preview')">닫기</button>
-      <button class="btn btn-success" style="flex-shrink:0;" onclick="rCopyShareLink()">링크복사</button>
-      <button class="btn btn-r-primary btn-desktop-only" style="flex-shrink:0;" onclick="rPrintQuote()">🖨️ 인쇄 / PDF 저장</button>
+    <div id="r-preview-content" style="flex:1;min-height:0;overflow-y:auto;overflow-x:auto;padding:8px;-webkit-overflow-scrolling:touch;"></div>
+    <div style="display:flex;flex-direction:row;justify-content:flex-end;align-items:center;gap:8px;padding:10px 14px;border-top:1px solid #dde3ee;background:#f8fafc;flex-shrink:0;">
+      <button class="btn btn-success" onclick="rCopyShareLink()">링크복사</button>
+      <button class="btn btn-r-primary" id="r-btn-print-quote" onclick="rPrintQuote()">🖨️ 인쇄 / PDF</button>
     </div>
   </div>
 </div>
