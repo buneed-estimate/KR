@@ -2058,35 +2058,71 @@ textarea.field-input{resize:vertical;min-height:52px;}
   width: auto !important;
 }
 
-/* ══ 스펙 관리 패널 반응형 ══ */
-.spec-admin-grid {
-  display: grid;
-  grid-template-columns: 280px 1fr;
+/* ══ 스펙 관리 패널 ══ */
+.spec-admin-wrap {
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  gap: 12px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
 }
-@media (max-width: 600px) {
-  .spec-admin-grid {
-    grid-template-columns: 1fr !important;
-    grid-template-rows: auto auto;
-    height: auto !important;
-    min-height: unset !important;
-  }
-  .spec-admin-grid > div:first-child {
-    border-right: none !important;
-    border-bottom: 1px solid var(--border);
-    max-height: 220px;
-    overflow-y: auto;
-  }
-  /* 스펙 옵션 테이블: 가로 스크롤 허용 */
-  #spec-opt-list {
-    overflow-x: auto !important;
-    -webkit-overflow-scrolling: touch;
-  }
-  #spec-opt-list table {
-    min-width: 300px;
-  }
-  /* 관리 열 버튼 항상 표시 */
-  #spec-opt-list td:last-child,
-  #spec-opt-list th:last-child {
-    white-space: nowrap !important;
-  }
+.spec-admin-header {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+.spec-section {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.spec-section-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: #f8fafc;
+  border-bottom: 1px solid var(--border);
+}
+.spec-cat-body {
+  padding: 8px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+.spec-opt-body {
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 500px;
+  -webkit-overflow-scrolling: touch;
+}
+.spec-opt-body table {
+  width: 100%;
+  min-width: 300px;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.spec-opt-body th {
+  background: #f8fafc;
+  padding: 8px 10px;
+  font-weight: 700;
+  color: #374151;
+  border-bottom: 1.5px solid var(--border);
+  text-align: left;
+  font-size: 11px;
+  white-space: nowrap;
+}
+.spec-opt-body td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.spec-opt-body tr:last-child td { border-bottom: none; }
+.spec-opt-body tr:hover td { background: #f8fafc; }
+.spec-opt-body td:last-child {
+  white-space: nowrap;
+  text-align: right;
 }
