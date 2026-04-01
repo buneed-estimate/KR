@@ -452,16 +452,14 @@ async function loadAndApplyUserProfile(email) {
       await db.from('user_profiles').insert({ user_id: user.id, email });
       profile = { user_id: user.id, email };
     }
-    // 공급사 필드 자동 세팅 (D5)
-    const setV = (id, v) => { const el = document.getElementById(id); if (el && v) el.value = v; };
-    setV('f-sales-name',  profile.name || '');
+    // 공급사 필드 자동 세팅 (D5) — 빈 값도 덮어쓰도록 v 체크 제거
+    const setV = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
+    setV('f-sales-name',  profile.name  || '');
     setV('f-sales-phone', profile.phone || '');
     setV('f-sales-email', profile.email || email);
-    setV('f-sales-dept',  profile.dept || '');
-    setV('r-sales-name',  profile.name || '');
+    setV('r-sales-name',  profile.name  || '');
     setV('r-sales-phone', profile.phone || '');
     setV('r-sales-email', profile.email || email);
-    setV('r-sales-dept',  profile.dept || '');
     // 헤더 이름 표시
     const nameEl = document.getElementById('user-name-display');
     if (nameEl && profile.name) nameEl.textContent = profile.name;

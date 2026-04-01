@@ -10,6 +10,14 @@
   --navy:#1B3A6B; --blue:#2E7FC1; --accent:#e8f0fd;
   --border:#dde3ee; --muted:#94a3b8; --bg:#f5f7fc;
   --success:#10b981; --danger:#ef4444; --warn:#f59e0b;
+  /* 폰트 크기 */
+  --fs-xs:10px;
+  --fs-sm:11px;
+  --fs-base:12px;
+  --fs-md:13px;
+  --fs-lg:14px;
+  --fs-xl:16px;
+  --fs-2xl:18px;
 }
 /* ===== 로그인 화면 ===== */
 #login-screen{display:flex;position:fixed;inset:0;background:linear-gradient(135deg,#1B3A6B 0%,#2E7FC1 100%);z-index:100;align-items:center;justify-content:center;}
@@ -1190,6 +1198,16 @@ textarea.field-input{resize:vertical;min-height:52px;}
   .history-card-list  { display: flex !important; }
 }
 
+/* ── 미리보기 모달 헤더/푸터: 항상 오른쪽 정렬 ── */
+.preview-modal-header {
+  justify-content: flex-end !important;
+}
+.preview-modal-footer {
+  justify-content: flex-end !important;
+  flex-direction: row !important;
+  align-items: center !important;
+}
+
 /* ── modal-footer-col: 견적 추가 모달 하단 세로 레이아웃 ── */
 .modal-footer-col {
   flex-direction: column !important;
@@ -1371,11 +1389,14 @@ textarea.field-input{resize:vertical;min-height:52px;}
   }
 }
 
-/* ── modal-footer-col: 모달 footer 세로 쌓기 ── */
-.modal-footer-col {
-  flex-direction: column !important;
-  gap: 8px !important;
-  align-items: stretch !important;
+/* ── 미리보기 모달 헤더/푸터: 항상 오른쪽 정렬 ── */
+.preview-modal-header {
+  justify-content: flex-end !important;
+}
+.preview-modal-footer {
+  justify-content: flex-end !important;
+  flex-direction: row !important;
+  align-items: center !important;
 }
 
 /* ── 할인율/금액 입력 줄바꿈 개선 ── */
