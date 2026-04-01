@@ -5,7 +5,8 @@ body > * { display: none !important; }
 /* 2. 구매/렌탈 미리보기 모달이 열려 있을 때만 표시 */
 #modal-preview.open,
 #r-modal-preview.open {
-  display: block !important;
+  display: flex !important;
+  flex-direction: column !important;
   position: static !important;
   background: none !important;
   padding: 0 !important;
@@ -25,13 +26,26 @@ body > * { display: none !important; }
   min-height: 100vh !important;
 }
 /* 모달 헤더/푸터(버튼 영역) 숨김 */
+/* .modal-header/.modal-footer 클래스 보유 여부와 관계없이 */
+/* 미리보기 modal-box 직계 div 중 첫째(헤더)·마지막(푸터) 모두 숨김 */
 #modal-preview .modal-header,
 #modal-preview .modal-footer,
+#modal-preview .modal-box > div:first-child,
+#modal-preview .modal-box > div:last-child,
 #r-modal-preview .modal-header,
-#r-modal-preview .modal-footer { display: none !important; }
+#r-modal-preview .modal-footer,
+#r-modal-preview .modal-box > div:first-child,
+#r-modal-preview .modal-box > div:last-child,
+/* 버튼 자체도 직접 숨김 */
+#modal-preview #btn-copy-link,
+#modal-preview #btn-print-quote,
+#r-modal-preview #r-btn-print-quote,
+#r-modal-preview .btn { display: none !important; }
 /* 모달 본문 전체 노출 */
 #modal-preview .modal-body,
-#r-modal-preview .modal-body {
+#modal-preview #preview-content,
+#r-modal-preview .modal-body,
+#r-modal-preview #r-preview-content {
   overflow: visible !important;
   max-height: none !important;
   padding: 0 !important;
