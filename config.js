@@ -684,13 +684,15 @@ function closeModal(id) {
 }
 
 // ── 모달 오버레이 클릭 시 닫기 (모바일 UX) ──
+// data-no-overlay-close 속성이 있는 모달은 오버레이 클릭으로 닫히지 않음
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.modal-overlay').forEach(overlay => {
     overlay.addEventListener('click', (e) => {
       // modal-box 내부 클릭은 무시
-      if (e.target === overlay) {
-        closeModal(overlay.id);
-      }
+      if (e.target !== overlay) return;
+      // 입력 폼이 있는 모달(data-no-overlay-close)은 오버레이 클릭으로 닫지 않음
+      if (overlay.dataset.noOverlayClose !== undefined) return;
+      closeModal(overlay.id);
     });
   });
 });

@@ -7,6 +7,12 @@
    - 고객사 선택 팝업 통합 (견적이력 + DB)
 ===================================================== */
 
+/* ── 전역 헬퍼 ── */
+function _setFieldVal(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.value = val || '';
+}
+
 /* ── 상태 ── */
 let _clients = [];          // 전체 로드된 목록
 let _clientsFiltered = [];  // 검색 필터 결과
@@ -340,11 +346,11 @@ async function pOpenClientPicker() {
   _cpiFiltered = [...list];
 
   renderCpiList('cpi-list', list, (c) => {
-    setV('f-company', c.company_name);
-    setV('f-contact', c.contact_name);
-    setV('f-phone',   c.contact_phone);
-    setV('f-email',   c.contact_email);
-    if (c.delivery) setV('f-delivery', c.delivery);
+    _setFieldVal('f-company', c.company_name);
+    _setFieldVal('f-contact', c.contact_name);
+    _setFieldVal('f-phone',   c.contact_phone);
+    _setFieldVal('f-email',   c.contact_email);
+    if (c.delivery) _setFieldVal('f-delivery', c.delivery);
     closeModal('modal-client-picker');
     showToast(`"${c.company_name}" 정보를 불러왔습니다`, 'success');
   });
@@ -388,11 +394,11 @@ async function rOpenClientPicker() {
 
   const list = [...merged.values()];
   renderCpiList('r-cpi-list', list, (c) => {
-    setV('r-company', c.company_name);
-    setV('r-contact', c.contact_name);
-    setV('r-phone',   c.contact_phone);
-    setV('r-email',   c.contact_email);
-    if (c.delivery) setV('r-delivery', c.delivery);
+    _setFieldVal('r-company', c.company_name);
+    _setFieldVal('r-contact', c.contact_name);
+    _setFieldVal('r-phone',   c.contact_phone);
+    _setFieldVal('r-email',   c.contact_email);
+    if (c.delivery) _setFieldVal('r-delivery', c.delivery);
     closeModal('modal-r-client-picker');
     showToast(`"${c.company_name}" 정보를 불러왔습니다`, 'success');
   });
