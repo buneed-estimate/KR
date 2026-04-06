@@ -456,6 +456,12 @@ async function pOpenClientPicker() {
   openModal('modal-client-picker');
   const listEl = document.getElementById('cpi-list');
   if (!listEl) return;
+
+  // 팝업 열리자마자 즉시 검색창·목록 초기화
+  const searchEl = document.getElementById('cpi-search');
+  if (searchEl) searchEl.value = '';
+  _cpiAll = [];
+  _cpiFiltered = [];
   listEl.innerHTML = '<div class="cpi-loading">불러오는 중...</div>';
 
   // clients DB 조회 (테이블 미존재 시 graceful 처리)
@@ -463,7 +469,7 @@ async function pOpenClientPicker() {
   if (db) {
     const { data, error } = await db
       .from('clients')
-      .select('company_name,contact_name,contact_phone,contact_email,delivery_address,biz_address')
+      .select('company_name,contact_name,contact_phone,contact_email,delivery_address')
       .order('company_name');
     if (!error) clientRows = data || [];
     // 테이블 없으면 견적이력만으로 진행 (오류 무시)
@@ -482,7 +488,7 @@ async function pOpenClientPicker() {
       contact_name:  c.contact_name || '',
       contact_phone: c.contact_phone || '',
       contact_email: c.contact_email || '',
-      delivery:      c.delivery_address || c.biz_address || '',
+      delivery:      c.delivery_address || '',
       from_db: true,
     });
   });
@@ -499,7 +505,7 @@ async function pOpenClientPicker() {
     }
   });
 
-  const list = [...merged.values()];
+  const list = [...merged.values()].sort((a,b) => (a.company_name||'').localeCompare(b.company_name||'', 'ko'));
   _cpiAll = list;
   _cpiFiltered = [...list];
 
@@ -518,6 +524,12 @@ async function rOpenClientPicker() {
   openModal('modal-r-client-picker');
   const listEl = document.getElementById('r-cpi-list');
   if (!listEl) return;
+
+  // 팝업 열리자마자 즉시 검색창·목록 초기화
+  const rSearchEl = document.getElementById('r-cpi-search');
+  if (rSearchEl) rSearchEl.value = '';
+  _cpiAll = [];
+  _cpiFiltered = [];
   listEl.innerHTML = '<div class="cpi-loading">불러오는 중...</div>';
 
   // clients DB 조회 (테이블 미존재 시 graceful 처리)
@@ -525,7 +537,7 @@ async function rOpenClientPicker() {
   if (db) {
     const { data, error } = await db
       .from('clients')
-      .select('company_name,contact_name,contact_phone,contact_email,delivery_address,biz_address')
+      .select('company_name,contact_name,contact_phone,contact_email,delivery_address')
       .order('company_name');
     if (!error) clientRows = data || [];
   }
@@ -541,7 +553,7 @@ async function rOpenClientPicker() {
       contact_name:  c.contact_name || '',
       contact_phone: c.contact_phone || '',
       contact_email: c.contact_email || '',
-      delivery:      c.delivery_address || c.biz_address || '',
+      delivery:      c.delivery_address || '',
     });
   });
   (quoteRows || []).forEach(q => {
@@ -556,7 +568,10 @@ async function rOpenClientPicker() {
     }
   });
 
-  const list = [...merged.values()];
+  const list = [...merged.values()].sort((a,b) => (a.company_name||'').localeCompare(b.company_name||'', 'ko'));
+  _cpiAll = list;
+  _cpiFiltered = [...list];
+
   renderCpiList('r-cpi-list', list, (c) => {
     _setFieldVal('r-company', c.company_name);
     _setFieldVal('r-contact', c.contact_name);
@@ -593,11 +608,16 @@ function renderCpiList(containerId, list, onSelect) {
 
 /* 팝업 검색 */
 function cpiSearch(inputId, listId, type) {
-  const q = (document.getElementById(inputId)?.value || '').toLowerCase();
+  const q = (document.getElementById(inputId)?.value || '').trim().toLowerCase();
+  if (!q) {
+    renderCpiList(listId, _cpiAll, _cpiCallback);
+    return;
+  }
   const list = _cpiAll.filter(c =>
     (c.company_name||'').toLowerCase().includes(q) ||
     (c.contact_name||'').toLowerCase().includes(q) ||
-    (c.contact_phone||'').includes(q)
+    (c.contact_phone||'').replace(/-/g,'').includes(q.replace(/-/g,'')) ||
+    (c.contact_email||'').toLowerCase().includes(q)
   );
   renderCpiList(listId, list, _cpiCallback);
 }
