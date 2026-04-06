@@ -618,7 +618,7 @@
 </div>
 
 <!-- ===== 모달: 구매 고객사 선택 ===== -->
-<div class="modal-overlay" id="modal-client-picker">
+<div class="modal-overlay" id="modal-client-picker" data-no-overlay-close>
   <div class="modal-box client-picker-box">
     <div class="modal-header">
       <h2>📋 고객사 선택</h2>
@@ -642,7 +642,7 @@
   </div>
 </div>
 
-<div class="modal-overlay" id="modal-r-client-picker">
+<div class="modal-overlay" id="modal-r-client-picker" data-no-overlay-close>
   <div class="modal-box client-picker-box">
     <div class="modal-header">
       <h2 style="color:var(--r-primary);">📋 고객사 선택</h2>
@@ -921,7 +921,7 @@
       <h2 id="client-modal-title">거래처 추가</h2>
       <button class="modal-close" onclick="closeModal('modal-client')">✕</button>
     </div>
-    <div class="modal-body" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+    <div class="modal-body client-modal-body" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
       <div style="grid-column:1/-1;"><div class="field-label">회사명 *</div><input class="field-input" id="cm-company" placeholder="(주)비유니드"></div>
       <div><div class="field-label">담당자</div><input class="field-input" id="cm-contact" placeholder="홍길동"></div>
       <div><div class="field-label">연락처</div><input class="field-input" id="cm-phone" placeholder="010-0000-0000"></div>
@@ -945,13 +945,13 @@
       <button class="modal-close" onclick="closeModal('modal-manual-item')">✕</button>
     </div>
     <div class="modal-body" style="display:flex;flex-direction:column;gap:10px;">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div class="mi-grid-2col" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
         <div><div class="field-label">브랜드</div><input class="field-input" id="mi-brand" placeholder="HP, Samsung 등"></div>
         <div><div class="field-label">카테고리</div><input class="field-input" id="mi-category" placeholder="노트북, 모니터 등"></div>
       </div>
       <div><div class="field-label">모델명 *</div><input class="field-input" id="mi-name" placeholder="모델명을 입력하세요"></div>
       <div><div class="field-label">사양 / 스펙</div><textarea class="field-input" id="mi-spec" rows="2" placeholder="CPU, RAM, 용량 등 사양 입력"></textarea></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div class="mi-grid-2col" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
         <div><div class="field-label">단가 (원) *</div><input class="field-input" id="mi-price" type="number" min="0" placeholder="0" oninput="calcManualItem()"></div>
         <div><div class="field-label">수량 *</div><input class="field-input" id="mi-qty" type="number" min="1" value="1" placeholder="1" oninput="calcManualItem()"></div>
       </div>
