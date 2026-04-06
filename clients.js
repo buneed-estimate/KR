@@ -64,12 +64,15 @@ async function loadClients() {
 }
 
 function filterClients() {
-  const q = (document.getElementById('client-search')?.value || '').toLowerCase().trim();
+  const raw = (document.getElementById('client-search')?.value || '').trim();
+  const q = raw.toLowerCase().replace(/\s+/g, ' ');
+  const qNorm = _normalizeCompanyName(raw);
   _clientsFiltered = q
     ? _clients.filter(c =>
+        _normalizeCompanyName(c.company_name).includes(qNorm) ||
         (c.company_name || '').toLowerCase().includes(q) ||
         (c.contact_name || '').toLowerCase().includes(q) ||
-        (c.contact_phone || '').includes(q) ||
+        (c.contact_phone || '').replace(/-/g,'').includes(q.replace(/-/g,'')) ||
         (c.sales_person || '').toLowerCase().includes(q)
       )
     : [..._clients];
@@ -144,12 +147,12 @@ function renderClientList() {
       <td style="text-align:center;"><input type="checkbox" class="client-row-check" data-id="${c.id}" onchange="_clientUpdateBulkBtn()" style="width:15px;height:15px;cursor:pointer;"></td>
       <td>
         <div style="font-weight:600;color:#1B3A6B;">${esc(c.company_name)}</div>
-        ${c.client_code ? `<div style="font-size:10px;color:#94a3b8;">${esc(c.client_code)}</div>` : ''}
+        ${c.memo ? `<div style="font-size:10px;color:#94a3b8;">${esc(c.memo)}</div>` : ''}
       </td>
       <td>${esc(c.contact_name)}</td>
       <td>${esc(c.contact_phone)}</td>
       <td style="font-size:11px;">${esc(c.contact_email)}</td>
-      <td style="font-size:11px;">${esc(c.delivery_address || c.biz_address)}</td>
+      <td style="font-size:11px;">${esc(c.delivery_address)}</td>
       <td>${esc(c.sales_person)}</td>
       <td style="text-align:center;white-space:nowrap;">
         <button class="btn btn-sm" style="padding:3px 8px;font-size:11px;background:#eef3fb;color:#1B3A6B;border:1px solid #c7d7f5;" onclick="openClientModal('${c.id}')">수정</button>
@@ -608,12 +611,15 @@ function renderCpiList(containerId, list, onSelect) {
 
 /* 팝업 검색 */
 function cpiSearch(inputId, listId, type) {
-  const q = (document.getElementById(inputId)?.value || '').trim().toLowerCase();
-  if (!q) {
+  const raw = (document.getElementById(inputId)?.value || '').trim();
+  if (!raw) {
     renderCpiList(listId, _cpiAll, _cpiCallback);
     return;
   }
+  const q = raw.toLowerCase().replace(/\s+/g, ' ');
+  const qNorm = _normalizeCompanyName(raw);
   const list = _cpiAll.filter(c =>
+    _normalizeCompanyName(c.company_name).includes(qNorm) ||
     (c.company_name||'').toLowerCase().includes(q) ||
     (c.contact_name||'').toLowerCase().includes(q) ||
     (c.contact_phone||'').replace(/-/g,'').includes(q.replace(/-/g,'')) ||
@@ -626,18 +632,43 @@ function cpiSearch(inputId, listId, type) {
    7. 견적 저장 시 고객사 자동 upsert
    purchase.js / rental.js에서 저장 후 호출
 ══════════════════════════════════════ */
+
+/**
+ * 회사명 정규화: 띄어쓰기·특수문자·대소문자 차이를 무시하고 비교하기 위해
+ * - 앞뒤 공백 제거
+ * - 중간 연속 공백 → 단일 공백
+ * - ㈜ → (주) 통일
+ * - 괄호 앞뒤 공백 제거  예) ( 주 ) → (주)
+ * - 소문자 변환
+ */
+function _normalizeCompanyName(name) {
+  if (!name) return '';
+  return name
+    .trim()
+    .replace(/\s+/g, ' ')               // 연속 공백 → 단일
+    .replace(/㈜/g, '(주)')             // ㈜ → (주)
+    .replace(/\(\s*/g, '(')             // ( 뒤 공백 제거
+    .replace(/\s*\)/g, ')')             // ) 앞 공백 제거
+    .replace(/\.\s*/g, '.')             // 점 뒤 공백 제거
+    .toLowerCase();
+}
+
 async function upsertClientFromQuote(payload) {
   if (!db || !payload.company_name) return;
   try {
-    // 동일 회사명 있으면 연락처 정보만 업데이트, 없으면 신규 등록
-    const { data: existing } = await db
+    const normalizedInput = _normalizeCompanyName(payload.company_name);
+
+    // 전체 고객사 목록에서 정규화 비교로 유사 회사명 탐색
+    const { data: allClients } = await db
       .from('clients')
-      .select('id')
-      .eq('company_name', payload.company_name)
-      .maybeSingle();
+      .select('id, company_name');
+
+    const existing = (allClients || []).find(c =>
+      _normalizeCompanyName(c.company_name) === normalizedInput
+    );
 
     if (existing) {
-      // 빈 값은 덮어쓰지 않음
+      // 기존 고객사 — 빈 값은 덮어쓰지 않음
       const update = {};
       if (payload.contact_name)  update.contact_name  = payload.contact_name;
       if (payload.contact_phone) update.contact_phone = payload.contact_phone;
@@ -645,6 +676,7 @@ async function upsertClientFromQuote(payload) {
       if (Object.keys(update).length)
         await db.from('clients').update(update).eq('id', existing.id);
     } else {
+      // 신규 고객사 — 입력된 원본 이름 그대로 저장
       await db.from('clients').insert({ ...payload, is_active: true });
     }
   } catch(e) { /* silent */ }
