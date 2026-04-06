@@ -19,6 +19,8 @@ let _clientsFiltered = [];  // 검색 필터 결과
 let _clientPage = 1;
 const _clientPageSize = 30;
 let _editingClientId = null;
+let _clientSortKey = 'company_name'; // 현재 정렬 기준
+let _clientSortAsc = true;           // true=오름차순, false=내림차순
 
 /* ══════════════════════════════════════
    1. 목록 로드 & 렌더
@@ -55,8 +57,10 @@ async function loadClients() {
 
   _clients = data || [];
   _clientsFiltered = [..._clients];
+  _applyClientSort();
   _clientPage = 1;
   renderClientList();
+  _updateClientSortIcons();
 }
 
 function filterClients() {
@@ -69,8 +73,49 @@ function filterClients() {
         (c.sales_person || '').toLowerCase().includes(q)
       )
     : [..._clients];
+  _applyClientSort();
   _clientPage = 1;
   renderClientList();
+}
+
+function sortClients(key) {
+  if (_clientSortKey === key) {
+    _clientSortAsc = !_clientSortAsc; // 같은 컬럼 재클릭 → 방향 반전
+  } else {
+    _clientSortKey = key;
+    _clientSortAsc = true;
+  }
+  _applyClientSort();
+  _clientPage = 1;
+  renderClientList();
+  _updateClientSortIcons();
+}
+
+function _applyClientSort() {
+  const key = _clientSortKey;
+  const asc = _clientSortAsc;
+  _clientsFiltered.sort((a, b) => {
+    const va = (a[key] || '').toString().toLowerCase();
+    const vb = (b[key] || '').toString().toLowerCase();
+    if (va < vb) return asc ? -1 : 1;
+    if (va > vb) return asc ? 1 : -1;
+    return 0;
+  });
+}
+
+function _updateClientSortIcons() {
+  // 모든 정렬 아이콘 초기화
+  ['company_name', 'contact_name', 'sales_person'].forEach(k => {
+    const el = document.getElementById('csort-' + k);
+    if (!el) return;
+    if (k === _clientSortKey) {
+      el.textContent = _clientSortAsc ? '▲' : '▼';
+      el.style.color = '#1B3A6B';
+    } else {
+      el.textContent = '⇅';
+      el.style.color = '#94a3b8';
+    }
+  });
 }
 
 function renderClientList() {
@@ -144,8 +189,7 @@ function openClientModal(id = null) {
   if (titleEl) titleEl.textContent = id ? '고객사 수정' : '고객사 추가';
 
   // 폼 초기화
-  ['cm-company','cm-contact','cm-phone','cm-email',
-   'cm-biz-addr','cm-delivery-addr','cm-sales','cm-code','cm-memo']
+  ['cm-company','cm-contact','cm-phone','cm-email','cm-delivery-addr','cm-sales','cm-memo']
     .forEach(i => { const el = document.getElementById(i); if(el) el.value = ''; });
 
   if (id) {
@@ -156,10 +200,8 @@ function openClientModal(id = null) {
       sv('cm-contact', c.contact_name);
       sv('cm-phone',   c.contact_phone);
       sv('cm-email',   c.contact_email);
-      sv('cm-biz-addr', c.biz_address);
       sv('cm-delivery-addr', c.delivery_address);
       sv('cm-sales',   c.sales_person);
-      sv('cm-code',    c.client_code);
       sv('cm-memo',    c.memo);
     }
   }
@@ -176,10 +218,8 @@ async function saveClient() {
     contact_name:     gv('cm-contact'),
     contact_phone:    gv('cm-phone'),
     contact_email:    gv('cm-email'),
-    biz_address:      gv('cm-biz-addr'),
     delivery_address: gv('cm-delivery-addr'),
     sales_person:     gv('cm-sales'),
-    client_code:      gv('cm-code'),
     memo:             gv('cm-memo'),
     is_active:        true,
   };
@@ -287,30 +327,23 @@ function importClientCSV(event) {
       }
       // 각 필드별 컬럼 인덱스 (후보 키워드 순서대로 매칭)
       const CI = {
-        client_code:          colIdx(['거래처코드','code','코드']),
-        client_type:          colIdx(['거래처구분','구분','type']),
-        company_name:         colIdx(['거래처명','회사명','company']),
-        biz_address:          colIdx(['사업자주소','사업장주소','주소','address']),
-        ceo_name:             colIdx(['대표자명','대표자','ceo']),
-        ceo_phone:            colIdx(['대표전화','대표번호']),
-        delivery_address:     colIdx(['배송주소','배송지','delivery']),
-        contact_name:         colIdx(['거래처담당자','담당자명','담당자','contact']),
-        contact_phone:        colIdx(['담당자전화','담당전화','연락처','phone','tel']),
-        contact_email:        colIdx(['담당자이메일','이메일','email']),
-        biz_type:             colIdx(['거래업종','업종','biztype']),
-        purchase_yn:          colIdx(['매입구분','매입']),
-        trade_condition_buy:  colIdx(['거래조건(구매)','구매조건','tradebuy']),
-        trade_condition_sell: colIdx(['거래조건(판매)','판매조건','tradesell']),
-        grade:                colIdx(['업체등급','등급','grade']),
+        company_name:     colIdx(['거래처명','회사명','company']),
+        delivery_address: colIdx(['배송주소','배송지','delivery']),
+        contact_name:     colIdx(['거래처담당자','담당자명','담당자','contact']),
+        contact_phone:    colIdx(['담당자전화','담당전화','연락처','phone','tel']),
+        contact_email:    colIdx(['담당자이메일','이메일','email']),
+        sales_person:     colIdx(['담당영업','영업사원','sales']),
+        memo:             colIdx(['메모','비고','memo','note']),
       };
 
-      // 헤더 매핑 실패 시 → 컬럼 순서 기본값으로 폴백
+      // 헤더 매핑 실패 시 → ERP 기본 컬럼 순서로 폴백
+      // ERP 원본: 거래처코드(0), 거래처구분(1), 거래처명(2), 사업자주소(3),
+      //           대표자명(4), 대표전화(5), 배송주소(6), 담당자(7),
+      //           담당자전화(8), 담당자이메일(9), ...
       const useFallback = CI.company_name === -1;
       if (useFallback) {
-        CI.client_code=0; CI.client_type=1; CI.company_name=2; CI.biz_address=3;
-        CI.ceo_name=4; CI.ceo_phone=5; CI.delivery_address=6; CI.contact_name=7;
-        CI.contact_phone=8; CI.contact_email=9; CI.biz_type=10; CI.purchase_yn=11;
-        CI.trade_condition_buy=12; CI.trade_condition_sell=13; CI.grade=14;
+        CI.company_name=2; CI.delivery_address=6; CI.contact_name=7;
+        CI.contact_phone=8; CI.contact_email=9;
       }
 
       function col(cols, key) {
@@ -319,36 +352,21 @@ function importClientCSV(event) {
       }
 
       const rows = dataAllRows.map(cols => ({
-        client_code:          col(cols, 'client_code'),
-        client_type:          col(cols, 'client_type'),
-        company_name:         col(cols, 'company_name'),
-        biz_address:          col(cols, 'biz_address'),
-        ceo_name:             col(cols, 'ceo_name'),
-        ceo_phone:            col(cols, 'ceo_phone'),
-        delivery_address:     col(cols, 'delivery_address'),
-        contact_name:         col(cols, 'contact_name'),
-        contact_phone:        col(cols, 'contact_phone'),
-        contact_email:        col(cols, 'contact_email'),
-        biz_type:             col(cols, 'biz_type'),
-        purchase_yn:          col(cols, 'purchase_yn'),
-        trade_condition_buy:  col(cols, 'trade_condition_buy'),
-        trade_condition_sell: col(cols, 'trade_condition_sell'),
-        grade:                col(cols, 'grade'),
-        is_active:            true,
+        company_name:     col(cols, 'company_name'),
+        delivery_address: col(cols, 'delivery_address'),
+        contact_name:     col(cols, 'contact_name'),
+        contact_phone:    col(cols, 'contact_phone'),
+        contact_email:    col(cols, 'contact_email'),
+        sales_person:     col(cols, 'sales_person'),
+        memo:             col(cols, 'memo'),
+        is_active:        true,
       })).filter(r => r.company_name); // 회사명 없는 줄 제외
 
       if (!rows.length) { showToast('유효한 데이터가 없습니다', 'error'); return; }
 
       showToast(`${rows.length}건 임포트 중...`, 'info');
 
-      // 기존 client_code 목록 조회 (중복 체크용)
-      const { data: existing } = await db.from('clients').select('id, client_code');
-      const existingMap = new Map((existing || [])
-        .filter(r => r.client_code)
-        .map(r => [r.client_code, r.id])
-      );
-
-      // 회사명 기준 중복 체크 (client_code 없는 경우)
+      // 회사명 기준 중복 체크
       const { data: existingByName } = await db.from('clients').select('id, company_name');
       const existingNameMap = new Map((existingByName || []).map(r => [r.company_name, r.id]));
 
@@ -359,9 +377,7 @@ function importClientCSV(event) {
       const toUpdate = []; // { id, row }
 
       for (const row of rows) {
-        let existingId = null;
-        if (row.client_code) existingId = existingMap.get(row.client_code) || null;
-        if (!existingId)     existingId = existingNameMap.get(row.company_name) || null;
+        let existingId = existingNameMap.get(row.company_name) || null;
 
         if (existingId) toUpdate.push({ id: existingId, row });
         else            toInsert.push(row);
@@ -411,24 +427,18 @@ async function exportClientsExcel() {
   if (!data?.length) { showToast('내보낼 데이터가 없습니다', 'error'); return; }
 
   const rows = data.map(c => ({
-    '거래처코드':   c.client_code || '',
     '회사명':       c.company_name || '',
     '담당자':       c.contact_name || '',
     '연락처':       c.contact_phone || '',
     '이메일':       c.contact_email || '',
-    '사업자주소':   c.biz_address || '',
     '배송지주소':   c.delivery_address || '',
     '담당영업사원': c.sales_person || '',
-    '대표자':       c.ceo_name || '',
-    '대표전화':     c.ceo_phone || '',
-    '거래업종':     c.biz_type || '',
-    '등급':         c.grade || '',
     '메모':         c.memo || '',
   }));
 
   const ws = XLSX.utils.json_to_sheet(rows);
   // 컬럼 너비 설정
-  ws['!cols'] = [8,20,10,14,24,30,30,12,10,14,12,8,20].map(w=>({wch:w}));
+  ws['!cols'] = [24,12,14,28,32,14,24].map(w=>({wch:w}));
 
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, '고객사목록');
@@ -678,10 +688,10 @@ function addManualItem() {
   showToast(`"${name}" 견적에 추가되었습니다`, 'success');
 }
 
-/* 검색 입력 핸들러 (HTML onkeyup에서 호출) */
+/* 검색 입력 핸들러 (HTML oninput에서 호출) */
 function onCpiSearchInput(type) {
-  if (type === 'purchase') cpiSearch('cpi-search-input', 'cpi-list', 'purchase');
-  else cpiSearch('r-cpi-search-input', 'r-cpi-list', 'rental');
+  if (type === 'purchase') cpiSearch('cpi-search', 'cpi-list', 'purchase');
+  else cpiSearch('r-cpi-search', 'r-cpi-list', 'rental');
 }
 
 /* ══════════════════════════════════════

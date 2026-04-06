@@ -536,12 +536,12 @@
         <table class="data-table">
           <thead><tr>
             <th style="width:36px;"><input type="checkbox" id="client-check-all" onchange="clientToggleAll(this)" style="width:15px;height:15px;cursor:pointer;"></th>
-            <th style="min-width:150px;">회사명</th>
-            <th style="min-width:80px;">담당자</th>
+            <th style="min-width:150px;"><button class="th-sort-btn" onclick="sortClients('company_name')">회사명 <span id="csort-company_name" class="sort-icon">⇅</span></button></th>
+            <th style="min-width:80px;"><button class="th-sort-btn" onclick="sortClients('contact_name')">담당자 <span id="csort-contact_name" class="sort-icon">⇅</span></button></th>
             <th style="min-width:120px;">연락처</th>
             <th style="min-width:160px;">이메일</th>
             <th style="min-width:180px;">배송지</th>
-            <th style="min-width:90px;">담당 영업</th>
+            <th style="min-width:90px;"><button class="th-sort-btn" onclick="sortClients('sales_person')">담당 영업 <span id="csort-sales_person" class="sort-icon">⇅</span></button></th>
             <th style="min-width:70px;text-align:center;">관리</th>
           </tr></thead>
           <tbody id="client-list-body">
@@ -922,13 +922,11 @@
       <button class="modal-close" onclick="closeModal('modal-client')">✕</button>
     </div>
     <div class="modal-body" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-      <div><div class="field-label">회사명 *</div><input class="field-input" id="cm-company" placeholder="(주)비유니드"></div>
-      <div><div class="field-label">거래처코드</div><input class="field-input" id="cm-code" placeholder="ERP 코드"></div>
+      <div style="grid-column:1/-1;"><div class="field-label">회사명 *</div><input class="field-input" id="cm-company" placeholder="(주)비유니드"></div>
       <div><div class="field-label">담당자</div><input class="field-input" id="cm-contact" placeholder="홍길동"></div>
       <div><div class="field-label">연락처</div><input class="field-input" id="cm-phone" placeholder="010-0000-0000"></div>
       <div style="grid-column:1/-1;"><div class="field-label">이메일</div><input class="field-input" id="cm-email" placeholder="example@company.com"></div>
-      <div style="grid-column:1/-1;"><div class="field-label">사업자 주소</div><input class="field-input" id="cm-biz-addr" placeholder="서울시 강남구..."></div>
-      <div style="grid-column:1/-1;"><div class="field-label">배송지 주소</div><input class="field-input" id="cm-delivery-addr" placeholder="배송지가 다른 경우 입력"></div>
+      <div style="grid-column:1/-1;"><div class="field-label">배송지 주소</div><input class="field-input" id="cm-delivery-addr" placeholder="배송지 주소 입력"></div>
       <div><div class="field-label">담당 영업사원</div><input class="field-input" id="cm-sales" placeholder="담당자명"></div>
       <div><div class="field-label">메모</div><input class="field-input" id="cm-memo" placeholder="특이사항"></div>
     </div>
