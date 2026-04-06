@@ -248,7 +248,16 @@ async function deleteClient(id, name) {
   const { error } = await db.from('clients').delete().eq('id', id);
   if (error) { showToast('삭제 실패: ' + error.message, 'error'); return; }
   showToast('삭제되었습니다', 'success');
-  loadClients();
+
+  // 로컬 배열에서 제거 후 현재 페이지 유지
+  _clients = _clients.filter(c => c.id !== id);
+  _clientsFiltered = _clientsFiltered.filter(c => c.id !== id);
+
+  // 삭제 후 현재 페이지에 항목이 없으면 한 페이지 앞으로
+  const totalPages = Math.ceil(_clientsFiltered.length / _clientPageSize);
+  if (_clientPage > totalPages && totalPages > 0) _clientPage = totalPages;
+
+  renderClientList();
 }
 
 /* ══════════════════════════════════════
@@ -824,10 +833,18 @@ async function clientBulkDelete() {
     showToast(`✅ ${ids.length}건 삭제 완료`, 'success');
   }
 
+  // 로컬 배열에서 제거 후 현재 페이지 유지
+  const idSet = new Set(ids);
+  _clients = _clients.filter(c => !idSet.has(c.id));
+  _clientsFiltered = _clientsFiltered.filter(c => !idSet.has(c.id));
+
+  const totalPages = Math.ceil(_clientsFiltered.length / _clientPageSize);
+  if (_clientPage > totalPages && totalPages > 0) _clientPage = totalPages;
+
   // 전체선택 체크박스 초기화
   const checkAll = document.getElementById('client-check-all');
   if (checkAll) checkAll.checked = false;
   _clientUpdateBulkBtn();
 
-  loadClients();
+  renderClientList();
 }
