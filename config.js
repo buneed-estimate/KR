@@ -617,9 +617,9 @@ function switchTopTab(tab, el) {
 
   // 구매/렌탈 탭 클릭 시 → 항상 견적 작성 서브탭으로 초기화
   if (tab === 'purchase') {
-    switchSubTab('p', 'write');
+    switchSubTab('p', 'quote');
   } else if (tab === 'rental') {
-    switchSubTab('r', 'write');
+    switchSubTab('r', 'quote');
   } else if (tab === 'clients') {
     // 고객사 관리 탭 진입 시 목록 로드
     if (typeof loadClients === 'function') loadClients();

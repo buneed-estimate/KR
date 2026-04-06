@@ -35,7 +35,23 @@ async function loadClients() {
     .select('*')
     .order('company_name', { ascending: true });
 
-  if (error) { showToast('불러오기 실패: ' + error.message, 'error'); return; }
+  if (error) {
+    const isTableMissing = error.message && error.message.includes('schema cache');
+    if (isTableMissing) {
+      body.innerHTML = `
+        <tr><td colspan="7" style="text-align:center;padding:40px;">
+          <div style="color:#dc2626;font-weight:600;margin-bottom:8px;">⚠️ clients 테이블이 Supabase에 없습니다</div>
+          <div style="font-size:12px;color:#64748b;line-height:1.8;">
+            Supabase Dashboard → SQL Editor에서<br>
+            <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;">create_clients_table.sql</code> 파일의 내용을 실행해 주세요.
+          </div>
+        </td></tr>`;
+      showToast('Supabase에 clients 테이블을 먼저 생성해 주세요', 'error');
+    } else {
+      showToast('불러오기 실패: ' + error.message, 'error');
+    }
+    return;
+  }
 
   _clients = data || [];
   _clientsFiltered = [..._clients];
@@ -238,17 +254,56 @@ function importClientCSV(event) {
 
       showToast(`${rows.length}건 임포트 중...`, 'info');
 
-      // 50건씩 배치 upsert (client_code 기준)
-      const batchSize = 50;
-      let imported = 0;
-      for (let i = 0; i < rows.length; i += batchSize) {
-        const batch = rows.slice(i, i + batchSize);
-        const { error } = await db.from('clients').upsert(batch, { onConflict: 'client_code', ignoreDuplicates: false });
-        if (error) { showToast('임포트 오류: ' + error.message, 'error'); return; }
-        imported += batch.length;
+      // 기존 client_code 목록 조회 (중복 체크용)
+      const { data: existing } = await db.from('clients').select('id, client_code');
+      const existingMap = new Map((existing || [])
+        .filter(r => r.client_code)
+        .map(r => [r.client_code, r.id])
+      );
+
+      // 회사명 기준 중복 체크 (client_code 없는 경우)
+      const { data: existingByName } = await db.from('clients').select('id, company_name');
+      const existingNameMap = new Map((existingByName || []).map(r => [r.company_name, r.id]));
+
+      let inserted = 0, updated = 0, failed = 0;
+
+      // 신규 / 업데이트 분류
+      const toInsert = [];
+      const toUpdate = []; // { id, row }
+
+      for (const row of rows) {
+        let existingId = null;
+        if (row.client_code) existingId = existingMap.get(row.client_code) || null;
+        if (!existingId)     existingId = existingNameMap.get(row.company_name) || null;
+
+        if (existingId) toUpdate.push({ id: existingId, row });
+        else            toInsert.push(row);
       }
 
-      showToast(`✅ ${imported}건 임포트 완료!`, 'success');
+      // 신규: 50건씩 배치 insert
+      const batchSize = 50;
+      for (let i = 0; i < toInsert.length; i += batchSize) {
+        const batch = toInsert.slice(i, i + batchSize);
+        const { error } = await db.from('clients').insert(batch);
+        if (error) { failed += batch.length; }
+        else       { inserted += batch.length; }
+      }
+
+      // 업데이트: 10건씩 병렬 처리
+      const updateChunkSize = 10;
+      for (let i = 0; i < toUpdate.length; i += updateChunkSize) {
+        const chunk = toUpdate.slice(i, i + updateChunkSize);
+        const results = await Promise.all(
+          chunk.map(({ id, row }) => db.from('clients').update(row).eq('id', id))
+        );
+        results.forEach(({ error }) => {
+          if (error) failed++;
+          else       updated++;
+        });
+      }
+
+      const msg = `✅ 임포트 완료! 신규 ${inserted}건, 업데이트 ${updated}건${failed ? `, 실패 ${failed}건` : ''}`;
+      showToast(msg, failed ? 'error' : 'success');
       loadClients();
     } catch(err) {
       showToast('파일 처리 오류: ' + err.message, 'error');
@@ -306,10 +361,16 @@ async function pOpenClientPicker() {
   if (!listEl) return;
   listEl.innerHTML = '<div class="cpi-loading">불러오는 중...</div>';
 
-  // clients DB 조회
-  const { data: clientRows } = db
-    ? await db.from('clients').select('company_name,contact_name,contact_phone,contact_email,delivery_address,biz_address').order('company_name')
-    : { data: [] };
+  // clients DB 조회 (테이블 미존재 시 graceful 처리)
+  let clientRows = [];
+  if (db) {
+    const { data, error } = await db
+      .from('clients')
+      .select('company_name,contact_name,contact_phone,contact_email,delivery_address,biz_address')
+      .order('company_name');
+    if (!error) clientRows = data || [];
+    // 테이블 없으면 견적이력만으로 진행 (오류 무시)
+  }
 
   // 기존 견적이력에서 추출 (중복 제거용)
   const { data: quoteRows } = db
@@ -362,9 +423,15 @@ async function rOpenClientPicker() {
   if (!listEl) return;
   listEl.innerHTML = '<div class="cpi-loading">불러오는 중...</div>';
 
-  const { data: clientRows } = db
-    ? await db.from('clients').select('company_name,contact_name,contact_phone,contact_email,delivery_address,biz_address').order('company_name')
-    : { data: [] };
+  // clients DB 조회 (테이블 미존재 시 graceful 처리)
+  let clientRows = [];
+  if (db) {
+    const { data, error } = await db
+      .from('clients')
+      .select('company_name,contact_name,contact_phone,contact_email,delivery_address,biz_address')
+      .order('company_name');
+    if (!error) clientRows = data || [];
+  }
 
   const { data: quoteRows } = db
     ? await db.from('rental_quotes').select('company_name,contact_name,contact_tel,contact_email').order('created_at', { ascending: false })
