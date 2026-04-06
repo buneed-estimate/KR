@@ -137,7 +137,7 @@ function renderClientList() {
   _clientUpdateBulkBtn();
 
   if (!page.length) {
-    body.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;color:#94a3b8;">등록된 고객사가 없습니다</td></tr>';
+    body.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:40px;color:#94a3b8;">등록된 고객사가 없습니다</td></tr>';
     renderClientPagination();
     return;
   }
@@ -145,15 +145,15 @@ function renderClientList() {
   body.innerHTML = page.map(c => `
     <tr>
       <td style="text-align:center;"><input type="checkbox" class="client-row-check" data-id="${c.id}" onchange="_clientUpdateBulkBtn()" style="width:15px;height:15px;cursor:pointer;"></td>
-      <td>
-        <div style="font-weight:600;color:#1B3A6B;">${esc(c.company_name)}</div>
-        ${c.memo ? `<div style="font-size:10px;color:#94a3b8;">${esc(c.memo)}</div>` : ''}
-      </td>
+      <td><div style="font-weight:600;color:#1B3A6B;">${esc(c.company_name)}</div></td>
       <td>${esc(c.contact_name)}</td>
       <td>${esc(c.contact_phone)}</td>
       <td style="font-size:11px;">${esc(c.contact_email)}</td>
       <td style="font-size:11px;">${esc(c.delivery_address)}</td>
       <td>${esc(c.sales_person)}</td>
+      <td style="font-size:11px;color:#64748b;max-width:160px;">
+        <div style="white-space:pre-wrap;word-break:break-all;">${esc(c.memo)}</div>
+      </td>
       <td style="text-align:center;white-space:nowrap;">
         <button class="btn btn-sm" style="padding:3px 8px;font-size:11px;background:#eef3fb;color:#1B3A6B;border:1px solid #c7d7f5;" onclick="openClientModal('${c.id}')">수정</button>
         <button class="btn btn-sm btn-danger" style="padding:3px 8px;font-size:11px;" onclick="deleteClient('${c.id}','${esc(c.company_name)}')">삭제</button>
