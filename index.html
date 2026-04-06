@@ -520,6 +520,8 @@
         <h2 style="font-size:15px;font-weight:700;color:#1B3A6B;margin:0;">🏢 고객사 관리</h2>
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
           <input class="field-input" id="client-search" placeholder="🔍 회사명 / 담당자 검색..." oninput="filterClients()" style="font-size:12px;padding:6px 10px;width:200px;">
+          <button class="btn btn-sm btn-danger" id="client-bulk-del-btn" onclick="clientBulkDelete()" style="display:none;">🗑️ 선택 삭제</button>
+          <button class="btn btn-sm btn-danger" onclick="clientDeleteAll()" style="background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;">🗑️ 전체 삭제</button>
           <button class="btn btn-sm btn-secondary" onclick="exportClientsExcel()">⬇ Excel 다운로드</button>
           <label class="btn btn-sm btn-secondary" style="cursor:pointer;" title="ERP CSV 임포트 (EUC-KR)">
             📂 CSV 임포트
@@ -533,6 +535,7 @@
       <div style="flex:1;overflow:auto;" class="table-scroll-wrap">
         <table class="data-table">
           <thead><tr>
+            <th style="width:36px;"><input type="checkbox" id="client-check-all" onchange="clientToggleAll(this)" style="width:15px;height:15px;cursor:pointer;"></th>
             <th style="min-width:150px;">회사명</th>
             <th style="min-width:80px;">담당자</th>
             <th style="min-width:120px;">연락처</th>

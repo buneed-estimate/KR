@@ -83,14 +83,20 @@ function renderClientList() {
   const start = (_clientPage - 1) * _clientPageSize;
   const page = _clientsFiltered.slice(start, start + _clientPageSize);
 
+  // 렌더 시 전체선택 체크박스 초기화
+  const checkAll = document.getElementById('client-check-all');
+  if (checkAll) checkAll.checked = false;
+  _clientUpdateBulkBtn();
+
   if (!page.length) {
-    body.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:#94a3b8;">등록된 고객사가 없습니다</td></tr>';
+    body.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;color:#94a3b8;">등록된 고객사가 없습니다</td></tr>';
     renderClientPagination();
     return;
   }
 
   body.innerHTML = page.map(c => `
     <tr>
+      <td style="text-align:center;"><input type="checkbox" class="client-row-check" data-id="${c.id}" onchange="_clientUpdateBulkBtn()" style="width:15px;height:15px;cursor:pointer;"></td>
       <td>
         <div style="font-weight:600;color:#1B3A6B;">${esc(c.company_name)}</div>
         ${c.client_code ? `<div style="font-size:10px;color:#94a3b8;">${esc(c.client_code)}</div>` : ''}
@@ -222,33 +228,114 @@ function importClientCSV(event) {
       const decoder = new TextDecoder('euc-kr');
       const text = decoder.decode(bytes);
 
-      const lines = text.split(/\r?\n/).filter(l => l.trim());
-      // 첫 줄 = 회사명 헤더, 두 번째 줄 = 컬럼명 → 데이터는 3번째 줄부터
-      const dataLines = lines.slice(2);
+      // ── RFC 4180 표준 CSV 파서 ──────────────────────────────────
+      // 필드 안에 쉼표(,) 또는 줄바꿈이 포함된 경우 큰따옴표로 감싸짐
+      // 예: "서울시 강남구, 테헤란로 123" → split(',') 하면 컬럼이 밀림
+      // → 이 파서는 따옴표를 올바르게 처리하여 컬럼 밀림 방지
+      function parseCSV(str) {
+        const result = [];
+        let row = [], field = '', inQuote = false;
+        for (let i = 0; i < str.length; i++) {
+          const ch = str[i];
+          const next = str[i + 1];
+          if (inQuote) {
+            if (ch === '"' && next === '"') { field += '"'; i++; } // escaped quote
+            else if (ch === '"') { inQuote = false; }
+            else { field += ch; }
+          } else {
+            if (ch === '"') { inQuote = true; }
+            else if (ch === ',') { row.push(field.trim()); field = ''; }
+            else if (ch === '\n' || (ch === '\r' && next === '\n')) {
+              if (ch === '\r') i++;
+              row.push(field.trim()); field = '';
+              if (row.some(f => f)) result.push(row); // 완전 빈 줄 제외
+              row = [];
+            } else { field += ch; }
+          }
+        }
+        if (field || row.length) { row.push(field.trim()); if (row.some(f => f)) result.push(row); }
+        return result;
+      }
 
-      if (!dataLines.length) { showToast('데이터가 없습니다', 'error'); return; }
+      const allRows = parseCSV(text);
 
-      const rows = dataLines.map(line => {
-        const cols = line.split(',');
-        return {
-          client_code:      (cols[0]||'').trim(),
-          client_type:      (cols[1]||'').trim(),
-          company_name:     (cols[2]||'').trim(),
-          biz_address:      (cols[3]||'').trim(),
-          ceo_name:         (cols[4]||'').trim(),
-          ceo_phone:        (cols[5]||'').trim(),
-          delivery_address: (cols[6]||'').trim(),
-          contact_name:     (cols[7]||'').trim(),
-          contact_phone:    (cols[8]||'').trim(),
-          contact_email:    (cols[9]||'').trim(),
-          biz_type:         (cols[10]||'').trim(),
-          purchase_yn:      (cols[11]||'').trim(),
-          trade_condition_buy:  (cols[12]||'').trim(),
-          trade_condition_sell: (cols[13]||'').trim(),
-          grade:            (cols[14]||'').trim(),
-          is_active:        true,
-        };
-      }).filter(r => r.company_name); // 회사명 없는 줄 제외
+      // 헤더 구조 파악:
+      // 첫 줄이 컬럼명(거래처코드 포함)이면 1줄 헤더, 아니면 2줄 헤더(회사명+컬럼명)
+      let headerRowIdx = 0;
+      if (allRows.length > 0) {
+        const firstRow = allRows[0].join(',').toLowerCase();
+        // 첫 줄에 '거래처코드' 또는 '거래처명' 같은 컬럼명이 있으면 1줄 헤더
+        if (firstRow.includes('거래처') || firstRow.includes('코드') || firstRow.includes('company')) {
+          headerRowIdx = 0;
+        } else {
+          // 첫 줄은 파일 제목(예: 회사명), 두 번째 줄이 컬럼명
+          headerRowIdx = 1;
+        }
+      }
+      const dataAllRows = allRows.slice(headerRowIdx + 1);
+
+      if (!dataAllRows.length) { showToast('데이터가 없습니다', 'error'); return; }
+
+      // 헤더 컬럼명으로 인덱스 자동 매핑
+      const headerCols = (allRows[headerRowIdx] || []).map(h => h.toLowerCase().replace(/\s/g,''));
+      function colIdx(keywords) {
+        for (const kw of keywords) {
+          const idx = headerCols.findIndex(h => h.includes(kw));
+          if (idx !== -1) return idx;
+        }
+        return -1;
+      }
+      // 각 필드별 컬럼 인덱스 (후보 키워드 순서대로 매칭)
+      const CI = {
+        client_code:          colIdx(['거래처코드','code','코드']),
+        client_type:          colIdx(['거래처구분','구분','type']),
+        company_name:         colIdx(['거래처명','회사명','company']),
+        biz_address:          colIdx(['사업자주소','사업장주소','주소','address']),
+        ceo_name:             colIdx(['대표자명','대표자','ceo']),
+        ceo_phone:            colIdx(['대표전화','대표번호']),
+        delivery_address:     colIdx(['배송주소','배송지','delivery']),
+        contact_name:         colIdx(['거래처담당자','담당자명','담당자','contact']),
+        contact_phone:        colIdx(['담당자전화','담당전화','연락처','phone','tel']),
+        contact_email:        colIdx(['담당자이메일','이메일','email']),
+        biz_type:             colIdx(['거래업종','업종','biztype']),
+        purchase_yn:          colIdx(['매입구분','매입']),
+        trade_condition_buy:  colIdx(['거래조건(구매)','구매조건','tradebuy']),
+        trade_condition_sell: colIdx(['거래조건(판매)','판매조건','tradesell']),
+        grade:                colIdx(['업체등급','등급','grade']),
+      };
+
+      // 헤더 매핑 실패 시 → 컬럼 순서 기본값으로 폴백
+      const useFallback = CI.company_name === -1;
+      if (useFallback) {
+        CI.client_code=0; CI.client_type=1; CI.company_name=2; CI.biz_address=3;
+        CI.ceo_name=4; CI.ceo_phone=5; CI.delivery_address=6; CI.contact_name=7;
+        CI.contact_phone=8; CI.contact_email=9; CI.biz_type=10; CI.purchase_yn=11;
+        CI.trade_condition_buy=12; CI.trade_condition_sell=13; CI.grade=14;
+      }
+
+      function col(cols, key) {
+        const idx = CI[key];
+        return (idx >= 0 && idx < cols.length) ? (cols[idx] || '').trim() : '';
+      }
+
+      const rows = dataAllRows.map(cols => ({
+        client_code:          col(cols, 'client_code'),
+        client_type:          col(cols, 'client_type'),
+        company_name:         col(cols, 'company_name'),
+        biz_address:          col(cols, 'biz_address'),
+        ceo_name:             col(cols, 'ceo_name'),
+        ceo_phone:            col(cols, 'ceo_phone'),
+        delivery_address:     col(cols, 'delivery_address'),
+        contact_name:         col(cols, 'contact_name'),
+        contact_phone:        col(cols, 'contact_phone'),
+        contact_email:        col(cols, 'contact_email'),
+        biz_type:             col(cols, 'biz_type'),
+        purchase_yn:          col(cols, 'purchase_yn'),
+        trade_condition_buy:  col(cols, 'trade_condition_buy'),
+        trade_condition_sell: col(cols, 'trade_condition_sell'),
+        grade:                col(cols, 'grade'),
+        is_active:            true,
+      })).filter(r => r.company_name); // 회사명 없는 줄 제외
 
       if (!rows.length) { showToast('유효한 데이터가 없습니다', 'error'); return; }
 
@@ -595,4 +682,90 @@ function addManualItem() {
 function onCpiSearchInput(type) {
   if (type === 'purchase') cpiSearch('cpi-search-input', 'cpi-list', 'purchase');
   else cpiSearch('r-cpi-search-input', 'r-cpi-list', 'rental');
+}
+
+/* ══════════════════════════════════════
+   9. 고객사 전체선택 / 선택삭제
+══════════════════════════════════════ */
+
+// 선택된 ID 목록 반환
+function _clientCheckedIds() {
+  return [...document.querySelectorAll('.client-row-check:checked')].map(el => el.dataset.id);
+}
+
+// 선택삭제 버튼 표시/숨김 업데이트
+function _clientUpdateBulkBtn() {
+  const btn = document.getElementById('client-bulk-del-btn');
+  if (!btn) return;
+  const count = _clientCheckedIds().length;
+  btn.style.display = count > 0 ? '' : 'none';
+  btn.textContent = `🗑️ 선택 삭제 (${count})`;
+}
+
+// 전체선택 / 전체해제
+function clientToggleAll(checkbox) {
+  document.querySelectorAll('.client-row-check').forEach(el => {
+    el.checked = checkbox.checked;
+  });
+  _clientUpdateBulkBtn();
+}
+
+// 전체 삭제
+async function clientDeleteAll() {
+  const total = _clients.length;
+  if (!total) { showToast('삭제할 데이터가 없습니다', 'error'); return; }
+  if (!confirm(`전체 ${total.toLocaleString()}개 고객사를 모두 삭제하시겠습니까?\n\n⚠️ 이 작업은 되돌릴 수 없습니다.`)) return;
+
+  showToast(`${total}건 삭제 중...`, 'info');
+
+  // 전체 ID 목록으로 50건씩 배치 삭제
+  const ids = _clients.map(c => c.id);
+  const chunkSize = 50;
+  let failed = 0;
+
+  for (let i = 0; i < ids.length; i += chunkSize) {
+    const chunk = ids.slice(i, i + chunkSize);
+    const { error } = await db.from('clients').delete().in('id', chunk);
+    if (error) failed += chunk.length;
+  }
+
+  if (failed) {
+    showToast(`삭제 완료 (실패 ${failed}건)`, 'error');
+  } else {
+    showToast(`✅ 전체 ${total}건 삭제 완료`, 'success');
+  }
+  loadClients();
+}
+
+// 선택된 항목 일괄 삭제
+async function clientBulkDelete() {
+  const ids = _clientCheckedIds();
+  if (!ids.length) return;
+  if (!confirm(`선택한 ${ids.length}개 고객사를 삭제하시겠습니까?`)) return;
+
+  showToast(`${ids.length}건 삭제 중...`, 'info');
+
+  // 10건씩 병렬 삭제
+  const chunkSize = 10;
+  let failed = 0;
+  for (let i = 0; i < ids.length; i += chunkSize) {
+    const chunk = ids.slice(i, i + chunkSize);
+    const results = await Promise.all(
+      chunk.map(id => db.from('clients').delete().eq('id', id))
+    );
+    results.forEach(({ error }) => { if (error) failed++; });
+  }
+
+  if (failed) {
+    showToast(`삭제 완료 (실패 ${failed}건)`, 'error');
+  } else {
+    showToast(`✅ ${ids.length}건 삭제 완료`, 'success');
+  }
+
+  // 전체선택 체크박스 초기화
+  const checkAll = document.getElementById('client-check-all');
+  if (checkAll) checkAll.checked = false;
+  _clientUpdateBulkBtn();
+
+  loadClients();
 }
