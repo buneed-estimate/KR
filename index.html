@@ -45,7 +45,7 @@
   <!-- 헤더 -->
   <div class="app-header" id="app-header">
     <!-- 왼쪽: 로고 -->
-    <div class="h-logo">
+    <div class="h-logo" onclick="switchTopTab('purchase',document.getElementById('ttab-purchase'));switchSubTab('p','write');" style="cursor:pointer;" title="홈으로">
       <picture><source srcset="logo.webp" type="image/webp"><img id="logo-header" src="logo.png" alt="비유니드 로고" style="height:30px;filter:none;"></picture>
       <span class="h-logo-label">비유니드 견적 시스템</span>
     </div>
@@ -54,6 +54,7 @@
       <button class="h-nav-tab active purchase" id="ttab-purchase" onclick="switchTopTab('purchase',this)"> 구매견적</button>
       <button class="h-nav-tab rental" id="ttab-rental" onclick="switchTopTab('rental',this)"> 렌탈견적</button>
       <button class="h-nav-tab admin" id="ttab-admin" onclick="switchTopTab('admin',this)"> 제품 관리</button>
+      <button class="h-nav-tab clients" id="ttab-clients" onclick="switchTopTab('clients',this)">🏢 고객사 관리</button>
     </div>
     <!-- 오른쪽: 프로필 드롭다운 + 로그아웃 -->
     <div class="h-right">
@@ -163,7 +164,10 @@
             </div>
             <!-- 품목 -->
             <div class="form-section">
-              <div class="section-title">📋 견적 품목</div>
+              <div class="section-title section-title--with-btn">
+                <span>📋 견적 품목</span>
+                <button class="btn btn-sm" onclick="openManualItemModal()" style="background:rgba(255,255,255,0.18);border:1.5px solid rgba(255,255,255,0.55);color:#fff;font-size:11px;padding:3px 10px;">✏️ 직접입력</button>
+              </div>
               <div id="quote-items-area"><div class="no-products" style="padding:16px 0">좌측 카탈로그에서 제품을 클릭하여 추가하세요</div></div>
             </div>
             <!-- 금액 -->
@@ -420,6 +424,7 @@
       <button class="admin-sub-tab active" onclick="switchAdminTab('p-products',this)">구매 제품</button>
       <button class="admin-sub-tab" onclick="switchAdminTab('r-products',this)">렌탈 제품</button>
       <button class="admin-sub-tab" onclick="switchAdminTab('spec',this)">스펙 관리</button>
+
     </div>
     <!-- 구매 제품 관리 -->
     <div class="admin-sub-panel active" id="admin-panel-p-products">
@@ -507,6 +512,45 @@
 
   </div><!-- /panel-admin -->
 
+  <!-- ===== 고객사 관리 패널 ===== -->
+  <div class="top-panel" id="panel-clients">
+    <div style="display:flex;flex-direction:column;flex:1;min-height:0;padding:12px;gap:10px;">
+      <!-- 헤더 -->
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+        <h2 style="font-size:15px;font-weight:700;color:#1B3A6B;margin:0;">🏢 고객사 관리</h2>
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+          <input class="field-input" id="client-search" placeholder="🔍 회사명 / 담당자 검색..." oninput="filterClients()" style="font-size:12px;padding:6px 10px;width:200px;">
+          <button class="btn btn-sm btn-secondary" onclick="exportClientsExcel()">⬇ Excel 다운로드</button>
+          <label class="btn btn-sm btn-secondary" style="cursor:pointer;" title="ERP CSV 임포트 (EUC-KR)">
+            📂 CSV 임포트
+            <input type="file" id="client-csv-input" accept=".csv" onchange="importClientCSV(event)" style="display:none;">
+          </label>
+          <button class="btn btn-sm btn-primary" onclick="openClientModal()">+ 고객사 추가</button>
+        </div>
+      </div>
+      <div style="font-size:11px;color:#94a3b8;">총 <span id="client-total-count">0</span>개 고객사</div>
+      <!-- 테이블 -->
+      <div style="flex:1;overflow:auto;" class="table-scroll-wrap">
+        <table class="data-table">
+          <thead><tr>
+            <th style="min-width:150px;">회사명</th>
+            <th style="min-width:80px;">담당자</th>
+            <th style="min-width:120px;">연락처</th>
+            <th style="min-width:160px;">이메일</th>
+            <th style="min-width:180px;">배송지</th>
+            <th style="min-width:90px;">담당 영업</th>
+            <th style="min-width:70px;text-align:center;">관리</th>
+          </tr></thead>
+          <tbody id="client-list-body">
+            <tr><td colspan="7" style="text-align:center;padding:40px;color:var(--muted);">로딩 중...</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <!-- 페이지네이션 -->
+      <div id="client-pagination" style="display:flex;justify-content:center;align-items:center;gap:6px;padding:4px;font-size:12px;"></div>
+    </div>
+  </div>
+
 </div><!-- #app -->
 
 <!-- ===== 모달: 구매 스펙 ===== -->
@@ -580,7 +624,7 @@
     <div class="cpi-search-wrap">
       <input class="field-input cpi-search-input" id="cpi-search"
         placeholder="🔍 회사명 / 담당자 검색..."
-        oninput="pFilterClientList()"
+        oninput="onCpiSearchInput('purchase')"
         autocomplete="off"
         autocorrect="off"
         autocapitalize="off"
@@ -604,7 +648,7 @@
     <div class="cpi-search-wrap">
       <input class="field-input cpi-search-input r-cpi-search-input" id="r-cpi-search"
         placeholder="🔍 회사명 / 담당자 검색..."
-        oninput="rFilterClientList()"
+        oninput="onCpiSearchInput('rental')"
         autocomplete="off"
         autocorrect="off"
         autocapitalize="off"
@@ -867,9 +911,65 @@
   </div>
 </div>
 
+<!-- ===== 모달: 거래처 추가/수정 ===== -->
+<div class="modal-overlay" id="modal-client">
+  <div class="modal-box" style="width:600px;max-width:96vw;">
+    <div class="modal-header">
+      <h2 id="client-modal-title">거래처 추가</h2>
+      <button class="modal-close" onclick="closeModal('modal-client')">✕</button>
+    </div>
+    <div class="modal-body" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div><div class="field-label">회사명 *</div><input class="field-input" id="cm-company" placeholder="(주)비유니드"></div>
+      <div><div class="field-label">거래처코드</div><input class="field-input" id="cm-code" placeholder="ERP 코드"></div>
+      <div><div class="field-label">담당자</div><input class="field-input" id="cm-contact" placeholder="홍길동"></div>
+      <div><div class="field-label">연락처</div><input class="field-input" id="cm-phone" placeholder="010-0000-0000"></div>
+      <div style="grid-column:1/-1;"><div class="field-label">이메일</div><input class="field-input" id="cm-email" placeholder="example@company.com"></div>
+      <div style="grid-column:1/-1;"><div class="field-label">사업자 주소</div><input class="field-input" id="cm-biz-addr" placeholder="서울시 강남구..."></div>
+      <div style="grid-column:1/-1;"><div class="field-label">배송지 주소</div><input class="field-input" id="cm-delivery-addr" placeholder="배송지가 다른 경우 입력"></div>
+      <div><div class="field-label">담당 영업사원</div><input class="field-input" id="cm-sales" placeholder="담당자명"></div>
+      <div><div class="field-label">메모</div><input class="field-input" id="cm-memo" placeholder="특이사항"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-client')">취소</button>
+      <button class="btn btn-primary" onclick="saveClient()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 모달: 1회성 견적품목 직접입력 ===== -->
+<div class="modal-overlay" id="modal-manual-item">
+  <div class="modal-box" style="width:480px;max-width:96vw;">
+    <div class="modal-header">
+      <h2>✏️ 품목 직접 입력</h2>
+      <button class="modal-close" onclick="closeModal('modal-manual-item')">✕</button>
+    </div>
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:10px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div><div class="field-label">브랜드</div><input class="field-input" id="mi-brand" placeholder="HP, Samsung 등"></div>
+        <div><div class="field-label">카테고리</div><input class="field-input" id="mi-category" placeholder="노트북, 모니터 등"></div>
+      </div>
+      <div><div class="field-label">모델명 *</div><input class="field-input" id="mi-name" placeholder="모델명을 입력하세요"></div>
+      <div><div class="field-label">사양 / 스펙</div><textarea class="field-input" id="mi-spec" rows="2" placeholder="CPU, RAM, 용량 등 사양 입력"></textarea></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div><div class="field-label">단가 (원) *</div><input class="field-input" id="mi-price" type="number" min="0" placeholder="0" oninput="calcManualItem()"></div>
+        <div><div class="field-label">수량 *</div><input class="field-input" id="mi-qty" type="number" min="1" value="1" placeholder="1" oninput="calcManualItem()"></div>
+      </div>
+      <div style="background:#f1f5f9;border-radius:6px;padding:8px 12px;font-size:13px;display:flex;justify-content:space-between;align-items:center;">
+        <span style="color:#64748b;">합계금액</span>
+        <span id="mi-total" style="font-weight:700;color:#1B3A6B;font-size:15px;">0 원</span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-manual-item')">취소</button>
+      <button class="btn btn-primary" onclick="addManualItem()">견적에 추가</button>
+    </div>
+  </div>
+</div>
+
 <script src="config.js" defer></script>
 <script src="purchase.js" defer></script>
 <script src="rental.js" defer></script>
+<script src="clients.js" defer></script>
 
 <script>
 // 렌탈 기간 ↔ 종료일 자동계산 (lock으로 순환 방지)

@@ -57,6 +57,7 @@
 .h-nav-tab.active{color:#1B3A6B;font-weight:700;border-bottom-color:#1B3A6B;}
 .h-nav-tab.active.rental{color:#2563eb;border-bottom-color:#2563eb;}
 .h-nav-tab.active.admin{color:#374151;border-bottom-color:#64748b;}
+.h-nav-tab.active.clients{color:#7c3aed;border-bottom-color:#7c3aed;}
 /* h-right */
 .h-right{display:flex;align-items:center;gap:8px;flex-shrink:0;}
 .h-logo-label{font-size:var(--fs-md);font-weight:800;color:#1B3A6B;margin-left:8px;letter-spacing:-0.3px;white-space:nowrap;}

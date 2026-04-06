@@ -445,6 +445,15 @@ async function saveQuote() {
     if (itemErr) throw new Error('품목 저장 실패: '+itemErr.message);
     // 로컬 자동 백업
     pAutoLocalBackup({ ...payload, id: qId }, itemsPayload);
+    // 고객사 자동 등록/업데이트
+    if (typeof upsertClientFromQuote === 'function') {
+      upsertClientFromQuote({
+        company_name:  payload.company_name,
+        contact_name:  payload.contact_name,
+        contact_phone: payload.contact_tel,
+        contact_email: payload.contact_email,
+      });
+    }
     showToast('견적이 저장되었습니다! ('+currentQuoteNum+')', 'success'); loadHistory();
   } catch(e) {
     console.error('saveQuote 오류:', e);
@@ -736,10 +745,8 @@ async function loadQuote(qId) {
   setV('f-sales-email',q.sales_email); setV('f-sales-dept',q.sales_dept);
   quoteItems = (items||[]).map(i=>Object.assign({},i));
   renderQuoteItems(); calcPrice();
-  // 구매견적 탭으로 이동
+  // 구매견적 탭 - 견적 작성으로 이동 (switchTopTab 내부에서 서브탭 초기화 포함)
   switchTopTab('purchase', document.getElementById('ttab-purchase'));
-  document.querySelectorAll('#panel-purchase .sub-tab').forEach((t,i)=>t.classList.toggle('active',i===0));
-  document.querySelectorAll('#panel-purchase .sub-panel').forEach((p,i)=>p.classList.toggle('active',i===0));
   showToast('견적을 불러왔습니다', 'success');
 }
 

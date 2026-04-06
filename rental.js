@@ -472,6 +472,15 @@ async function rSaveQuote() {
     if (itemErr) throw new Error('렌탈 품목 저장 실패: '+itemErr.message);
     // 로컬 자동 백업
     rAutoLocalBackup({ ...payload, id: qId }, rQuoteItems);
+    // 고객사 자동 upsert
+    if (typeof upsertClientFromQuote === 'function') {
+      upsertClientFromQuote({
+        company_name:  payload.company_name,
+        contact_name:  payload.contact_name,
+        contact_phone: payload.contact_tel,
+        contact_email: payload.contact_email,
+      });
+    }
     showToast('렌탈 견적이 저장되었습니다 ✅','success'); rLoadHistory();
   } catch(e) {
     console.error('rSaveQuote 오류:', e);
@@ -741,9 +750,8 @@ async function rLoadQuote(qId) {
   document.getElementById('r-duration-label').textContent = rCurrentType==='일'?'렌탈 기간 (일)':'렌탈 기간 (개월)';
   rQuoteItems = (items||[]).map(i=>Object.assign({},i));
   rRenderQuoteItems(); rCalcPrice();
+  // 렌탈견적 탭 - 견적 작성으로 이동 (switchTopTab 내부에서 서브탭 초기화 포함)
   switchTopTab('rental', document.getElementById('ttab-rental'));
-  document.querySelectorAll('#panel-rental .sub-tab').forEach((t,i)=>t.classList.toggle('active',i===0));
-  document.querySelectorAll('#panel-rental .sub-panel').forEach((p,i)=>p.classList.toggle('active',i===0));
   showToast('렌탈 견적을 불러왔습니다','success');
 }
 

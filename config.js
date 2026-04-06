@@ -614,6 +614,17 @@ function switchTopTab(tab, el) {
   document.querySelectorAll('.h-nav-tab').forEach(t=>t.classList.remove('active'));
   const activeTab = document.getElementById('ttab-' + tab);
   if (activeTab) activeTab.classList.add('active');
+
+  // 구매/렌탈 탭 클릭 시 → 항상 견적 작성 서브탭으로 초기화
+  if (tab === 'purchase') {
+    switchSubTab('p', 'write');
+  } else if (tab === 'rental') {
+    switchSubTab('r', 'write');
+  } else if (tab === 'clients') {
+    // 고객사 관리 탭 진입 시 목록 로드
+    if (typeof loadClients === 'function') loadClients();
+  }
+
   // 렌탈 탭 진입 시: rProducts 없으면 lazy load
   if (tab === 'rental') {
     if (typeof rProducts !== 'undefined' && rProducts.length === 0) {
